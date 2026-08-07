@@ -19,7 +19,8 @@ Yixuan "Coda" Shi（GitHub [@Coda-Shi](https://github.com/Coda-Shi)）的个人�
 | 仓库 | [Coda-Shi/personal-site](https://github.com/Coda-Shi/personal-site)（Public） |
 | 本地路径 | `C:\Users\shiyi\dev\personal-site` |
 | 主分支 | `main`（受保护） |
-| 托管 | Vercel |
+| 托管 | Vercel（scope: `coda4`） |
+| 生产部署 | https://personal-site-dwz5h3837-coda4.vercel.app （该次部署的固定地址；稳定别名见 Vercel 面板） |
 | 正式域名 | 未购买，暂用 `*.vercel.app` 子域名 |
 | 开发环境 | Windows 11、PowerShell、Node v24.18.1、npm 11.16.0 |
 
@@ -93,7 +94,37 @@ Yixuan "Coda" Shi（GitHub [@Coda-Shi](https://github.com/Coda-Shi)）的个人�
 
 > 💡 **选购原则**：看续费价，不看首年价。GoDaddy 等首年 $1–5、次年 $20–25。后缀的影响远大于注册商——`.com` ≈ $11、`.dev` ≈ $12–15、`.io` 高达 $40–60。
 
-## 4. 工作流约定
+## 4. 内容与设计方向
+
+> 2026-08-07 由所有者口述。**这是约束条件，不是参考建议**——审美没有客观对错，只有是否符合他的意图，所以本节优先于任何默认审美倾向。
+
+### 自我定位：三条并列的职业线
+
+1. **Scholarly work** — 学术
+2. **Professional work** — 职业
+3. **Creative Artist and Leader** — 创作者与领导者
+
+他主动强调自己是「多面生涯」的人。**三条线是并列关系，不分主次**——信息架构不得把任何一条降级为附属栏目或塞进「其他」。
+
+### 兴趣
+
+心理学 · 哲学 · 金属核（metalcore）
+
+### 审美
+
+| 维度 | 方向 |
+|---|---|
+| 核心张力 | **「现代色彩 + 几何极简」× 「古典典雅」的对撞** —— 不是二选一，是刻意让两套视觉语汇同框冲突 |
+| 色彩 | 黑 / 灰 / 白 打底，叠加 红 / 蓝 / 黄 等**原色**（高饱和，不是低饱和莫兰迪系） |
+| 元素 | 偏爱**各类符号**（symbols）作为视觉语言 |
+
+> ⚠️ **给未来的 AI**：不要默认输出「干净的 SaaS 风」——柔和渐变、圆角卡片、低饱和中性色、通用无衬线字体，正是他偏好的**反面**。金属核 + 哲学/心理学的组合意味着高对比、严肃、甚至略带攻击性的表达是被允许的。
+
+### 素材
+
+简历原件 `Yixuan_Shi_Main_Resume.docx` 位于仓库根目录，**已 gitignore，不会进入公开历史**（见 §7 的隐私规则）。
+
+## 5. 工作流约定
 
 **不要直接改 `main`。** 标准循环：
 
@@ -112,13 +143,15 @@ gh pr create --fill
 
 提交信息用 [Conventional Commits](https://www.conventionalcommits.org/)：`feat:` / `fix:` / `chore:` / `docs:` / `refactor:`。
 
-## 5. 环境事实
+## 6. 环境事实
 
 - **`gh` CLI 不在本会话 shell 的 PATH 中**（winget 装后需新终端才刷新）。AI 调用时用完整路径：`C:\Program Files\GitHub CLI\gh.exe`
 - SSH 密钥 `~/.ssh/id_ed25519` 已注册到 GitHub，**无密码短语**，推送免交互
 - 全局 git 配置已设 `init.defaultBranch=main`、`push.autoSetupRemote=true`、`core.longpaths=true`
 
-## 6. 已知陷阱
+## 7. 已知陷阱
+
+> **隐私规则（最高优先级）**：本仓库是 Public。含个人信息的原始文档一律不入库，`.gitignore` 已封禁根目录的 `*.docx` / `*.doc` / `*.rtf` 和 `/private/`。**执行 `git add -A` 前必须先看 `git status`**——PII 一旦推送即被永久收录，删除提交也撤不回来。
 
 | 陷阱 | 说明 |
 |---|---|
@@ -129,7 +162,7 @@ gh pr create --fill
 | **原生命令 stderr 被当错误** | git/gh 写 stderr 时 PowerShell 报 `NativeCommandError` 且 `$?` 为 false，**即使退出码是 0**。别据此判断失败。 |
 | **`gh` token 缺 `workflow` scope** | 当前 scope 为 `gist, read:org, repo`。走 SSH 推送不受影响；若将来需通过 API 改工作流文件，需 `gh auth refresh -s workflow`。 |
 
-## 7. 当前进度
+## 8. 当前进度
 
 - [x] Git 环境与 SSH 打通
 - [x] 安装并授权 `gh` CLI
@@ -138,12 +171,13 @@ gh pr create --fill
 - [x] CI 工作流（PR 上跑 lint + build，首次运行 37s 通过）
 - [x] 创建公开仓库并推送
 - [x] 配置 `main` 分支保护
-- [ ] **连接 Vercel 完成首次部署** ← 进行中
+- [x] 连接 Vercel，Production 首次部署成功（2026-08-07 05:25 UTC）
 - [ ] 把部署网址写入仓库 homepage 字段
-- [ ] 设计并实现实际的网站内容（尚未开始，脚手架仍是 Next.js 默认首页）
+- [ ] **设计信息架构与视觉方案**（见 §4）← 下一步
+- [ ] 实现网站内容（脚手架仍是 Next.js 默认首页）
 - [ ] 购买域名并绑定（见 D6）
 
-## 8. 待决事项
+## 9. 待决事项
 
 | 问题 | 状态 |
 |---|---|
