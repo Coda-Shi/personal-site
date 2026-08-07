@@ -25,28 +25,38 @@ export const PROFILE =
 
 // Tailwind cannot see class names assembled at runtime, so every track's classes
 // are written out in full here rather than interpolated from the track id.
+// `cssVar` is for SVG fills and inline transforms, where a utility class won't do.
 export const TRACK_CLASSES: Record<
   TrackId,
-  { text: string; bg: string; border: string; rule: string }
+  { text: string; bg: string; border: string; cssVar: string }
 > = {
   scholarly: {
     text: "text-klein",
     bg: "bg-klein",
     border: "border-klein",
-    rule: "decoration-klein",
+    cssVar: "var(--color-klein)",
   },
   professional: {
     text: "text-gilt",
     bg: "bg-gilt",
     border: "border-gilt",
-    rule: "decoration-gilt",
+    cssVar: "var(--color-gilt)",
   },
   creative: {
     text: "text-oxblood",
     bg: "bg-oxblood",
     border: "border-oxblood",
-    rule: "decoration-oxblood",
+    cssVar: "var(--color-oxblood)",
   },
+};
+
+// Where each track sits on the disc. Angles are SVG convention: 0deg points
+// right, positive turns clockwise. Scholarly crowns the disc; creative and
+// professional take the lower left and lower right.
+export const TRACK_ARCS: Record<TrackId, { start: number; end: number; mid: number }> = {
+  scholarly: { start: 212, end: 328, mid: 270 },
+  creative: { start: 92, end: 208, mid: 150 },
+  professional: { start: 332, end: 448, mid: 30 },
 };
 
 export const TRACKS: Track[] = [

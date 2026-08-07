@@ -1,15 +1,25 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0b0b0b;
-  --color-paper: #f2efe9;
-  --color-graphite: #45443f;
-  --color-ash: #86847c;
-  --color-rule: #d5d0c4;
+  /* Ground and type. The site now sits on near-black so that a track colour can
+     flood the page without fighting a light background. */
+  --color-void: #050505;
+  --color-bone: #f2efe9;
+  --color-graphite: #a3a099;
+  --color-ash: #6e6b63;
+  --color-rule: #2b2b28;
 
-  --color-klein: #002fa7;
-  --color-oxblood: #6e1423;
-  --color-gilt: #b08d2e;
+  /* Track pigments, lifted from their true values for legibility on black and
+     balanced against each other in perceived luminance — otherwise gold
+     dominates and the trinity stops reading as three equals. See D7 in CLAUDE.md. */
+  --color-klein: #0b37c8;
+  --color-oxblood: #96202f;
+  --color-gilt: #806220;
+
+  /* True pigments, kept for any light-ground surface (print, OG images). */
+  --color-klein-deep: #002fa7;
+  --color-oxblood-deep: #6e1423;
+  --color-gilt-deep: #b08d2e;
 
   --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
   --font-sans: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
@@ -19,23 +29,23 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    background-color: var(--color-void);
   }
 
   body {
-    background-color: var(--color-paper);
-    color: var(--color-ink);
+    color: var(--color-bone);
     font-family: var(--font-sans);
     font-size: 1rem;
     line-height: 1.6;
   }
 
   ::selection {
-    background-color: var(--color-ink);
-    color: var(--color-paper);
+    background-color: var(--color-bone);
+    color: var(--color-void);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-ink);
+    outline: 2px solid var(--color-bone);
     outline-offset: 3px;
   }
 }
