@@ -1,0 +1,18 @@
+# 仓库内统一存 LF；检出到 Windows 时由 core.autocrlf 负责转换。
+# 没有这个文件，Windows 和 Linux 协作时会出现「整个文件都改了」的假 diff。
+* text=auto eol=lf
+
+# 二进制文件，禁止任何换行符转换（否则会损坏文件）
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.avif binary
+*.ico  binary
+*.woff  binary
+*.woff2 binary
+*.pdf  binary
+
+# 让 GitHub 在 PR 里默认折叠 lockfile，避免几千行噪音淹没真正的改动
+package-lock.json linguist-generated=true

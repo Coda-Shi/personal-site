@@ -1,0 +1,28 @@
+name: CI
+
+# 推到 main、以及任何指向 main 的 PR，都会触发这套检查。
+# 配合分支保护后，检查不通过就无法合并——这是防止把坏代码带上线的第一道闸。
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      # npm ci 严格按 package-lock.json 安装，不会像 npm install 那样悄悄升级依赖。
+      # CI 里永远用 ci，不用 install。
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run build
