@@ -52,13 +52,15 @@ export function TrackMark({ track, className }: { track: Track; className?: stri
         {...svgProps}
         role="img"
         aria-label={track.glyphName}
-        strokeWidth={1.3}
-        style={{ width: "1.05em", height: "1.05em" }}
+        style={{ width: "1.15em", height: "1.15em" }}
         className={box}
       >
-        <circle cx="12" cy="12" r="6.1" />
-        <line x1="12" y1="1.8" x2="12" y2="22.2" />
-        <line x1="1.8" y1="12" x2="22.2" y2="12" />
+        {/* A heavy elliptical ring crossed by two thinner bars that run past
+            it, matching the engraved coda sign rather than a circle with a
+            plus through it. Butt caps: the reference has flat bar ends. */}
+        <ellipse cx="12" cy="12" rx="6.9" ry="7.9" strokeWidth={2.8} />
+        <line x1="12" y1="0.9" x2="12" y2="23.1" strokeWidth={1.9} strokeLinecap="butt" />
+        <line x1="0.7" y1="12" x2="23.3" y2="12" strokeWidth={1.9} strokeLinecap="butt" />
       </svg>
     );
   }

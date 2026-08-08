@@ -281,18 +281,21 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
     // and what is unique to each thing. Λ_g = Λ asks whether a construct means
     // the same thing across groups — the empirical form of the Tractatus line
     // sitting beside it. The layer is an argument, not a word cloud.
+    // The two mottos are anchors because the owner says they are what he
+    // actually lives by; the factor equation earns its place as the one thing
+    // the research half is built on.
     anchors: [
-      { text: "Σ = ΛΦΛ′ + Θ", face: "mono" },
-      { text: "Λ_g = Λ", face: "mono" },
       { text: "Memento mori", face: "serif" },
+      { text: "Amplectere omnia", face: "serif" },
+      { text: "Σ = ΛΦΛ′ + Θ", face: "mono" },
     ],
     support: [
       { text: "Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.", face: "serif" },
       { text: "Der bestirnte Himmel über mir, und das moralische Gesetz in mir.", face: "serif" },
       { text: "Das Wahre ist das Ganze.", face: "serif" },
-      { text: "Amplectere omnia", face: "serif" },
       { text: "Sapere aude", face: "serif" },
       { text: "Sein zum Tode", face: "serif" },
+      { text: "Λ_g = Λ", face: "mono" },
       { text: "M ⊨ φ", face: "mono" },
       { text: "∀x(Px → Qx)", face: "mono" },
       { text: "N = 10,080", face: "mono" },
@@ -335,19 +338,10 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
     // an empty stretch beats filler.
     anchors: [],
     support: [],
-    // BMP notation only. The treble clef U+1D11E lives in the Supplementary
-    // Multilingual Plane and is missing from most system fonts — the same trap
-    // as the coda sign. Anything in this layer may render from a fallback face,
-    // which is tolerable at low opacity; rendering as an empty box is not.
-    texture: [
-      { text: "♩", face: "mono" },
-      { text: "♪", face: "mono" },
-      { text: "♫", face: "mono" },
-      { text: "♬", face: "mono" },
-      { text: "♭", face: "mono" },
-      { text: "♮", face: "mono" },
-      { text: "♯", face: "mono" },
-    ],
+    // Music notation removed: seven small glyphs scattered across a wedge this
+    // large read as litter, not as texture. The two line plates hold the
+    // sector on their own until real material arrives.
+    texture: [],
   },
   professional: {
     // Texture only, by request — drawn flowchart primitives, no readable

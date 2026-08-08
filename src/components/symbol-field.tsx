@@ -9,15 +9,13 @@ import { SYMBOL_LAYERS, TRACK_ARCS, type SymbolItem, type TrackId } from "@/lib/
  * first version did, re-shuffled the field on every viewport and produced a
  * different pile-up each time.
  *
- * Three sizes, not a ramp. Font size stops working as an encoding past
- * large / medium / small, so a continuous scale reads as noise rather than as
- * hierarchy.
+ * Three sizes, not a ramp: font size stops working as an encoding past
+ * large / medium / small.
  *
- * Size is set from target *rendered width*, not chosen per item. Font size
- * applied uniformly makes long strings dominate purely because they are long —
- * a sixty-character German sentence at the same size as ω swallows the sector.
- * Solving for width instead equalises visual mass, which is the whole reason
- * auto-generated word clouds look the way they do.
+ * Size is solved from a target *rendered width*, not chosen per item. A single
+ * font size hands the emphasis to whichever string is longest regardless of
+ * what it means, which is most of why auto-generated word clouds look the way
+ * they do.
  *
  * Placement is a hash of the index, never Math.random: this server-renders
  * first, and a mismatch would break hydration.
@@ -31,17 +29,41 @@ type Tier = "anchor" | "support" | "texture";
 
 const TIERS: Record<
   Tier,
-  { width: number; min: number; max: number; r0: number; r1: number; o0: number; o1: number }
+  {
+    width: number;
+    min: number;
+    max: number;
+    r0: number;
+    r1: number;
+    o0: number;
+    o1: number;
+    /** Reveal window: base delay plus jitter, so the field arrives unevenly. */
+    d0: number;
+    d1: number;
+  }
 > = {
-  // r0/r1 bound the radial band; o0/o1 fade opacity across it, so the field
-  // thins as it travels away from the arc it was fired from.
-  anchor: { width: 330, min: 30, max: 58, r0: 300, r1: 560, o0: 0.34, o1: 0.26 },
-  support: { width: 215, min: 17, max: 33, r0: 320, r1: 780, o0: 0.24, o1: 0.13 },
-  texture: { width: 100, min: 14, max: 25, r0: 280, r1: 950, o0: 0.17, o1: 0.07 },
+  // The ceiling is deliberately low. Solved widths want to push the short
+  // anchors past 40, which shouted over everything else; 32 keeps the top of
+  // the hierarchy roughly a third larger than support rather than double.
+  anchor: { width: 220, min: 24, max: 32, r0: 300, r1: 560, o0: 0.34, o1: 0.26, d0: 0, d1: 160 },
+  support: { width: 175, min: 15, max: 24, r0: 320, r1: 780, o0: 0.24, o1: 0.13, d0: 130, d1: 330 },
+  texture: { width: 90, min: 12, max: 19, r0: 280, r1: 950, o0: 0.17, o1: 0.07, d0: 280, d1: 520 },
 };
 
-/** Mean advance as a fraction of the em. Only needs to not under-estimate. */
+/**
+ * Two advance tables, because the two jobs want opposite errors.
+ *
+ * ADVANCE is the typical advance and drives the solved font size — too
+ * pessimistic and every string comes out undersized.
+ *
+ * BOX is the worst case and drives the collision rectangle, which must never
+ * under-estimate. Mono needs a lot of headroom: JetBrains Mono has no Greek or
+ * logic notation, so Σ Λ Φ ⊨ come from a fallback face at roughly 0.72em
+ * against the 0.62em of the mono grid. Sizing on 0.62 and colliding on 0.62
+ * put the factor equation 6 units into its neighbour.
+ */
 const ADVANCE = { mono: 0.62, serif: 0.46 } as const;
+const BOX_ADVANCE = { mono: 0.78, serif: 0.52 } as const;
 
 function rand(seed: number) {
   const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
@@ -57,8 +79,8 @@ type Placed = {
   cy: number;
   size: number;
   opacity: number;
+  delay: number;
 };
-type Shape = { key: string; variant: number; cx: number; cy: number; size: number; opacity: number };
 
 function overlaps(a: Box, b: Box) {
   return (
@@ -91,29 +113,33 @@ function insideWedge(box: Box, start: number, end: number) {
 }
 
 /**
- * The Creative sector's two line plates, reserved before any glyph is placed so
- * the notation flows around them instead of across the figure's face.
+ * The Creative sector's two line plates, reserved before any glyph is placed.
+ * Positions are hand-set, not solved: with the music notation removed these
+ * two carry the whole wedge, so where they sit is a composition decision.
  * Both derived by scripts/keyart-lineart.py.
  */
-const PLATES: Record<string, { href: string; box: Box; opacity: number }> = {
-  figure: {
-    href: "/creative/dear-suspect-figure.png",
-    box: { x: 328, y: 1186, w: 440, h: 533 },
-    opacity: 0.2,
-  },
-  mark: {
+const PLATES = [
+  {
+    key: "mark",
     href: "/creative/elegists-mark.png",
-    box: { x: 420, y: 876, w: 200, h: 282 },
-    opacity: 0.26,
+    box: { x: 263, y: 782, w: 200, h: 282 },
+    opacity: 0.3,
+    delay: 40,
   },
-};
+  {
+    key: "figure",
+    href: "/creative/dear-suspect-figure.png",
+    box: { x: 290, y: 1085, w: 460, h: 557 },
+    opacity: 0.22,
+    delay: 190,
+  },
+];
 
-function layout(track: TrackId): { text: Placed[]; shapes: Shape[] } {
+function layout(track: TrackId): Placed[] {
   const arc = TRACK_ARCS[track];
   const span = arc.end - arc.start;
-  const taken: Box[] = track === "creative" ? Object.values(PLATES).map((p) => p.box) : [];
-  const text: Placed[] = [];
-  const shapes: Shape[] = [];
+  const taken: Box[] = track === "creative" ? PLATES.map((p) => p.box) : [];
+  const placed: Placed[] = [];
   let seed = track.length * 97 + 5;
 
   const tiers: [Tier, SymbolItem[]][] = [
@@ -122,15 +148,15 @@ function layout(track: TrackId): { text: Placed[]; shapes: Shape[] } {
     ["texture", SYMBOL_LAYERS[track].texture],
   ];
 
-  // Anchors are placed first and nearest the arc, so the largest things claim
-  // the calmest space and everything else arranges itself around them.
+  // Anchors go down first and nearest the arc, so the largest things claim the
+  // calmest space and everything else arranges itself around them.
   for (const [tier, items] of tiers) {
     const t = TIERS[tier];
     for (const item of items) {
       const raw = t.width / Math.max(1, item.text.length * ADVANCE[item.face]);
       const size = Math.min(t.max, Math.max(t.min, raw));
-      const w = item.text.length * size * ADVANCE[item.face];
-      const h = size * 1.2;
+      const w = item.text.length * size * BOX_ADVANCE[item.face];
+      const h = size * 1.25;
 
       for (let attempt = 0; attempt < 80; attempt += 1) {
         seed += 1;
@@ -145,7 +171,7 @@ function layout(track: TrackId): { text: Placed[]; shapes: Shape[] } {
 
         taken.push(box);
         const k = (radius - t.r0) / (t.r1 - t.r0);
-        text.push({
+        placed.push({
           key: `${tier}-${item.text}`,
           text: item.text,
           face: item.face,
@@ -153,6 +179,7 @@ function layout(track: TrackId): { text: Placed[]; shapes: Shape[] } {
           cy,
           size,
           opacity: t.o0 + (t.o1 - t.o0) * k,
+          delay: Math.round(t.d0 + rand(seed * 3 + 7) * (t.d1 - t.d0)),
         });
         break;
       }
@@ -161,94 +188,56 @@ function layout(track: TrackId): { text: Placed[]; shapes: Shape[] } {
     }
   }
 
-  if (track === "professional") {
-    const sizes = [30, 44, 58];
-    for (let i = 0; i < 18; i += 1) {
-      const size = sizes[i % 3];
-      for (let attempt = 0; attempt < 80; attempt += 1) {
-        seed += 1;
-        const angle = arc.start + 4 + rand(seed * 2) * (span - 8);
-        const radius = 300 + rand(seed * 2 + 1) * 620;
-        const cx = C + Math.cos((angle * Math.PI) / 180) * radius;
-        const cy = C + Math.sin((angle * Math.PI) / 180) * radius;
-        const box: Box = { x: cx - size / 2, y: cy - size / 2, w: size, h: size };
-        if (!insideWedge(box, arc.start, arc.end)) continue;
-        if (taken.some((b) => overlaps(b, box))) continue;
-        taken.push(box);
-        shapes.push({
-          key: `shape-${i}`,
-          variant: i % 6,
-          cx,
-          cy,
-          size,
-          opacity: 0.2 - (radius - 300) / 620 * 0.11,
-        });
-        break;
-      }
-    }
-  }
-
-  return { text, shapes };
+  return placed;
 }
 
-const LAYOUTS: Record<TrackId, ReturnType<typeof layout>> = {
+const LAYOUTS: Record<TrackId, Placed[]> = {
   scholarly: layout("scholarly"),
   creative: layout("creative"),
   professional: layout("professional"),
 };
 
-function FlowShape({ variant, cx, cy, size }: Omit<Shape, "key" | "opacity">) {
-  const s = size / 24;
-  const stroke = { fill: "none", stroke: "currentColor", strokeWidth: 1.4 / s };
-  return (
-    <g transform={`translate(${cx - size / 2} ${cy - size / 2}) scale(${s})`}>
-      {variant === 0 ? <path d="M12 3 L21 12 L12 21 L3 12 Z" {...stroke} /> : null}
-      {variant === 1 ? <rect x="2" y="8" width="20" height="9" {...stroke} /> : null}
-      {variant === 2 ? <rect x="2" y="8" width="20" height="9" rx="4.5" {...stroke} /> : null}
-      {variant === 3 ? <path d="M7 8 L23 8 L17 17 L1 17 Z" {...stroke} /> : null}
-      {variant === 4 ? <path d="M2 12 H19 M14.5 7.5 L19.5 12 L14.5 16.5" {...stroke} /> : null}
-      {variant === 5 ? <path d="M4 3 V21 M20 3 V21 M4 12 H20" {...stroke} /> : null}
-    </g>
-  );
-}
-
 export function SymbolField({ track, active }: { track: TrackId; active: boolean }) {
   const arc = TRACK_ARCS[track];
+  const items = LAYOUTS[track];
+  const plates = track === "creative" ? PLATES : [];
+  if (items.length === 0 && plates.length === 0) return null;
+
   const span = arc.end - arc.start;
   const from = arc.start + 90; // conic starts at 12 o'clock, arcs at 3 o'clock
   const mask = `conic-gradient(from ${from}deg at 50% 50%, #000 0deg, #000 ${span}deg, transparent ${span}deg)`;
-  const { text, shapes } = LAYOUTS[track];
+
+  // Each element carries its own delay so the field assembles unevenly rather
+  // than switching on as a block. On the way out the delay drops to zero, so
+  // closing a sector is immediate — a staggered exit reads as lag.
+  const reveal = (target: number, delay: number) => ({
+    opacity: active ? target : 0,
+    transition: "opacity 620ms ease-out",
+    transitionDelay: active ? `${delay}ms` : "0ms",
+  });
 
   return (
     <svg
       viewBox={`0 0 ${BOARD} ${BOARD}`}
       preserveAspectRatio="xMidYMid slice"
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 -z-10 size-full text-bone transition-opacity duration-700 ease-out"
-      style={{ opacity: active ? 1 : 0, maskImage: mask, WebkitMaskImage: mask }}
+      className="pointer-events-none fixed inset-0 -z-10 size-full text-bone"
+      style={{ maskImage: mask, WebkitMaskImage: mask }}
     >
-      {track === "creative"
-        ? Object.entries(PLATES).map(([key, plate]) => (
-            <image
-              key={key}
-              href={plate.href}
-              x={plate.box.x}
-              y={plate.box.y}
-              width={plate.box.w}
-              height={plate.box.h}
-              preserveAspectRatio="xMidYMid meet"
-              opacity={plate.opacity}
-            />
-          ))
-        : null}
-
-      {shapes.map((s) => (
-        <g key={s.key} opacity={s.opacity}>
-          <FlowShape variant={s.variant} cx={s.cx} cy={s.cy} size={s.size} />
-        </g>
+      {plates.map((plate) => (
+        <image
+          key={plate.key}
+          href={plate.href}
+          x={plate.box.x}
+          y={plate.box.y}
+          width={plate.box.w}
+          height={plate.box.h}
+          preserveAspectRatio="xMidYMid meet"
+          style={reveal(plate.opacity, plate.delay)}
+        />
       ))}
 
-      {text.map((item) => (
+      {items.map((item) => (
         <text
           key={item.key}
           x={item.cx}
@@ -256,11 +245,11 @@ export function SymbolField({ track, active }: { track: TrackId; active: boolean
           textAnchor="middle"
           dominantBaseline="central"
           fill="currentColor"
-          opacity={item.opacity}
           fontSize={item.size}
           fontFamily={item.face === "serif" ? "var(--font-display)" : "var(--font-mono)"}
           fontStyle={item.face === "serif" ? "italic" : undefined}
           letterSpacing={item.face === "serif" ? 0 : 1.1}
+          style={reveal(item.opacity, item.delay)}
         >
           {item.text}
         </text>
