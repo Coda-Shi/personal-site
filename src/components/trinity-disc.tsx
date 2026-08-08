@@ -113,6 +113,14 @@ export function TrinityDisc() {
         onMouseLeave={() => setFocus(null)}
       >
         <svg viewBox="0 0 400 400" className="size-full" aria-hidden="true">
+          {/* A conic wedge converges on the centre, so without this the beam
+              squeezes out from behind the hub and its apex sits on the Coda
+              circle. Filling the inner disc with the page ground hides that
+              apex: the beam now appears to leave the sector's own inner arc.
+              It also shapes the grow animation for free — the wedge stays
+              completely hidden until it clears this radius. */}
+          <circle cx={CX} cy={CY} r={R_INNER} fill="var(--color-void)" />
+
           {/* The bezel is plotted before anything is drawn onto it. */}
           <path
             d={TICKS}

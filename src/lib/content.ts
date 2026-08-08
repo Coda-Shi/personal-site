@@ -85,7 +85,7 @@ export const TRACKS: Track[] = [
     glyph: "⊨",
     glyphName: "double turnstile — models, satisfies",
     mark: "turnstile",
-    lede: "Cultural psychology, psychometrics, and the question of whether a construct means the same thing to everyone it is measured on.",
+    lede: "Philosophy, psychology, public affairs. An intellectual obsession with the collective psyche.",
     entries: [
       {
         org: "Tsinghua University",
@@ -141,7 +141,7 @@ export const TRACKS: Track[] = [
     glyph: "§",
     glyphName: "section sign",
     mark: "char",
-    lede: "Operations, compliance, and the unglamorous systems that decide whether a plant ships on time or does not.",
+    lede: "Operations, compliance, industrial and policy research. Investigation and system design.",
     entries: [
       {
         org: "Everglory Products Corporation",
@@ -193,7 +193,7 @@ export const TRACKS: Track[] = [
     glyph: "𝄌",
     glyphName: "coda — the sign marking a work's final passage",
     mark: "coda",
-    lede: "A game studio, a music collective, and roughly a hundred thousand characters of script. The territory of what could be the case.",
+    lede: "Game studio, music collective, literary pieces. Visions that defy the mind's confinement.",
     entries: [
       {
         org: "ELEGISTS STUDIO",
@@ -255,13 +255,24 @@ export const EDUCATION = [
  * lyrics are excluded outright; they are the most aggressively enforced text
  * there is, and no amount of faintness makes reproducing them fair use.
  */
+export type SymbolItem = { text: string; face: "mono" | "serif" };
+
+/**
+ * Three tiers, and only three. Font size stops working as an encoding past
+ * large/medium/small, so a continuous ramp just reads as noise. Which tier a
+ * thing belongs to is an editorial decision about what this sector is arguing,
+ * which is why it lives here rather than in the layout code.
+ *
+ * Nothing may appear twice — not across tiers, and not as both a standalone
+ * mark and the sector's own glyph on the ring.
+ */
 export type SymbolLayer = {
-  /** Set in mono. Notation, equations, fit indices. */
-  formulas: string[];
-  /** Set in the display serif, italic. Readable at the inner radius. */
-  phrases: string[];
-  /** Single characters, scattered as texture. */
-  marks: string[];
+  /** The two or three ideas the sector is actually about. */
+  anchors: SymbolItem[];
+  /** Named sources and working notation. */
+  support: SymbolItem[];
+  /** Terms and single marks, read as grain rather than as statements. */
+  texture: SymbolItem[];
 };
 
 export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
@@ -270,59 +281,80 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
     // and what is unique to each thing. Λ_g = Λ asks whether a construct means
     // the same thing across groups — the empirical form of the Tractatus line
     // sitting beside it. The layer is an argument, not a word cloud.
-    formulas: [
-      "Σ = ΛΦΛ′ + Θ",
-      "Λ_g = Λ",
-      "τ_g = τ",
-      "Θ_g = Θ",
-      "Δχ²(df)",
-      "ΔCFI ≤ .01",
-      "RMSEA ≤ .06",
-      "SRMR",
-      "WLSMV",
-      "ω",
-      "M ⊨ φ",
-      "∀x(Px → Qx)",
-      "N = 10,080",
-      "Cramér's V",
+    anchors: [
+      { text: "Σ = ΛΦΛ′ + Θ", face: "mono" },
+      { text: "Λ_g = Λ", face: "mono" },
+      { text: "Memento mori", face: "serif" },
     ],
-    phrases: [
-      "Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.",
-      "Der bestirnte Himmel über mir, und das moralische Gesetz in mir.",
-      "Das Wahre ist das Ganze.",
-      "Die Eule der Minerva beginnt erst mit der einbrechenden Dämmerung ihren Flug.",
-      "Memento mori",
-      "Amplectere omnia",
-      "Sapere aude",
-      "Sein zum Tode",
-      "Geworfenheit",
-      "container / contained",
-      "the capacity to be alone",
-      "the depressive position",
-      "projective identification",
-      "transitional object",
-      "good-enough",
-      "reverie",
+    support: [
+      { text: "Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.", face: "serif" },
+      { text: "Der bestirnte Himmel über mir, und das moralische Gesetz in mir.", face: "serif" },
+      { text: "Das Wahre ist das Ganze.", face: "serif" },
+      { text: "Amplectere omnia", face: "serif" },
+      { text: "Sapere aude", face: "serif" },
+      { text: "Sein zum Tode", face: "serif" },
+      { text: "M ⊨ φ", face: "mono" },
+      { text: "∀x(Px → Qx)", face: "mono" },
+      { text: "N = 10,080", face: "mono" },
+      { text: "Δχ²(df)", face: "mono" },
     ],
-    marks: ["⊨", "⊢", "∀", "∃", "¬", "→", "□", "◇", "≡", "∴", "λ", "χ", "Σ", "Θ", "τ", "ω", "Φ"],
+    texture: [
+      { text: "τ_g = τ", face: "mono" },
+      { text: "Θ_g = Θ", face: "mono" },
+      { text: "ΔCFI ≤ .01", face: "mono" },
+      { text: "RMSEA ≤ .06", face: "mono" },
+      { text: "WLSMV", face: "mono" },
+      { text: "ω", face: "mono" },
+      { text: "Geworfenheit", face: "serif" },
+      { text: "container / contained", face: "serif" },
+      { text: "the capacity to be alone", face: "serif" },
+      { text: "the depressive position", face: "serif" },
+      { text: "projective identification", face: "serif" },
+      { text: "transitional object", face: "serif" },
+      { text: "good-enough", face: "serif" },
+      { text: "reverie", face: "serif" },
+      // ⊨ is absent on purpose: it is this sector's mark on the ring, and
+      // repeating it here is the one duplication that would read as an error.
+      { text: "⊢", face: "mono" },
+      { text: "∀", face: "mono" },
+      { text: "∃", face: "mono" },
+      { text: "¬", face: "mono" },
+      { text: "→", face: "mono" },
+      { text: "□", face: "mono" },
+      { text: "◇", face: "mono" },
+      { text: "≡", face: "mono" },
+      { text: "∴", face: "mono" },
+      { text: "λ", face: "mono" },
+      { text: "χ", face: "mono" },
+      { text: "Φ", face: "mono" },
+    ],
   },
   creative: {
-    formulas: [],
-    // Awaiting the owner's own material: poems, lines from DEAR SUSPECT, the
-    // studio logo. Placeholder is notation only — nothing borrowed.
-    phrases: [],
+    // Deliberately sparse. The two line plates carry this sector until the
+    // owner's own poems and script lines arrive. Nothing borrowed goes in, and
+    // an empty stretch beats filler.
+    anchors: [],
+    support: [],
     // BMP notation only. The treble clef U+1D11E lives in the Supplementary
     // Multilingual Plane and is missing from most system fonts — the same trap
     // as the coda sign. Anything in this layer may render from a fallback face,
-    // which is tolerable at 7–22% opacity; rendering as an empty box is not.
-    marks: ["♩", "♪", "♫", "♬", "♭", "♮", "♯"],
+    // which is tolerable at low opacity; rendering as an empty box is not.
+    texture: [
+      { text: "♩", face: "mono" },
+      { text: "♪", face: "mono" },
+      { text: "♫", face: "mono" },
+      { text: "♬", face: "mono" },
+      { text: "♭", face: "mono" },
+      { text: "♮", face: "mono" },
+      { text: "♯", face: "mono" },
+    ],
   },
   professional: {
-    // Texture only, by request. Rendered as drawn flowchart primitives rather
-    // than characters — see FLOW_SHAPES in the symbol-field component.
-    formulas: [],
-    phrases: [],
-    marks: [],
+    // Texture only, by request — drawn flowchart primitives, no readable
+    // words. Generated in the symbol-field component, not listed here.
+    anchors: [],
+    support: [],
+    texture: [],
   },
 };
 
