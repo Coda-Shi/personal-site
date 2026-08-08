@@ -245,6 +245,87 @@ export const EDUCATION = [
   },
 ];
 
+/**
+ * The faint layer that fills a sector's beam once it is lit.
+ *
+ * Copyright rule for this layer: full quotations only from public-domain
+ * sources. Kant, Hegel and the Tractatus are clear. Heidegger, Bion, Klein,
+ * Winnicott and Anna Freud are all still in copyright, so they appear as terms
+ * and titles — neither of which is protectable — never as sentences. Song
+ * lyrics are excluded outright; they are the most aggressively enforced text
+ * there is, and no amount of faintness makes reproducing them fair use.
+ */
+export type SymbolLayer = {
+  /** Set in mono. Notation, equations, fit indices. */
+  formulas: string[];
+  /** Set in the display serif, italic. Readable at the inner radius. */
+  phrases: string[];
+  /** Single characters, scattered as texture. */
+  marks: string[];
+};
+
+export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
+  scholarly: {
+    // Σ = ΛΦΛ′ + Θ says everything observable decomposes into what is shared
+    // and what is unique to each thing. Λ_g = Λ asks whether a construct means
+    // the same thing across groups — the empirical form of the Tractatus line
+    // sitting beside it. The layer is an argument, not a word cloud.
+    formulas: [
+      "Σ = ΛΦΛ′ + Θ",
+      "Λ_g = Λ",
+      "τ_g = τ",
+      "Θ_g = Θ",
+      "Δχ²(df)",
+      "ΔCFI ≤ .01",
+      "RMSEA ≤ .06",
+      "SRMR",
+      "WLSMV",
+      "ω",
+      "M ⊨ φ",
+      "∀x(Px → Qx)",
+      "N = 10,080",
+      "Cramér's V",
+    ],
+    phrases: [
+      "Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.",
+      "Der bestirnte Himmel über mir, und das moralische Gesetz in mir.",
+      "Das Wahre ist das Ganze.",
+      "Die Eule der Minerva beginnt erst mit der einbrechenden Dämmerung ihren Flug.",
+      "Memento mori",
+      "Amplectere omnia",
+      "Sapere aude",
+      "Sein zum Tode",
+      "Geworfenheit",
+      "container / contained",
+      "the capacity to be alone",
+      "the depressive position",
+      "projective identification",
+      "transitional object",
+      "good-enough",
+      "reverie",
+    ],
+    marks: ["⊨", "⊢", "∀", "∃", "¬", "→", "□", "◇", "≡", "∴", "λ", "χ", "Σ", "Θ", "τ", "ω", "Φ"],
+  },
+  creative: {
+    formulas: [],
+    // Awaiting the owner's own material: poems, lines from DEAR SUSPECT, the
+    // studio logo. Placeholder is notation only — nothing borrowed.
+    phrases: [],
+    // BMP notation only. The treble clef U+1D11E lives in the Supplementary
+    // Multilingual Plane and is missing from most system fonts — the same trap
+    // as the coda sign. Anything in this layer may render from a fallback face,
+    // which is tolerable at 7–22% opacity; rendering as an empty box is not.
+    marks: ["♩", "♪", "♫", "♬", "♭", "♮", "♯"],
+  },
+  professional: {
+    // Texture only, by request. Rendered as drawn flowchart primitives rather
+    // than characters — see FLOW_SHAPES in the symbol-field component.
+    formulas: [],
+    phrases: [],
+    marks: [],
+  },
+};
+
 export const SKILLS = [
   {
     heading: "Statistical & programming",
