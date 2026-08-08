@@ -21,7 +21,9 @@ export type Track = {
 export const NAME = 'Yixuan "Coda" Shi';
 
 export const PROFILE =
-  "Interdisciplinary researcher and creative director working across cultural psychology, psychometrics, crisis intervention, and AI-native game development.";
+  "Interdisciplinary researcher, creative director and young professional whose current works span across Psychology and Psychometrics, AI-native game production and organizational leadership.";
+
+export const HINT = "Hover and tap to explore more";
 
 // Tailwind cannot see class names assembled at runtime, so every track's classes
 // are written out in full here rather than interpolated from the track id.

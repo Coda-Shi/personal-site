@@ -9,17 +9,14 @@
   --color-ash: #6e6b63;
   --color-rule: #2b2b28;
 
-  /* Track pigments, lifted from their true values for legibility on black and
-     balanced against each other in perceived luminance — otherwise gold
-     dominates and the trinity stops reading as three equals. See D7 in CLAUDE.md. */
-  --color-klein: #0b37c8;
-  --color-oxblood: #96202f;
-  --color-gilt: #806220;
-
-  /* True pigments, kept for any light-ground surface (print, OG images). */
-  --color-klein-deep: #002fa7;
-  --color-oxblood-deep: #6e1423;
-  --color-gilt-deep: #b08d2e;
+  /* Klein and oxblood are their true pigment values. Gold cannot be: yellow
+     hues carry intrinsically high luminance, so true #B08D2E reads roughly six
+     times brighter than the other two and the trinity collapses into one
+     dominant and two subordinates. Tarnishing it to bronze is what "旧金"
+     literally describes. See D7 in CLAUDE.md before changing any of these. */
+  --color-klein: #002fa7;
+  --color-oxblood: #6e1423;
+  --color-gilt: #6a5216;
 
   --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
   --font-sans: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
@@ -51,6 +48,16 @@
 }
 
 @layer utilities {
+  /* On a short window — a phone held sideways, a half-height desktop window —
+     there is no room for both the paragraph and a centred disc, and the
+     paragraph is what wins a collision with the disc's upper arc. Drop it and
+     keep the name, the hint, and the disc. */
+  @media (max-height: 600px) {
+    .hide-when-short {
+      display: none;
+    }
+  }
+
   .label {
     font-family: var(--font-mono);
     font-size: 0.6875rem;

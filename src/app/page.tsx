@@ -1,35 +1,45 @@
 import Link from "next/link";
 import { TrinityDisc } from "@/components/trinity-disc";
-import { NAME, PROFILE } from "@/lib/content";
+import { HINT, NAME, PROFILE } from "@/lib/content";
 
+// The disc must land dead centre of the viewport on open, so the header and
+// footer are taken out of flow rather than allowed to push it down. The page
+// is exactly one viewport tall and does not scroll.
 export default function Home() {
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-8 md:px-10 md:py-10">
-      <header className="max-w-xl">
-        <h1 className="font-display text-4xl leading-[0.95] font-light tracking-tight md:text-6xl">
+    <main className="relative grid h-dvh w-full place-items-center overflow-hidden">
+      <header className="absolute inset-x-6 top-6 z-10 md:inset-x-10 md:top-9">
+        {/* Every line is w-fit or width-capped. A full-width block box at
+            top-left reaches under the centred disc even when its text does
+            not, which makes overlap impossible to reason about — cap the boxes
+            and the geometry becomes checkable. */}
+        <h1 className="w-fit font-display text-2xl leading-none font-light tracking-tight md:text-3xl">
           {NAME}
         </h1>
-        <p className="mt-4 max-w-md text-sm leading-relaxed text-bone/70">{PROFILE}</p>
+        <p className="hide-when-short mt-3 max-w-xs text-xs leading-relaxed text-bone/70 md:max-w-sm md:text-sm xl:max-w-md">
+          {PROFILE}
+        </p>
+        <p className="label mt-3 w-fit text-bone/45">{HINT}</p>
       </header>
 
-      <div className="flex flex-1 items-center justify-center py-4">
+      <div className="w-full px-6">
         <TrinityDisc />
       </div>
 
-      <footer className="flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-bone/20 pt-5">
-        <Link href="/cv" className="label text-bone/60 transition-colors hover:text-bone">
+      <footer className="absolute inset-x-6 bottom-6 z-10 flex flex-wrap items-center gap-x-8 gap-y-2 md:inset-x-10 md:bottom-8">
+        <Link href="/cv" className="label text-bone/55 transition-colors hover:text-bone">
           Curriculum vitae
         </Link>
         <a
           href="https://elegists.studio"
-          className="label text-bone/60 transition-colors hover:text-bone"
+          className="label text-bone/55 transition-colors hover:text-bone"
           rel="noreferrer"
         >
           Elegists Studio
         </a>
         <a
           href="https://github.com/Coda-Shi"
-          className="label text-bone/60 transition-colors hover:text-bone"
+          className="label text-bone/55 transition-colors hover:text-bone"
           rel="noreferrer"
         >
           GitHub

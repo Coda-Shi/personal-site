@@ -44,23 +44,38 @@ export function TrinityDisc() {
 
   return (
     <>
-      {/* The chosen pigment runs to the edges of the page. It doubles as a
-          preview of the destination: each track page uses this colour as its
-          ground, so the flood is the transition, not decoration. */}
-      {TRACKS.map((track) => (
-        <span
-          key={track.id}
-          aria-hidden="true"
-          className="pointer-events-none fixed top-1/2 left-1/2 -z-10 block aspect-square w-[170vmax] rounded-full transition-transform duration-700 ease-out"
-          style={{
-            backgroundColor: TRACK_CLASSES[track.id].cssVar,
-            transform: `translate(-50%, -50%) scale(${active === track.id ? 1 : 0})`,
-          }}
-        />
-      ))}
+      {/* The pigment does not flood the whole page — it fires out of its own
+          120° sector, aligned exactly with that wedge's edges, so the disc
+          reads as an emitter rather than a swatch. A conic-gradient with hard
+          stops gives an exact angular slice; clip-path would need the arc
+          approximated by hand. The half-degree ramps at each edge exist only
+          to stop the boundary aliasing.
+
+          It still previews the destination: each track page uses this colour
+          as its ground, so the beam widening into a full page is the
+          transition, not decoration. */}
+      {TRACKS.map((track) => {
+        const arc = TRACK_ARCS[track.id];
+        const span = arc.end - arc.start;
+        // conic-gradient measures from 12 o'clock; the sector angles measure
+        // from 3 o'clock. Hence the 90° offset.
+        const from = arc.start + 90;
+        const pigment = TRACK_CLASSES[track.id].cssVar;
+        return (
+          <span
+            key={track.id}
+            aria-hidden="true"
+            className="pointer-events-none fixed top-1/2 left-1/2 -z-10 block aspect-square w-[240vmax] rounded-full transition-transform duration-700 ease-out"
+            style={{
+              background: `conic-gradient(from ${from - 0.5}deg at 50% 50%, transparent 0deg, ${pigment} 0.5deg, ${pigment} ${span + 0.5}deg, transparent ${span + 1}deg)`,
+              transform: `translate(-50%, -50%) scale(${active === track.id ? 1 : 0})`,
+            }}
+          />
+        );
+      })}
 
       <div
-        className="relative mx-auto aspect-square w-full max-w-[min(72vh,32rem)]"
+        className="relative mx-auto aspect-square w-full max-w-[min(56vh,30rem)]"
         onMouseLeave={() => setActive(null)}
       >
         <svg viewBox="0 0 400 400" className="size-full" aria-hidden="true">
@@ -72,10 +87,10 @@ export function TrinityDisc() {
                 key={track.id}
                 d={annularSector(arc.start, arc.end)}
                 fill={TRACK_CLASSES[track.id].cssVar}
-                stroke="rgba(242, 239, 233, 0.18)"
+                stroke="rgba(242, 239, 233, 0.3)"
                 strokeWidth={1}
                 className="cursor-pointer transition-opacity duration-500 ease-out"
-                style={{ opacity: active !== null && !isActive ? 0.28 : 1 }}
+                style={{ opacity: active !== null && !isActive ? 0.4 : 1 }}
                 onMouseEnter={() => setActive(track.id)}
                 onClick={() => router.push(`/${track.id}`)}
               />
