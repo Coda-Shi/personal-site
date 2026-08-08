@@ -13,20 +13,34 @@ export default function Home() {
             top-left reaches under the centred disc even when its text does
             not, which makes overlap impossible to reason about — cap the boxes
             and the geometry becomes checkable. */}
-        <h1 className="w-fit font-display text-2xl leading-none font-light tracking-tight md:text-3xl">
+        <h1
+          className="oldstyle w-fit font-display text-2xl leading-none font-light tracking-tight md:text-3xl"
+          style={{ animation: "rise-in 700ms ease-out both" }}
+        >
           {NAME}
         </h1>
-        <p className="hide-when-short mt-3 max-w-xs text-xs leading-relaxed text-bone/70 md:max-w-sm md:text-sm xl:max-w-md">
+        <p
+          className="hide-when-short mt-3 max-w-xs text-xs leading-relaxed text-bone/70 md:max-w-sm md:text-sm xl:max-w-md"
+          style={{ animation: "rise-in 700ms ease-out 130ms both" }}
+        >
           {PROFILE}
         </p>
-        <p className="label mt-3 w-fit text-bone/45">{HINT}</p>
+        <p
+          className="label mt-3 w-fit text-bone/45"
+          style={{ animation: "rise-in 700ms ease-out 260ms both" }}
+        >
+          {HINT}
+        </p>
       </header>
 
       <div className="w-full px-6">
         <TrinityDisc />
       </div>
 
-      <footer className="absolute inset-x-6 bottom-6 z-10 flex flex-wrap items-center gap-x-8 gap-y-2 md:inset-x-10 md:bottom-8">
+      <footer
+        className="absolute inset-x-6 bottom-6 z-10 flex flex-wrap items-center gap-x-8 gap-y-2 md:inset-x-10 md:bottom-8"
+        style={{ animation: "rise-in 700ms ease-out 1850ms both" }}
+      >
         <Link href="/cv" className="label text-bone/55 transition-colors hover:text-bone">
           Curriculum vitae
         </Link>

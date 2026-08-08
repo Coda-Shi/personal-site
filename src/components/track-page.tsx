@@ -1,4 +1,5 @@
 import { SiteShell } from "@/components/site-shell";
+import { TrackMark } from "@/components/track-mark";
 import { TRACK_CLASSES, type Entry, type Track } from "@/lib/content";
 
 // Every surface below sits on a ground that changes per route, so nothing here
@@ -35,8 +36,8 @@ export function TrackPage({ track, children }: { track: Track; children?: React.
   return (
     <SiteShell ground={TRACK_CLASSES[track.id].cssVar}>
       <header>
-        <p aria-hidden="true" className="font-display text-6xl leading-none md:text-7xl">
-          {track.glyph}
+        <p className="font-display text-6xl leading-none md:text-7xl">
+          <TrackMark track={track} />
         </p>
         <h1 className="mt-4 font-display text-5xl leading-none font-light tracking-tight md:text-6xl">
           {track.title}

@@ -12,8 +12,22 @@ export type Entry = {
 export type Track = {
   id: TrackId;
   title: string;
+  /** Character form. For `mark: "coda"` this is a fallback only — see below. */
   glyph: string;
   glyphName: string;
+  /**
+   * Anything other than "char" is drawn as SVG rather than set as type.
+   *
+   * Cormorant Garamond contains no logic or mathematical notation at all —
+   * measured by advance width, ⊨ ∀ ◇ ∴ Λ χ every one of them falls through to
+   * the generic serif, so they render as Times New Roman on Windows and as
+   * something else on macOS, and may be missing outright elsewhere. U+1D10C,
+   * the coda sign, is absent from essentially every text font.
+   *
+   * § is the exception and stays as a character: it is a genuine typographic
+   * mark, Cormorant has a beautiful one, and it should be set, not traced.
+   */
+  mark: "char" | "coda" | "turnstile";
   lede: string;
   entries: Entry[];
 };
@@ -65,8 +79,12 @@ export const TRACKS: Track[] = [
   {
     id: "scholarly",
     title: "Scholarly",
-    glyph: "∀",
-    glyphName: "universal quantifier",
+    // Model-theoretic entailment: M ⊨ φ, "the structure M satisfies φ". Both
+    // halves of this track in one mark — a factor model asking whether it
+    // satisfies the data, and the formal semantics behind the Tractatus.
+    glyph: "⊨",
+    glyphName: "double turnstile — models, satisfies",
+    mark: "turnstile",
     lede: "Cultural psychology, psychometrics, and the question of whether a construct means the same thing to everyone it is measured on.",
     entries: [
       {
@@ -122,6 +140,7 @@ export const TRACKS: Track[] = [
     title: "Professional",
     glyph: "§",
     glyphName: "section sign",
+    mark: "char",
     lede: "Operations, compliance, and the unglamorous systems that decide whether a plant ships on time or does not.",
     entries: [
       {
@@ -171,8 +190,9 @@ export const TRACKS: Track[] = [
   {
     id: "creative",
     title: "Creative",
-    glyph: "◇",
-    glyphName: "modal possibility operator",
+    glyph: "𝄌",
+    glyphName: "coda — the sign marking a work's final passage",
+    mark: "coda",
     lede: "A game studio, a music collective, and roughly a hundred thousand characters of script. The territory of what could be the case.",
     entries: [
       {
