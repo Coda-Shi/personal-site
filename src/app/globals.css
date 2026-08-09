@@ -1,15 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0b0b0b;
-  --color-paper: #f2efe9;
-  --color-graphite: #45443f;
-  --color-ash: #86847c;
-  --color-rule: #d5d0c4;
+  /* Ground and type. The site now sits on near-black so that a track colour can
+     flood the page without fighting a light background. */
+  --color-void: #050505;
+  --color-bone: #f2efe9;
+  --color-graphite: #a3a099;
+  --color-ash: #6e6b63;
+  --color-rule: #2b2b28;
 
+  /* Klein and oxblood are their true pigment values. Gold cannot be: yellow
+     hues carry intrinsically high luminance, so true #B08D2E reads roughly six
+     times brighter than the other two and the trinity collapses into one
+     dominant and two subordinates. Tarnishing it to bronze is what "旧金"
+     literally describes. See D7 in CLAUDE.md before changing any of these. */
   --color-klein: #002fa7;
   --color-oxblood: #6e1423;
-  --color-gilt: #b08d2e;
+  --color-gilt: #6a5216;
 
   --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
   --font-sans: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
@@ -19,34 +26,104 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    background-color: var(--color-void);
   }
 
   body {
-    background-color: var(--color-paper);
-    color: var(--color-ink);
+    color: var(--color-bone);
     font-family: var(--font-sans);
     font-size: 1rem;
     line-height: 1.6;
   }
 
   ::selection {
-    background-color: var(--color-ink);
-    color: var(--color-paper);
+    background-color: var(--color-bone);
+    color: var(--color-void);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-ink);
+    outline: 2px solid var(--color-bone);
     outline-offset: 3px;
   }
 }
 
 @layer utilities {
+  /* On a short window — a phone held sideways, a half-height desktop window —
+     there is no room for both the paragraph and a centred disc, and the
+     paragraph is what wins a collision with the disc's upper arc. Drop it and
+     keep the name, the hint, and the disc. */
+  @media (max-height: 600px) {
+    .hide-when-short {
+      display: none;
+    }
+  }
+
   .label {
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.16em;
     text-transform: uppercase;
+    /* Instrument-panel figures: equal width, equal height, sitting on the
+       baseline. The opposite of .oldstyle below — that contrast is the point. */
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  /* Text figures: 1234567890 with ascenders and descenders, set to the rhythm
+     of lowercase rather than to a grid. Eighteenth-century book typography.
+     Placed next to .label figures, the same year reads as two civilisations.
+     If Google's Cormorant build ships without the `onum` feature this quietly
+     does nothing — it degrades to the default figures, never to broken text. */
+  .oldstyle {
+    font-variant-numeric: oldstyle-nums proportional-nums;
+  }
+}
+
+/* ── Entrance ─────────────────────────────────────────────────────────────
+   The disc is plotted rather than faded in: the tick bezel appears first, the
+   three sectors are drawn onto it one after another, then the pigment inks in
+   behind the line. Every animation uses `both` fill mode, so the pre-delay
+   state is the hidden one and the post-run state persists.
+   The global prefers-reduced-motion rule collapses all of this to ~0ms, which
+   lands on the finished state rather than on nothing. */
+/* Paired with pathLength="1" on the path, so one keyframe works for any
+   geometry and nothing depends on a custom property resolving inside a
+   keyframe — that combination has historically been buggy in Safari. */
+@keyframes plot-stroke {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes ink-in {
+  from {
+    fill-opacity: 0;
+  }
+  to {
+    fill-opacity: 1;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 

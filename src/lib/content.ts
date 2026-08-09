@@ -12,8 +12,22 @@ export type Entry = {
 export type Track = {
   id: TrackId;
   title: string;
+  /** Character form. For `mark: "coda"` this is a fallback only — see below. */
   glyph: string;
   glyphName: string;
+  /**
+   * Anything other than "char" is drawn as SVG rather than set as type.
+   *
+   * Cormorant Garamond contains no logic or mathematical notation at all —
+   * measured by advance width, ⊨ ∀ ◇ ∴ Λ χ every one of them falls through to
+   * the generic serif, so they render as Times New Roman on Windows and as
+   * something else on macOS, and may be missing outright elsewhere. U+1D10C,
+   * the coda sign, is absent from essentially every text font.
+   *
+   * § is the exception and stays as a character: it is a genuine typographic
+   * mark, Cormorant has a beautiful one, and it should be set, not traced.
+   */
+  mark: "char" | "coda" | "turnstile";
   lede: string;
   entries: Entry[];
 };
@@ -21,41 +35,57 @@ export type Track = {
 export const NAME = 'Yixuan "Coda" Shi';
 
 export const PROFILE =
-  "Interdisciplinary researcher and creative director working across cultural psychology, psychometrics, crisis intervention, and AI-native game development.";
+  "Interdisciplinary researcher, creative director and young professional whose current works span across Psychology and Psychometrics, AI-native game production and organizational leadership.";
+
+export const HINT = "Hover and tap to explore more";
 
 // Tailwind cannot see class names assembled at runtime, so every track's classes
 // are written out in full here rather than interpolated from the track id.
+// `cssVar` is for SVG fills and inline transforms, where a utility class won't do.
 export const TRACK_CLASSES: Record<
   TrackId,
-  { text: string; bg: string; border: string; rule: string }
+  { text: string; bg: string; border: string; cssVar: string }
 > = {
   scholarly: {
     text: "text-klein",
     bg: "bg-klein",
     border: "border-klein",
-    rule: "decoration-klein",
+    cssVar: "var(--color-klein)",
   },
   professional: {
     text: "text-gilt",
     bg: "bg-gilt",
     border: "border-gilt",
-    rule: "decoration-gilt",
+    cssVar: "var(--color-gilt)",
   },
   creative: {
     text: "text-oxblood",
     bg: "bg-oxblood",
     border: "border-oxblood",
-    rule: "decoration-oxblood",
+    cssVar: "var(--color-oxblood)",
   },
+};
+
+// Where each track sits on the disc. Angles are SVG convention: 0deg points
+// right, positive turns clockwise. Scholarly crowns the disc; creative and
+// professional take the lower left and lower right.
+export const TRACK_ARCS: Record<TrackId, { start: number; end: number; mid: number }> = {
+  scholarly: { start: 212, end: 328, mid: 270 },
+  creative: { start: 92, end: 208, mid: 150 },
+  professional: { start: 332, end: 448, mid: 30 },
 };
 
 export const TRACKS: Track[] = [
   {
     id: "scholarly",
     title: "Scholarly",
-    glyph: "∀",
-    glyphName: "universal quantifier",
-    lede: "Cultural psychology, psychometrics, and the question of whether a construct means the same thing to everyone it is measured on.",
+    // Model-theoretic entailment: M ⊨ φ, "the structure M satisfies φ". Both
+    // halves of this track in one mark — a factor model asking whether it
+    // satisfies the data, and the formal semantics behind the Tractatus.
+    glyph: "⊨",
+    glyphName: "double turnstile — models, satisfies",
+    mark: "turnstile",
+    lede: "Philosophy, psychology, public affairs. An intellectual obsession with the collective psyche.",
     entries: [
       {
         org: "Tsinghua University",
@@ -110,7 +140,8 @@ export const TRACKS: Track[] = [
     title: "Professional",
     glyph: "§",
     glyphName: "section sign",
-    lede: "Operations, compliance, and the unglamorous systems that decide whether a plant ships on time or does not.",
+    mark: "char",
+    lede: "Operations, compliance, industrial and policy research. Investigation and system design.",
     entries: [
       {
         org: "Everglory Products Corporation",
@@ -159,9 +190,10 @@ export const TRACKS: Track[] = [
   {
     id: "creative",
     title: "Creative",
-    glyph: "◇",
-    glyphName: "modal possibility operator",
-    lede: "A game studio, a music collective, and roughly a hundred thousand characters of script. The territory of what could be the case.",
+    glyph: "𝄌",
+    glyphName: "coda — the sign marking a work's final passage",
+    mark: "coda",
+    lede: "Game studio, music collective, literary pieces. Visions that defy the mind's confinement.",
     entries: [
       {
         org: "ELEGISTS STUDIO",
@@ -212,6 +244,146 @@ export const EDUCATION = [
     detail: "Dean's List for all eight quarters. Philosophy of mind, ethics, symbolic logic, general psychology, advanced statistical methods.",
   },
 ];
+
+/**
+ * The faint layer that fills a sector's beam once it is lit.
+ *
+ * Copyright rule for this layer: full quotations only from public-domain
+ * sources. Kant, Hegel and the Tractatus are clear. Heidegger, Bion, Klein,
+ * Winnicott and Anna Freud are all still in copyright, so they appear as terms
+ * and titles — neither of which is protectable — never as sentences. Song
+ * lyrics are excluded outright; they are the most aggressively enforced text
+ * there is, and no amount of faintness makes reproducing them fair use.
+ */
+export type SymbolItem = { text: string; face: "mono" | "serif" };
+
+/**
+ * Three tiers, and only three. Font size stops working as an encoding past
+ * large/medium/small, so a continuous ramp just reads as noise. Which tier a
+ * thing belongs to is an editorial decision about what this sector is arguing,
+ * which is why it lives here rather than in the layout code.
+ *
+ * Nothing may appear twice — not across tiers, and not as both a standalone
+ * mark and the sector's own glyph on the ring.
+ */
+export type SymbolLayer = {
+  /** The two or three ideas the sector is actually about. */
+  anchors: SymbolItem[];
+  /** Named sources and working notation. */
+  support: SymbolItem[];
+  /** Terms and single marks, read as grain rather than as statements. */
+  texture: SymbolItem[];
+};
+
+export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
+  scholarly: {
+    // Σ = ΛΦΛ′ + Θ says everything observable decomposes into what is shared
+    // and what is unique to each thing. Λ_g = Λ asks whether a construct means
+    // the same thing across groups — the empirical form of the Tractatus line
+    // sitting beside it. The layer is an argument, not a word cloud.
+    // The two mottos are anchors because the owner says they are what he
+    // actually lives by; the factor equation earns its place as the one thing
+    // the research half is built on.
+    anchors: [
+      { text: "Memento mori", face: "serif" },
+      { text: "Amplectere omnia", face: "serif" },
+      { text: "Σ = ΛΦΛ′ + Θ", face: "mono" },
+    ],
+    support: [
+      { text: "Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.", face: "serif" },
+      { text: "Der bestirnte Himmel über mir, und das moralische Gesetz in mir.", face: "serif" },
+      { text: "Das Wahre ist das Ganze.", face: "serif" },
+      { text: "Wovon man nicht sprechen kann, darüber muß man schweigen.", face: "serif" },
+      { text: "Wo Es war, soll Ich werden.", face: "serif" },
+      { text: "Sapere aude", face: "serif" },
+      { text: "Sein zum Tode", face: "serif" },
+      { text: "Λ_g = Λ", face: "mono" },
+      { text: "M ⊨ φ", face: "mono" },
+      { text: "∀x(Px → Qx)", face: "mono" },
+      { text: "N = 10,080", face: "mono" },
+      { text: "Δχ²(df)", face: "mono" },
+    ],
+    texture: [
+      { text: "τ_g = τ", face: "mono" },
+      { text: "Θ_g = Θ", face: "mono" },
+      { text: "ΔCFI ≤ .01", face: "mono" },
+      { text: "RMSEA ≤ .06", face: "mono" },
+      { text: "WLSMV", face: "mono" },
+      { text: "ω", face: "mono" },
+      // Philosophy: terms only for anyone still in copyright. Lichtung and
+      // Geworfenheit are Heidegger, who is not out until 2046; a term is not
+      // a quotation, a paragraph would be.
+      { text: "Geworfenheit", face: "serif" },
+      { text: "Lichtung", face: "serif" },
+      { text: "Nachträglichkeit", face: "serif" },
+      // One concept each, the most load-bearing one that analyst is known for.
+      // Bion gets two because both are notation rather than prose.
+      { text: "paranoid-schizoid position", face: "serif" },
+      { text: "β → α", face: "mono" },
+      { text: "L · H · K", face: "mono" },
+      { text: "transitional object", face: "serif" },
+      { text: "identification with the aggressor", face: "serif" },
+      { text: "collective unconscious", face: "serif" },
+      // Personality and trauma. Volitional personality change is the Delta Lab
+      // work, so the sector points at something he actually did.
+      { text: "volitional personality change", face: "serif" },
+      { text: "disorganised attachment", face: "serif" },
+      { text: "complex PTSD", face: "serif" },
+      { text: "dissociation", face: "serif" },
+      { text: "window of tolerance", face: "serif" },
+      { text: "posttraumatic growth", face: "serif" },
+      { text: "HEXACO", face: "mono" },
+      // ⊨ is absent on purpose: it is this sector's mark on the ring, and
+      // repeating it here is the one duplication that would read as an error.
+      // Φ is absent too — it is already in the knot, as JΦ.
+      { text: "⊢", face: "mono" },
+      { text: "∀", face: "mono" },
+      { text: "∃", face: "mono" },
+      { text: "¬", face: "mono" },
+      { text: "□", face: "mono" },
+      { text: "◇", face: "mono" },
+      { text: "∴", face: "mono" },
+      { text: "λ", face: "mono" },
+    ],
+  },
+  creative: {
+    // Deliberately sparse. The two line plates carry this sector until the
+    // owner's own poems and script lines arrive. Nothing borrowed goes in, and
+    // an empty stretch beats filler.
+    anchors: [],
+    support: [],
+    // Music notation removed: seven small glyphs scattered across a wedge this
+    // large read as litter, not as texture. The two line plates hold the
+    // sector on their own until real material arrives.
+    texture: [],
+  },
+  professional: {
+    // Real citations rather than abstract flowchart shapes. 29 CFR 1910.147 is
+    // the federal lockout/tagout standard he actually wrote procedures
+    // against, so anyone in the trade recognises it on sight and everyone else
+    // reads texture. That is a better trade than invented diagram furniture.
+    anchors: [{ text: "29 CFR 1910.147", face: "mono" }],
+    support: [
+      { text: "ISO 9001", face: "mono" },
+      { text: "ISO 45001", face: "mono" },
+      { text: "Kaizen", face: "serif" },
+      { text: "takt time", face: "serif" },
+      { text: "lockout / tagout", face: "serif" },
+    ],
+    texture: [
+      { text: "6S", face: "mono" },
+      { text: "OEE", face: "mono" },
+      { text: "P&ID", face: "mono" },
+      { text: "ERP / EDI", face: "mono" },
+      { text: "SOP", face: "mono" },
+      { text: "preventive maintenance", face: "serif" },
+      { text: "order to fulfilment", face: "serif" },
+      { text: "capacity alignment", face: "serif" },
+      { text: "root cause", face: "serif" },
+      // No § here — it is this sector's mark on the ring.
+    ],
+  },
+};
 
 export const SKILLS = [
   {
