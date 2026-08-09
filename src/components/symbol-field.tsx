@@ -19,7 +19,9 @@ import { SYMBOL_LAYERS, TRACK_ARCS, type SymbolItem, type TrackId } from "@/lib/
  * they do.
  *
  * Placement is a hash of the index, never Math.random: this server-renders
- * first, and a mismatch would break hydration.
+ * first, and a mismatch would break hydration. Being pure is necessary but was
+ * not sufficient — see `snap` and `rand` below for why, and do not remove the
+ * grid snapping without reading it.
  */
 
 const BOARD = 2000;
@@ -91,9 +93,39 @@ const TIERS: Record<
 const ADVANCE = { mono: 0.62, serif: 0.46 } as const;
 const BOX_ADVANCE = { mono: 0.78, serif: 0.52 } as const;
 
+/**
+ * Round to a fixed grid. Multiply, round, divide are all exactly specified by
+ * IEEE 754 and ECMA-262, so every engine returns the identical double.
+ */
+function snap(value: number, grid: number) {
+  return Math.round(value * grid) / grid;
+}
+
+/**
+ * Deterministic pseudo-random in [0, 1).
+ *
+ * `sin(seed) * 43758.5453` is the shader-golf idiom, and it is pure — but pure
+ * is not the same as portable. ECMA-262 leaves `Math.sin` implementation
+ * defined, so Node and V8-in-Chrome disagree in the last ulp; the 43758×
+ * multiplier lifts that to ~1e-12 in the unit interval, and `angle` and
+ * `radius` carry it to ~1e-8 in board units. Measured on this repo: summing
+ * 5000 draws gives 2475.35446484680 in Node v24 and 2475.35446484678 in
+ * Chrome. React saw two different `x` attributes, reported a hydration
+ * mismatch, and abandoned hydration for the whole tree.
+ *
+ * Snapping to 1e-6 is six orders coarser than the disagreement and nine orders
+ * finer than a visible position, so both engines agree and the arrangement is
+ * the one already signed off in D13. A 1e-9 grid is *not* enough: the layout
+ * takes on the order of a thousand draws, and at that grid the odds of some
+ * draw straddling a rounding boundary stop being negligible.
+ *
+ * The alternative — an integer hash, bit-exact by construction — reshuffles
+ * every position and changes which items get dropped. Rejected for that reason
+ * alone, not on the merits.
+ */
 function rand(seed: number) {
   const x = Math.sin(seed * 127.1 + 311.7) * 43758.5453;
-  return x - Math.floor(x);
+  return snap(x - Math.floor(x), 1e6);
 }
 
 type Box = { x: number; y: number; w: number; h: number };
@@ -210,8 +242,15 @@ function layout(track: TrackId): Placed[] {
         seed += 1;
         const angle = arc.start + 3 + rand(seed * 2) * (span - 6);
         const radius = t.r0 + rand(seed * 2 + 1) * (t.r1 - t.r0);
-        const cx = C + Math.cos((angle * Math.PI) / 180) * radius;
-        const cy = C + Math.sin((angle * Math.PI) / 180) * radius;
+        // Snapped before the box is built, so collision detection and the
+        // rendered attribute are the same number — otherwise the two engines
+        // could accept different candidates and produce genuinely different
+        // layouts, not merely different digits. cos/sin are the last
+        // implementation-defined step in the pipeline; 1e-3 board units is
+        // 4e-4 of a pixel at the size this board renders, and ten orders of
+        // magnitude coarser than the ulp they disagree by.
+        const cx = snap(C + Math.cos((angle * Math.PI) / 180) * radius, 1e3);
+        const cy = snap(C + Math.sin((angle * Math.PI) / 180) * radius, 1e3);
         const box: Box = { x: cx - w / 2, y: cy - h / 2, w, h };
 
         if (!insideWedge(box, arc.start, arc.end)) continue;

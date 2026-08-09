@@ -6,7 +6,7 @@
 >
 > **维护约定**：做了新决策、完成了里程碑、或发现了新陷阱，就更新本文件，并同步「最后更新」日期。决策只增不删——推翻旧决策时把它标记为「已废弃」并说明原因，保留推理链比保留结论更有价值。
 
-**最后更新**：2026-08-07
+**最后更新**：2026-08-09
 
 ---
 
@@ -17,7 +17,7 @@ Yixuan "Coda" Shi（GitHub [@Coda-Shi](https://github.com/Coda-Shi)）的个人�
 | 项 | 值 |
 |---|---|
 | 仓库 | [Coda-Shi/personal-site](https://github.com/Coda-Shi/personal-site)（Public） |
-| 本地路径 | `C:\Users\shiyi\dev\personal-site` |
+| 本地路径 | **因机器而异**，见 §6。已知：`C:\Users\shiyi\dev\personal-site`、`C:\Users\Yixuan Shi\dev\personal-site` |
 | 主分支 | `main`（受保护） |
 | 托管 | Vercel（scope: `coda4`） |
 | 生产部署 | https://personal-site-dwz5h3837-coda4.vercel.app （该次部署的固定地址；稳定别名见 Vercel 面板） |
@@ -277,13 +277,44 @@ Professional 扇区用**真实法规条号**而非抽象流程图形：`29 CFR 1
 
 `SymbolField` 对没有任何内容的扇区返回 `null`，不渲染空的遮罩 SVG。
 
-**验证方法**：遍历渲染后的 `getBBox()` 两两求交，以及检查每个盒子四角的极角是否在扇区内。当前 64 / 46 / 34 个元素，重叠 0，出界 0。`getBBox()` 返回的是 viewBox 坐标，**所以这个结论天然与分辨率无关**。
+**验证方法**：遍历渲染后的 `getBBox()` 两两求交，以及检查每个盒子四角的极角是否在扇区内。`getBBox()` 返回的是 viewBox 坐标，**所以这个结论天然与分辨率无关**。
+
+**2026-08-09 实测**（此前记的「64 / 46 / 34」是旧内容留下的，已过期）：
+
+| 扇区 | `content.ts` 条目 | 实际落位 | 重叠 | 出界 |
+|---|---|---|---|---|
+| Scholarly | 3 + 12 + 30 = 45 | 45（另加结自带的 10 个标签，DOM 里共 55 个 `<text>`） | 0 | 0 |
+| Creative | 0（**故意留空**，见 `SYMBOL_LAYERS.creative` 的注释，只有两张线稿） | 0 | 0 | 0 |
+| Professional | 1 + 5 + 9 = 15 | 15 | 0 | 0 |
+
+**一个都没被丢弃**。数这个数的时候注意：Scholarly 的 SVG 里有 55 个 `<text>`，其中 10 个是波罗米环自己的标签（Imaginaire / Symbolique / Réel / Corps / Mort / Vie / Sens / JA / JΦ / a），不是纹理层的。直接数 `<text>` 会多出 10。
 
 ### D14 — DEAR SUSPECT 线条版 ✅ 生效中
 
 `public/creative/dear-suspect-figure.png`，由 `scripts/keyart-lineart.py` 从工作室 press kit 的 `key_art_main.png` 派生。源图不入库（在 OneDrive 里），脚本入库。
 
 **不要用边缘检测重做这张图。** 原画本身就是笔触，边缘算子会在每一笔周围描出双线并丢掉墨色轻重。正确做法是**把黑底键掉、保留笔触**：以 `max(R,G,B)` 作为"有墨"的度量（红色笔触的亮度只有 0.1 会被吃掉，但最大通道有 0.63），映射到 alpha，再给四边羽化——原图在自己的下边缘把裙摆切断了，不羽化会显得像失误。
+
+### D15 — 布局数值吸附到网格，而不是换成整数哈希 ✅ 生效中（2026-08-09）
+
+**背景**：`SymbolField` 报 hydration mismatch，React 放弃整棵树的 hydration。原因不是「用了 `Math.random`」——代码本来就避开了它——而是 **`Math.sin` 在 ECMA-262 里是实现自定义的**。`rand()` 用的 `sin(seed) * 43758.5453` 是着色器圈的老写法，纯函数没错，但**纯 ≠ 跨引擎一致**：Node 和 Chrome 的 `Math.sin` 差最后一个 ulp，43758 倍的乘数把它放大到单位区间的 ~1e-12，`angle` 和 `radius` 再放大到画板单位的 ~1e-8——正好是 React 报出来的 `x` 属性差异量级。
+
+实测（同一份代码，5000 次求和）：
+
+| | Node v24.14.1 | Chrome |
+|---|---|---|
+| `sin` 版 | `2475.354464846803` | `2475.354464846786` |
+| 整数哈希版 | `2511.84365374105982482` | 完全相同 |
+
+**决策**：`rand()` 的输出吸附到 1e-6 网格，`cx` / `cy` 吸附到 1e-3 网格（且**在建碰撞盒之前**吸附，让碰撞检测和渲染用同一个数）。
+
+**为什么不换成整数哈希**（murmur3 finalizer 那种，构造上就 bit-exact）：**它会把每个符号的位置全部重排**，也会改变哪些条目因放不下而被丢弃。D13 的构图是已经验证过的，本次任务是修动画，不是重做符号层。**这是为了保住构图而做的取舍，不是没想到更彻底的办法。**
+
+**为什么网格是 1e-6 而不是 1e-9**：布局过程大约要抽一千次随机数。1e-9 网格下，单次抽样跨过舍入边界的概率约 2e-3，一千次就有约 2 次——不可忽略。1e-6 比分歧量（1e-12）粗六个数量级，比可见位置细九个数量级。
+
+**代价**：`Math.cos` / `Math.sin` / `Math.atan2` / `Math.hypot` 仍留在管线里，理论上仍可能在 1 ulp 处翻转某个边界判断。1e-3 的吸附把这个概率压到约 1e-10/坐标，但**不是零**。真要彻底根除，只能把布局改成服务端算一次、序列化进 HTML 传给客户端（约多 15KB 载荷，且要一路 prop drilling）。当前不值这个价。
+
+> ⚠️ **给未来的 AI**：不要以为「没用 `Math.random` 就 hydration 安全」。任何超越函数（`sin` / `cos` / `tan` / `atan2` / `hypot` / `exp` / `pow` 的非整数次幂）在 JS 里都是实现自定义的，服务端和浏览器可以给出不同的最后一位。**只要结果会被渲染成属性，就必须吸附到网格。**
 
 ## 5. 工作流约定
 
@@ -306,9 +337,23 @@ gh pr create --fill
 
 ## 6. 环境事实
 
-- **`gh` CLI 不在本会话 shell 的 PATH 中**（winget 装后需新终端才刷新）。AI 调用时用完整路径：`C:\Program Files\GitHub CLI\gh.exe`
+> ⚠️ **所有者在多台机器上开发同一个仓库。** 本节以下的内容**逐机器不同**，读到时先确认当前机器是哪台，不要照抄。判断办法：`git rev-parse --show-toplevel` 看路径，`gh auth status` 看登录态。
+
+### 跨机器不变的
+
 - SSH 密钥 `~/.ssh/id_ed25519` 已注册到 GitHub，**无密码短语**，推送免交互
 - 全局 git 配置已设 `init.defaultBranch=main`、`push.autoSetupRemote=true`、`core.longpaths=true`
+
+### 机器 A（`C:\Users\shiyi\`）
+
+- **`gh` CLI 不在该会话 shell 的 PATH 中**（winget 装后需新终端才刷新）。AI 调用时用完整路径：`C:\Program Files\GitHub CLI\gh.exe`
+- `gh` 已登录，scope 为 `gist, read:org, repo`
+
+### 机器 B（`C:\Users\Yixuan Shi\`）—— 2026-08-09 记录
+
+- 仓库路径 `C:\Users\Yixuan Shi\dev\personal-site`（**在 OneDrive 之外**，故意的：`node_modules` 的硬链接会卡死 OneDrive 同步引擎）
+- **`gh` 在 PATH 里，但没有登录**。SSH 推送正常（已验证认证为 `Coda-Shi`），但 §5 工作流里的 `gh pr create --fill` 会失败——要先 `gh auth login`，或者直接去网页开 PR
+- **Windows「动画效果」是关闭的**，见 §7 的对应陷阱
 
 ## 7. 已知陷阱
 
@@ -322,6 +367,24 @@ gh pr create --fill
 | **PowerShell 5.1 无 `&&`** | 用 `;` 或 `if ($?) { }`。 |
 | **原生命令 stderr 被当错误** | git/gh 写 stderr 时 PowerShell 报 `NativeCommandError` 且 `$?` 为 false，**即使退出码是 0**。别据此判断失败。 |
 | **`gh` token 缺 `workflow` scope** | 当前 scope 为 `gist, read:org, repo`。走 SSH 推送不受影响；若将来需通过 API 改工作流文件，需 `gh auth refresh -s workflow`。 |
+| **超越函数会破坏 hydration** | `Math.sin` / `cos` / `atan2` / `hypot` 在 ECMA-262 里是实现自定义的，Node 与浏览器差最后一个 ulp。凡是会渲染成属性的计算结果都必须吸附到网格，见 D15。 |
+
+> 🔴 **「入场动画不播放、所有东西直接闪现」——先查操作系统，不要改代码。**
+>
+> 2026-08-09 在机器 B 上遇到过一次，排查结论是**站点完全正常**：Windows 的「动画效果」被关掉了（设置 → 辅助功能 → 视觉效果 → 动画效果），Chromium 把这个系统设置映射成 CSS 的 `prefers-reduced-motion: reduce`，于是 §D11 那条全局规则如设计所愿把所有动画压到 `0.01ms`，配合 `fill-mode: both` 直接落在完成态——看起来就是「啪一下全出来了」。
+>
+> **诊断命令**（PowerShell，查 `SPI_GETCLIENTAREAANIMATION`，返回 `False` 即为关闭）：
+>
+> ```powershell
+> Add-Type "using System;using System.Runtime.InteropServices;public class Spi{[DllImport(\"user32.dll\")]public static extern bool SystemParametersInfo(uint a,uint b,ref bool c,uint d);}"
+> $v=$false; [void][Spi]::SystemParametersInfo(0x1042,0,[ref]$v,0); $v
+> ```
+>
+> 浏览器里对应的一行是 `matchMedia('(prefers-reduced-motion: reduce)').matches`。
+>
+> ⚠️ **绝对不要为了「让动画能看见」去删或改 `globals.css` 里的 `@media (prefers-reduced-motion: reduce)` 规则。** 那条规则是无障碍功能，是给前庭功能障碍者用的（动画会引发眩晕和恶心），删掉是拿别人的健康换自己看一眼效果。要看动画就去把系统设置打开，或者在 Chrome DevTools 的 Rendering 面板里临时把 `prefers-reduced-motion` 模拟成 `no-preference`。
+>
+> 已验证过的性质：在 reduced-motion 生效时，页面落在**完成态**（`h1` 与 footer 的 opacity 均为 1），不是落在空白——D11 要求的这条仍然成立。把那条 media 规则从 CSSOM 里删掉后，`rise-in` 的时长立刻恢复成 700ms，说明动画本身毫发无损。
 
 ## 8. 当前进度
 
