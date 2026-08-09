@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { SymbolField } from "@/components/symbol-field";
 import { TrackMark } from "@/components/track-mark";
 import { TRACKS, TRACK_ARCS, TRACK_CLASSES, type TrackId } from "@/lib/content";
@@ -20,7 +19,7 @@ const R_TICK_MINOR = 189;
 const R_TICK_MAJOR = 181;
 
 /** The hub is a fourth focus target, but it lights nothing and colours nothing. */
-type Focus = TrackId | "hub" | null;
+export type Focus = TrackId | "hub" | null;
 
 function polar(radius: number, degrees: number) {
   const rad = (degrees * Math.PI) / 180;
@@ -65,9 +64,16 @@ function labelPosition(mid: number) {
   return { left: `${(p.x / 400) * 100}%`, top: `${(p.y / 400) * 100}%` };
 }
 
-export function TrinityDisc() {
+// Focus is owned by the page rather than by the disc: lighting a sector also
+// has to clear the intro copy out of the beam's way, and that copy is a sibling.
+export function TrinityDisc({
+  focus,
+  setFocus,
+}: {
+  focus: Focus;
+  setFocus: (next: Focus) => void;
+}) {
   const router = useRouter();
-  const [focus, setFocus] = useState<Focus>(null);
 
   /** True whenever something is lit and it is not this track. */
   const dimmed = (id: TrackId) => focus !== null && focus !== id;
