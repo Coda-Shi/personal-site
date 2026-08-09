@@ -1,35 +1,43 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { SiteShell } from "@/components/site-shell";
 import { ADVOCACY } from "@/lib/content";
+import { getDictionary, hasLocale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "Coda himself",
-  description: "Writer and advocate.",
-};
+export async function generateMetadata({ params }: PageProps<"/[lang]/coda">): Promise<Metadata> {
+  const { lang } = await params;
+  if (!hasLocale(lang)) return {};
+  const dict = getDictionary(lang);
+  return { title: dict.hub.heading, description: dict.hub.subheading };
+}
 
 // No ground colour, no glyph, a narrower measure, more serif. The three public
 // identities are encoded; this one is not. See D9 in CLAUDE.md.
-export default function Page() {
+export default async function Page({ params }: PageProps<"/[lang]/coda">) {
+  const { lang } = await params;
+  if (!hasLocale(lang)) notFound();
+  const dict = getDictionary(lang);
+
   return (
-    <SiteShell>
+    <SiteShell lang={lang}>
       <header className="max-w-xl">
         <h1 className="font-display text-5xl leading-none font-light tracking-tight md:text-6xl">
-          Coda himself
+          {dict.hub.heading}
         </h1>
         <p className="mt-6 font-display text-2xl leading-snug italic text-bone/70">
-          as a writer and an advocate
+          {dict.hub.subheading}
         </p>
       </header>
 
       <section className="mt-16 max-w-xl">
-        <h2 className="label text-bone/55">Poems</h2>
+        <h2 className="label text-bone/55">{dict.headings.poems}</h2>
         <p className="mt-6 font-display text-2xl leading-relaxed italic text-bone/45">
           Not yet published here.
         </p>
       </section>
 
       <section className="mt-16">
-        <h2 className="label text-bone/55">Advocacy</h2>
+        <h2 className="label text-bone/55">{dict.headings.advocacy}</h2>
         <div className="mt-6 space-y-8">
           {ADVOCACY.map((item) => (
             <article key={item.org} className="border-t border-bone/20 pt-5">

@@ -141,7 +141,7 @@ export const TRACKS: Track[] = [
     glyph: "§",
     glyphName: "section sign",
     mark: "char",
-    lede: "Operations, compliance, industrial and policy research. Investigation and system design.",
+    lede: "Operations, compliance, industrial and policy research. Investigation and system design as means to a greater end.",
     entries: [
       {
         org: "Everglory Products Corporation",

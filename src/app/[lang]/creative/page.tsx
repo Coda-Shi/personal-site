@@ -1,17 +1,26 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { TrackPage } from "@/components/track-page";
 import { TRACKS } from "@/lib/content";
+import { getDictionary, hasLocale } from "@/lib/i18n";
 
 const track = TRACKS.find((t) => t.id === "creative")!;
 
-export const metadata: Metadata = {
-  title: track.title,
-  description: track.lede,
-};
+export async function generateMetadata({
+  params,
+}: PageProps<"/[lang]/creative">): Promise<Metadata> {
+  const { lang } = await params;
+  if (!hasLocale(lang)) return {};
+  const copy = getDictionary(lang).tracks[track.id];
+  return { title: copy.title, description: copy.lede };
+}
 
-export default function Page() {
+export default async function Page({ params }: PageProps<"/[lang]/creative">) {
+  const { lang } = await params;
+  if (!hasLocale(lang)) notFound();
+
   return (
-    <TrackPage track={track}>
+    <TrackPage lang={lang} track={track}>
       <p className="mt-12 text-sm leading-relaxed text-bone/75">
         Elegists Studio keeps its own home at{" "}
         <a

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { SiteShell } from "@/components/site-shell";
 import { EntryList } from "@/components/track-page";
 import {
@@ -6,25 +7,34 @@ import {
   CONTACT_EMAIL,
   EDUCATION,
   NAME,
-  PROFILE,
   SKILLS,
   TRACKS,
   TRACK_CLASSES,
 } from "@/lib/content";
+import { getDictionary, hasLocale } from "@/lib/i18n";
 
-export const metadata: Metadata = {
-  title: "Curriculum vitae",
-  description: PROFILE,
-};
+export async function generateMetadata({ params }: PageProps<"/[lang]/cv">): Promise<Metadata> {
+  const { lang } = await params;
+  if (!hasLocale(lang)) return {};
+  const dict = getDictionary(lang);
+  return { title: dict.nav.cv, description: dict.profile };
+}
 
-export default function Page() {
+// The entries themselves are still English — translation is landing section by
+// section, and the dictionary falls back rather than blanking. Only the
+// headings and the profile are localised so far.
+export default async function Page({ params }: PageProps<"/[lang]/cv">) {
+  const { lang } = await params;
+  if (!hasLocale(lang)) notFound();
+  const dict = getDictionary(lang);
+
   return (
-    <SiteShell>
+    <SiteShell lang={lang}>
       <header className="max-w-2xl">
         <h1 className="font-display text-5xl leading-none font-light tracking-tight md:text-6xl">
           {NAME}
         </h1>
-        <p className="mt-6 text-base leading-relaxed text-bone/80">{PROFILE}</p>
+        <p className="mt-6 text-base leading-relaxed text-bone/80">{dict.profile}</p>
         <a
           href={`mailto:${CONTACT_EMAIL}`}
           className="label mt-6 inline-block text-bone/70 underline underline-offset-4 transition-colors hover:text-bone"
@@ -34,7 +44,7 @@ export default function Page() {
       </header>
 
       <section className="mt-16">
-        <h2 className="label text-bone/55">Education</h2>
+        <h2 className="label text-bone/55">{dict.headings.education}</h2>
         <div className="mt-6 space-y-8">
           {EDUCATION.map((item) => (
             <article key={item.org} className="border-t border-bone/20 pt-5">
@@ -62,14 +72,14 @@ export default function Page() {
               className="inline-block size-2"
               style={{ backgroundColor: TRACK_CLASSES[track.id].cssVar }}
             />
-            {track.title}
+            {dict.tracks[track.id].title}
           </h2>
           <EntryList entries={track.entries} />
         </section>
       ))}
 
       <section className="mt-16">
-        <h2 className="label text-bone/55">Advocacy</h2>
+        <h2 className="label text-bone/55">{dict.headings.advocacy}</h2>
         <div className="mt-6 space-y-8">
           {ADVOCACY.map((item) => (
             <article key={item.org} className="border-t border-bone/20 pt-5">

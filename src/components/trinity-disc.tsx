@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { SymbolField } from "@/components/symbol-field";
 import { TrackMark } from "@/components/track-mark";
 import { TRACKS, TRACK_ARCS, TRACK_CLASSES, type TrackId } from "@/lib/content";
+import type { Dictionary, Locale } from "@/lib/i18n";
 
 const CX = 200;
 const CY = 200;
@@ -67,9 +68,13 @@ function labelPosition(mid: number) {
 // Focus is owned by the page rather than by the disc: lighting a sector also
 // has to clear the intro copy out of the beam's way, and that copy is a sibling.
 export function TrinityDisc({
+  lang,
+  dict,
   focus,
   setFocus,
 }: {
+  lang: Locale;
+  dict: Dictionary;
   focus: Focus;
   setFocus: (next: Focus) => void;
 }) {
@@ -158,7 +163,7 @@ export function TrinityDisc({
                   animation: `plot-stroke 700ms cubic-bezier(0.65, 0, 0.35, 1) ${drawDelay}ms both, ink-in 500ms ease-out ${drawDelay + 700}ms both`,
                 }}
                 onMouseEnter={() => setFocus(track.id)}
-                onClick={() => router.push(`/${track.id}`)}
+                onClick={() => router.push(`/${lang}/${track.id}`)}
               />
             );
           })}
@@ -175,7 +180,7 @@ export function TrinityDisc({
         {TRACKS.map((track, i) => (
           <Link
             key={track.id}
-            href={`/${track.id}`}
+            href={`/${lang}/${track.id}`}
             style={{
               ...labelPosition(TRACK_ARCS[track.id].mid),
               animation: `fade-in 500ms ease-out ${1250 + i * 150}ms both`,
@@ -190,7 +195,7 @@ export function TrinityDisc({
               style={{ opacity: dimmed(track.id) ? 0.3 : 1 }}
             >
               <TrackMark track={track} className="font-display text-3xl leading-none md:text-4xl" />
-              <span className="label">{track.title}</span>
+              <span className="label">{dict.tracks[track.id].title}</span>
             </span>
           </Link>
         ))}
@@ -199,8 +204,8 @@ export function TrinityDisc({
             nothing and dims all three sectors: the private self is reached by
             turning the colour off, not by adding another one. */}
         <Link
-          href="/coda"
-          aria-label="Coda himself — writer and advocate"
+          href={`/${lang}/coda`}
+          aria-label={dict.hub.ariaLabel}
           style={{
             animation: "fade-in 500ms ease-out 1700ms both",
             transform: `translate(-50%, -50%) scale(${focus === "hub" ? 1.07 : 1})`,
@@ -212,13 +217,13 @@ export function TrinityDisc({
           onFocus={() => setFocus("hub")}
           onBlur={() => setFocus(null)}
         >
-          <span className="font-display text-2xl italic md:text-3xl">Coda</span>
+          <span className="font-display text-2xl italic md:text-3xl">{dict.hub.name}</span>
           <span
             className={`label transition-colors duration-300 ${
               focus === "hub" ? "text-bone" : "text-bone/55"
             }`}
           >
-            himself
+            {dict.hub.qualifier}
           </span>
         </Link>
       </div>

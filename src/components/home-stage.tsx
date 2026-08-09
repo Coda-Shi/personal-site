@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { LanguageToggle } from "@/components/language-toggle";
 import { TrinityDisc, type Focus } from "@/components/trinity-disc";
-import { HINT, NAME, PROFILE } from "@/lib/content";
+import { NAME } from "@/lib/content";
+import type { Dictionary, Locale } from "@/lib/i18n";
 
 /**
  * Owns which sector is lit, because two separate things react to it: the disc,
@@ -18,7 +20,7 @@ import { HINT, NAME, PROFILE } from "@/lib/content";
  * The name stays. It is one short line, it sits clear of every wedge, and
  * without it a lit page has nobody's name on it.
  */
-export function HomeStage() {
+export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
   const [focus, setFocus] = useState<Focus>(null);
 
   // The hub lights no beam, so it should not clear the copy either.
@@ -52,26 +54,26 @@ export function HomeStage() {
             className="hide-when-short mt-3 max-w-xs text-xs leading-relaxed text-bone/70 md:max-w-sm md:text-sm xl:max-w-md"
             style={recede}
           >
-            {PROFILE}
+            {dict.profile}
           </p>
         </div>
         <div style={{ animation: "rise-in 700ms ease-out 260ms both" }}>
           <p className="label mt-3 w-fit text-bone/45" style={recede}>
-            {HINT}
+            {dict.hint}
           </p>
         </div>
       </header>
 
       <div className="w-full px-6">
-        <TrinityDisc focus={focus} setFocus={setFocus} />
+        <TrinityDisc lang={lang} dict={dict} focus={focus} setFocus={setFocus} />
       </div>
 
       <footer
         className="absolute inset-x-6 bottom-6 z-10 flex flex-wrap items-center gap-x-8 gap-y-2 md:inset-x-10 md:bottom-8"
         style={{ animation: "rise-in 700ms ease-out 1850ms both" }}
       >
-        <Link href="/cv" className="label text-bone/55 transition-colors hover:text-bone">
-          Curriculum vitae
+        <Link href={`/${lang}/cv`} className="label text-bone/55 transition-colors hover:text-bone">
+          {dict.nav.cv}
         </Link>
         <a
           href="https://elegists.studio"
@@ -87,6 +89,7 @@ export function HomeStage() {
         >
           GitHub
         </a>
+        <LanguageToggle lang={lang} label={dict.switchTo} />
       </footer>
     </main>
   );
