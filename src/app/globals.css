@@ -18,9 +18,24 @@
   --color-oxblood: #6e1423;
   --color-gilt: #6a5216;
 
-  --font-display: var(--font-cormorant), Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, "Courier New", monospace;
+  /* Latin face first, Han face second. The browser resolves family per
+     character, so English keeps Cormorant and Space Grotesk while Chinese
+     picks up Source Han from the next slot — one stack, both scripts, no
+     :lang() switching needed for ordinary text. */
+  --font-display: var(--font-cormorant), var(--font-noto-serif-sc), Georgia, "Times New Roman",
+    serif;
+  --font-sans: var(--font-grotesk), var(--font-noto-sans-sc), ui-sans-serif, system-ui, sans-serif;
+  /* Mono stays Latin-only by design — Chinese has no monospace tradition, and
+     the Han fallback here is only so a stray character is not tofu. */
+  --font-mono: var(--font-jetbrains), var(--font-noto-sans-sc), ui-monospace, "Courier New",
+    monospace;
+
+  /* Chinese has no italic. See the :lang(zh) rule below for why this exists.
+     TODO: vendor 朱雀仿宋 (Zhuque Fangsong, OFL 1.1) as a subset and load it
+     with next/font/local. Until then this resolves to the system fangsong,
+     which exists on Windows and macOS and is absent on most Linux — the same
+     OS-dependent lottery D9 documents for the logic glyphs. */
+  --font-fangsong: "FangSong", "STFangsong", "仿宋", var(--font-noto-serif-sc), serif;
 }
 
 @layer base {
@@ -77,6 +92,29 @@
   .oldstyle {
     font-variant-numeric: oldstyle-nums proportional-nums;
   }
+}
+
+/* ── Italic has no Chinese ─────────────────────────────────────────────────
+   There is no italic face for any Han typeface — Source Han ships none, and
+   none is coming, because the concept does not exist in the tradition. Asked
+   for `font-style: italic` the browser synthesises one by shearing each glyph
+   about twelve degrees, which distorts every stroke weight and reads as a
+   rendering fault rather than as emphasis.
+
+   What Chinese uses in italic's place is a different hand. Fangsong is the
+   right one here: it carries the "another voice" job that italic does, and it
+   is narrow and angular where kai is soft and calligraphic — kai would pull
+   the page warm, against the high-contrast register §4 asks for.
+
+   Scoped to :lang(zh), which the root layout sets from the route, so the
+   English side keeps real Cormorant italic and only Chinese is substituted.
+   Latin fragments inside Chinese text still italicise normally, because the
+   family stack below reaches Cormorant first for those characters. */
+:lang(zh) .italic,
+:lang(zh) em,
+:lang(zh) i {
+  font-style: normal;
+  font-family: var(--font-cormorant), var(--font-fangsong), serif;
 }
 
 /* ── Entrance ─────────────────────────────────────────────────────────────

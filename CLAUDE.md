@@ -129,7 +129,11 @@ Yixuan "Coda" Shi（GitHub [@Coda-Shi](https://github.com/Coda-Shi)）的个人�
 
 ### 语言
 
-**站点内容一律英文。** 本文档和提交信息中文/英文均可，但用户可见的页面文案是英文。
+> ⚠️ **「站点内容一律英文」已于 2026-08-09 废弃**，被 D16 取代。原文保留如下，因为它解释了初版为什么全英文。
+
+~~**站点内容一律英文。** 本文档和提交信息中文/英文均可，但用户可见的页面文案是英文。~~
+
+**现行**：站点为中英双语，英文是**规范版本**（canonical），中文逐节翻译。本文档和提交信息中英均可。见 D16。
 
 ### 素材
 
@@ -316,6 +320,42 @@ Professional 扇区用**真实法规条号**而非抽象流程图形：`29 CFR 1
 
 > ⚠️ **给未来的 AI**：不要以为「没用 `Math.random` 就 hydration 安全」。任何超越函数（`sin` / `cos` / `tan` / `atan2` / `hypot` / `exp` / `pow` 的非整数次幂）在 JS 里都是实现自定义的，服务端和浏览器可以给出不同的最后一位。**只要结果会被渲染成属性，就必须吸附到网格。**
 
+### D16 — 中英双语，英文规范、中文增量翻译 ✅ 生效中（2026-08-09）
+
+**决策**：站点改为 `/[lang]/…` 双语（`en` / `zh`），推翻 §4 的「一律英文」。
+
+**路由**：`src/proxy.ts`（**Next 16 把 `middleware.ts` 改名为 `proxy.ts`，导出名也从 `middleware` 变成 `proxy`——不要改回去**）。`app/[lang]/layout.tsx` 就是根布局，`app/layout.tsx` 已不存在。两个 locale 都在 `generateStaticParams` 里，所以 12 个页面全部静态预渲染，proxy 只负责重定向。
+
+**「跟随浏览器语言」必须配一条例外**：只有在**没有显式选择**时才读 `Accept-Language`。用户手动切过语言就写 cookie，之后永不自动跳。理由：无条件按 header 跳转会把明确想看另一种语言的人每次都弹走，也会把爬虫弹走、导致只有一种语言被收录。访问带 locale 前缀的地址同样会写 cookie——顺着别人分享的 `/zh/...` 进来，之后就留在中文。
+
+**翻译可以是子集。** `getDictionary()` 把中文词典**浅合并**到英文之上，缺的键回落英文而不是渲染空白。这就是敢在只译完首页时上线的原因。故意只合并一层：再往下每个值都是一个完整单元（三条线、整个 hub），半译一个是错误不是特性。
+
+> ⚠️ `src/lib/i18n.ts` **只能被服务端组件引用**。两份词典都是静态 import，被客户端组件拉进去就会把全部译文打进浏览器包。`HomeStage` / `TrinityDisc` / `LanguageToggle` 都是客户端组件，一律**以 props 接收字符串**，只 `import type`。
+
+### D17 — 中文的字体与「斜体」 ✅ 生效中（2026-08-09）
+
+**D8 的三套拉丁字体一个中文字都没有。** 不补中文字体的话，每个汉字都会回退到系统字体（Windows 微软雅黑 / macOS 苹方 / Linux 随缘），D8 的排版对撞在中文版里直接塌成通用 UI 黑体——和 D9 记录的记号回退是同一个病。
+
+**决策**：字体栈写成「拉丁在前、思源在后」，浏览器**按字符**选族，一套栈同时管两种文字，普通正文不需要 `:lang()` 切换。
+
+| 角色 | 拉丁 | 中文 |
+|---|---|---|
+| display | Cormorant Garamond | 思源宋体 Noto Serif SC |
+| sans | Space Grotesk | 思源黑体 Noto Sans SC |
+| mono | JetBrains Mono | **不配**——中文没有等宽传统，硬凑更糟；栈里的思源只为避免豆腐块 |
+
+> 🔴 **CJK 字体必须 `preload: false`。** Google 把中文切成上百个 unicode-range 分片，`preload` 默认 `true` 会给**每一个分片**注入 `<link rel=preload>`。实测：加了 `preload: false` 后页面只有 4 个 preload（全是拉丁）；不加会是七百个左右，而且恰好废掉分片按需加载这个机制本身。
+>
+> 已验证：`Noto Sans SC` 注册 303 个 face、实际只下载 24 个；`Noto Serif SC` 注册 404、下载 3 个。**代价是样式表里有 775 条 `@font-face` 规则**——只是元数据不是字体二进制，但不是零成本。
+
+**中文没有斜体。** 任何汉字字体都不存在 italic 字面，思源没有、以后也不会有，因为这个概念不在传统里。强行 `font-style: italic`，浏览器只能把字形整体切变约 12°，笔画粗细全乱，读起来像渲染故障而不是强调。
+
+中文里承担 italic 职能的是**换一种字体**。选**仿宋**不选楷体：仿宋清瘦峻峭，楷体温润，后者会把调子拉暖、和 §4 要的高对比打架。
+
+实现是 `globals.css` 里的 `:lang(zh) .italic` 规则——`font-style: normal` + 换族。英文侧照常用 Cormorant 的真斜体，中文里夹的拉丁片段也照常斜，因为族栈先命中 Cormorant。
+
+> ⏳ **未完成**：仿宋目前指向**系统字体**（Windows 有、macOS 有、多数 Linux 没有），也就是 D9 那个「逐操作系统抽签」的老问题，只是范围小到三句 lede。要根治得把 [朱雀仿宋](https://github.com/TrionesType/zhuque)（OFL 1.1，覆盖 GB 2312 与通用规范汉字表，目前测试预览版）子集化后 vendore 进仓库，用 `next/font/local` 加载。**Google Fonts 上没有任何仿宋**，别去那里找。
+
 ## 5. 工作流约定
 
 **不要直接改 `main`。** 标准循环：
@@ -399,11 +439,62 @@ gh pr create --fill
 - [x] 确定信息架构与视觉方案（见 §4、D7–D10）
 - [x] 实现三条线内页、`/coda`、`/cv`
 - [x] 首页重做为 trinity 圆盘（见 D10）
+- [x] 修掉 `SymbolField` 的 hydration mismatch（见 D15）
+- [x] 中英双语骨架：`/[lang]/` 路由、`proxy.ts`、语言切换开关、中文字体（见 D16、D17）
+- [x] 中文首页文案定稿并上线（简介、三条线名称与 lede、中心、提示语）
 - [ ] 把部署网址写入仓库 homepage 字段
 - [ ] **中心照片**——所有者待选。目前 `/` 的 Portrait 是圆形描边占位，换真照片只需改一个组件
 - [ ] **诗文**——只能由所有者提供，`/coda` 的 Poems 目前是空状态
 - [ ] 逐页打磨视觉（所有者原话「你先做，我们可以慢慢改」）
 - [ ] 购买域名并绑定（见 D6）
+
+### 中文版翻译进度
+
+英文是规范版本，中文按节推进。`getDictionary()` 缺键回落英文，所以未译部分**不会开天窗**，只会显示英文。
+
+| 区块 | 状态 |
+|---|---|
+| 首页简介 / 提示语 | ✅ 已定稿 |
+| 三条线名称（学术 · 实务 · 创作） | ✅ 已定稿 |
+| 三条线 lede | ✅ 已定稿 |
+| 中心（Coda 其人 / 书写与行路之人） | ✅ 已定稿 |
+| 导航与区块标题（简历 / 教育 / 行路 / 诗） | ✅ 已定稿 |
+| **CV 正文条目**（org / role / detail） | ⬜ **未开始——下一步就是这个** |
+| `/cv` 的 Additional 区块标题（其他） | ✅ 已定稿 |
+| 符号装饰层（`SYMBOL_LAYERS`） | 🚫 **按所有者要求永不翻译**——拉丁箴言、德语引文、心理测量记号保持原文 |
+
+### 下一步队列（按优先级）
+
+1. **CV 正文翻译**。条目在 `content.ts` 的 `TRACKS[].entries`、`EDUCATION`、`ADVOCACY`、`SKILLS`。译文进 `i18n.ts` 的 `zh`，需要先扩 `Dictionary` 类型。**工作量最大的一块，但纯机械。**
+2. **朱雀仿宋 vendore 进仓库**。现在 `--font-fangsong` 指向系统字体，多数 Linux 上没有。见 D17 末尾。
+3. **中文标点空隙**。全角顿号句号在 lede 字号下空得明显，且会把「迷。」这类孤字甩到下一行。可选 `text-spacing-trim: trim-start`（Chrome 支持）；`hanging-punctuation` 目前只有 Safari 支持。所有者尚未定夺。
+
+## 8.5 换机器怎么接上
+
+> 这一节是给「明天换台电脑继续改」准备的。**照着做，别跳。**
+
+```bash
+git clone git@github.com:Coda-Shi/personal-site.git
+cd personal-site
+npm install
+npm run dev
+```
+
+然后**必须做这三件事**，它们都存在 `.git/config` 或本机环境里，**不随仓库同步**：
+
+1. 🔴 **设提交邮箱**，否则真实邮箱会进公开历史（§7 隐私规则，最高优先级）：
+
+   ```bash
+   git config --local user.email "257181346+Coda-Shi@users.noreply.github.com"
+   ```
+
+   > 顺带：账号级的根治办法是 GitHub → Settings → Emails 打开 **Keep my email addresses private** 和 **Block command line pushes that expose my email**，一次设置对所有机器生效。**2026-08-09 时这两项还是关的**，所以 #1–#4 的提交作者都带着真实邮箱。已经泄漏的撤不回来，但可以止损。
+
+2. **确认 `gh` 登录状态**：`gh auth status`。没登录的话 `gh pr create` 会失败，得先 `gh auth login`，或者直接去网页开 PR。
+
+3. **`node_modules` 必须在 OneDrive 之外**。硬链接会卡死 OneDrive 同步引擎——所以仓库放 `~/dev/`，不要放进 OneDrive 目录。
+
+验证环境没问题：`npm run lint && npm run build`，应当零报错、静态生成 12 个页面（6 条路由 × 2 个 locale）。
 
 ## 9. 待决事项
 
