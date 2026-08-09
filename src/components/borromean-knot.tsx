@@ -60,17 +60,21 @@ const RINGS = CENTERS.map((self, i) => {
 // Every position is checked against the three circles: ring names sit outside
 // all of them, Corps / Mort / Vie inside exactly one, Sens / JA / JΦ inside
 // exactly two, and a inside all three.
+// Sizes are pushed as far as the regions allow. The whole figure lands around
+// 170px on a laptop, so these read as fine print — legible if you lean in,
+// texture otherwise. Enlarging them further starts pushing labels out of the
+// region they name, which would be worse than small.
 const LABELS: { text: string; x: number; y: number; size: number; italic?: boolean }[] = [
-  { text: "Imaginaire", x: 52, y: 22, size: 11 },
-  { text: "Symbolique", x: 248, y: 22, size: 11 },
-  { text: "Réel", x: 150, y: 300, size: 11 },
-  { text: "Corps", x: 66, y: 108, size: 10 },
-  { text: "Mort", x: 234, y: 108, size: 10 },
-  { text: "Vie", x: 150, y: 246, size: 10 },
-  { text: "Sens", x: 150, y: 82, size: 10 },
-  { text: "JA", x: 102, y: 186, size: 10 },
-  { text: "JΦ", x: 198, y: 186, size: 10 },
-  { text: "a", x: 150, y: 150, size: 15, italic: true },
+  { text: "Imaginaire", x: 52, y: 20, size: 15 },
+  { text: "Symbolique", x: 248, y: 20, size: 15 },
+  { text: "Réel", x: 150, y: 301, size: 15 },
+  { text: "Corps", x: 66, y: 108, size: 13 },
+  { text: "Mort", x: 234, y: 108, size: 13 },
+  { text: "Vie", x: 150, y: 246, size: 13 },
+  { text: "Sens", x: 150, y: 82, size: 13 },
+  { text: "JA", x: 102, y: 186, size: 13 },
+  { text: "JΦ", x: 198, y: 186, size: 13 },
+  { text: "a", x: 150, y: 150, size: 21, italic: true },
 ];
 
 export const KNOT_VIEWBOX = { w: 300, h: 312 };

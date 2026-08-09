@@ -65,10 +65,10 @@ export function TrackMark({ track, className }: { track: Track; className?: stri
           stroke="none"
           fillRule="evenodd"
           d="M 4.6 12 A 7.4 8.5 0 1 0 19.4 12 A 7.4 8.5 0 1 0 4.6 12 Z
-             M 7.4 12 A 4.6 7.0 0 1 1 16.6 12 A 4.6 7.0 0 1 1 7.4 12 Z"
+             M 6.9 12 A 5.1 7.4 0 1 1 17.1 12 A 5.1 7.4 0 1 1 6.9 12 Z"
         />
-        <line x1="12" y1="0.9" x2="12" y2="23.1" strokeWidth={1.9} strokeLinecap="butt" />
-        <line x1="0.7" y1="12" x2="23.3" y2="12" strokeWidth={1.9} strokeLinecap="butt" />
+        <line x1="12" y1="0.9" x2="12" y2="23.1" strokeWidth={1.25} strokeLinecap="butt" />
+        <line x1="0.7" y1="12" x2="23.3" y2="12" strokeWidth={1.25} strokeLinecap="butt" />
       </svg>
     );
   }

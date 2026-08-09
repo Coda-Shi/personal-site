@@ -26,6 +26,31 @@ const BOARD = 2000;
 const C = BOARD / 2;
 const PAD = 16; // clear space demanded around every box, in board units
 
+/**
+ * Radial band the field may occupy, in board units.
+ *
+ * The SVG uses `preserveAspectRatio="xMidYMid meet"`, never `slice`. Slice
+ * scales the board to *cover* the viewport, so on a 2:1 screen only the middle
+ * ±506 board units survive — and because Scholarly points upward, most of its
+ * field, the knot included, was rendering above the top edge where nobody
+ * could see it. `meet` fits the whole board, which is what makes R_MAX a
+ * promise rather than a hope. The beam is a separate element and still runs to
+ * the corners.
+ *
+ * R_MIN has to clear the disc, and the two scale differently: the board tracks
+ * min(vw, vh) while the disc is min(56vh, 30rem). Worked through the viewport
+ * range that puts the disc's outer tick at up to 549 board units — worst on
+ * short screens, where the disc eats more than half the board radius — so the
+ * floor sits at 580 with margin.
+ *
+ * There is deliberately no outer *radius* cap. The board is a fully visible
+ * square, so the corners sit at radius 1414 and a circular ceiling would throw
+ * away the roomiest part of every wedge. Items are bounded by the board
+ * rectangle instead.
+ */
+const R_MIN = 580;
+const EDGE = 20;
+
 type Tier = "anchor" | "support" | "texture";
 
 const TIERS: Record<
@@ -46,9 +71,9 @@ const TIERS: Record<
   // The ceiling is deliberately low. Solved widths want to push the short
   // anchors past 40, which shouted over everything else; 32 keeps the top of
   // the hierarchy roughly a third larger than support rather than double.
-  anchor: { width: 220, min: 24, max: 32, r0: 300, r1: 560, o0: 0.34, o1: 0.26, d0: 0, d1: 160 },
-  support: { width: 175, min: 15, max: 24, r0: 320, r1: 780, o0: 0.24, o1: 0.13, d0: 130, d1: 330 },
-  texture: { width: 90, min: 12, max: 19, r0: 280, r1: 950, o0: 0.17, o1: 0.07, d0: 280, d1: 520 },
+  anchor: { width: 220, min: 24, max: 32, r0: 600, r1: 820, o0: 0.34, o1: 0.26, d0: 0, d1: 160 },
+  support: { width: 175, min: 15, max: 24, r0: 590, r1: 1000, o0: 0.24, o1: 0.13, d0: 130, d1: 330 },
+  texture: { width: 90, min: 12, max: 19, r0: 585, r1: 1180, o0: 0.17, o1: 0.07, d0: 280, d1: 520 },
 };
 
 /**
@@ -102,10 +127,11 @@ function insideWedge(box: Box, start: number, end: number) {
       [box.x + box.w, box.y + box.h],
     ] as const
   ).every(([x, y]) => {
+    if (x < EDGE || x > BOARD - EDGE || y < EDGE || y > BOARD - EDGE) return false;
     const dx = x - C;
     const dy = y - C;
     const r = Math.hypot(dx, dy);
-    if (r < 250 || r > 990) return false;
+    if (r < R_MIN) return false;
     let a = (Math.atan2(dy, dx) * 180) / Math.PI;
     while (a < start) a += 360;
     while (a >= start + 360) a -= 360;
@@ -123,14 +149,14 @@ const PLATES = [
   {
     key: "mark",
     href: "/creative/elegists-mark.png",
-    box: { x: 263, y: 782, w: 200, h: 282 },
+    box: { x: 133, y: 758, w: 190, h: 268 },
     opacity: 0.3,
     delay: 40,
   },
   {
     key: "figure",
     href: "/creative/dear-suspect-figure.png",
-    box: { x: 290, y: 1085, w: 460, h: 557 },
+    box: { x: 121, y: 1349, w: 380, h: 460 },
     opacity: 0.22,
     delay: 190,
   },
@@ -142,7 +168,14 @@ const PLATES = [
  * to take real space — it is the only Lacan content in the sector, standing in
  * for the whole vocabulary of mathemes.
  */
-const KNOT_BOX: Box = { x: 775, y: 148, w: 450, h: 468 }; // 300×312 local, ×1.5
+/**
+ * Sized to the largest box that still fits the band. The wedge points straight
+ * up, so the knot is squeezed between R_MIN at the bottom and the board edge at
+ * the top: its lower corners land at radius 587, twenty units clear of the
+ * floor, and its top edge at y=32 is twelve clear of the margin. Going bigger
+ * means either crossing the disc or falling off the board.
+ */
+const KNOT_BOX: Box = { x: 800, y: 32, w: 400, h: 416 }; // 300×312 local, ×1.333
 const KNOT_DELAY = 90;
 
 function layout(track: TrackId): Placed[] {
@@ -234,7 +267,7 @@ export function SymbolField({ track, active }: { track: TrackId; active: boolean
   return (
     <svg
       viewBox={`0 0 ${BOARD} ${BOARD}`}
-      preserveAspectRatio="xMidYMid slice"
+      preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 -z-10 size-full text-bone"
       style={{ maskImage: mask, WebkitMaskImage: mask }}
