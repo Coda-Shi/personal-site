@@ -1,3 +1,4 @@
+import { BorromeanKnot, KNOT_VIEWBOX } from "@/components/borromean-knot";
 import { SYMBOL_LAYERS, TRACK_ARCS, type SymbolItem, type TrackId } from "@/lib/content";
 
 /**
@@ -135,10 +136,24 @@ const PLATES = [
   },
 ];
 
+/**
+ * Lacan's knot in the Scholarly wedge. Reserved like the Creative plates, and
+ * hand-placed for the same reason: it is a composition, not a fill item. Sized
+ * to take real space — it is the only Lacan content in the sector, standing in
+ * for the whole vocabulary of mathemes.
+ */
+const KNOT_BOX: Box = { x: 775, y: 148, w: 450, h: 468 }; // 300×312 local, ×1.5
+const KNOT_DELAY = 90;
+
 function layout(track: TrackId): Placed[] {
   const arc = TRACK_ARCS[track];
   const span = arc.end - arc.start;
-  const taken: Box[] = track === "creative" ? PLATES.map((p) => p.box) : [];
+  const taken: Box[] =
+    track === "creative"
+      ? PLATES.map((p) => p.box)
+      : track === "scholarly"
+        ? [KNOT_BOX]
+        : [];
   const placed: Placed[] = [];
   let seed = track.length * 97 + 5;
 
@@ -224,6 +239,15 @@ export function SymbolField({ track, active }: { track: TrackId; active: boolean
       className="pointer-events-none fixed inset-0 -z-10 size-full text-bone"
       style={{ maskImage: mask, WebkitMaskImage: mask }}
     >
+      {track === "scholarly" ? (
+        <g
+          transform={`translate(${KNOT_BOX.x} ${KNOT_BOX.y}) scale(${KNOT_BOX.w / KNOT_VIEWBOX.w})`}
+          style={reveal(0.3, KNOT_DELAY)}
+        >
+          <BorromeanKnot />
+        </g>
+      ) : null}
+
       {plates.map((plate) => (
         <image
           key={plate.key}

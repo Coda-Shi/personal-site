@@ -55,10 +55,18 @@ export function TrackMark({ track, className }: { track: Track; className?: stri
         style={{ width: "1.15em", height: "1.15em" }}
         className={box}
       >
-        {/* A heavy elliptical ring crossed by two thinner bars that run past
-            it, matching the engraved coda sign rather than a circle with a
-            plus through it. Butt caps: the reference has flat bar ends. */}
-        <ellipse cx="12" cy="12" rx="6.9" ry="7.9" strokeWidth={2.8} />
+        {/* The ring is modulated like a serif capital O — heavy on the
+            flanks, thin across the top and bottom — so it is built from two
+            ellipses with evenodd rather than stroked, which can only give a
+            uniform weight. Flanks run 2.8 units, crown and foot 1.5.
+            Butt caps on the bars: the reference has flat ends. */}
+        <path
+          fill="currentColor"
+          stroke="none"
+          fillRule="evenodd"
+          d="M 4.6 12 A 7.4 8.5 0 1 0 19.4 12 A 7.4 8.5 0 1 0 4.6 12 Z
+             M 7.4 12 A 4.6 7.0 0 1 1 16.6 12 A 4.6 7.0 0 1 1 7.4 12 Z"
+        />
         <line x1="12" y1="0.9" x2="12" y2="23.1" strokeWidth={1.9} strokeLinecap="butt" />
         <line x1="0.7" y1="12" x2="23.3" y2="12" strokeWidth={1.9} strokeLinecap="butt" />
       </svg>

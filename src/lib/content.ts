@@ -293,6 +293,8 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
       { text: "Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.", face: "serif" },
       { text: "Der bestirnte Himmel über mir, und das moralische Gesetz in mir.", face: "serif" },
       { text: "Das Wahre ist das Ganze.", face: "serif" },
+      { text: "Wovon man nicht sprechen kann, darüber muß man schweigen.", face: "serif" },
+      { text: "Wo Es war, soll Ich werden.", face: "serif" },
       { text: "Sapere aude", face: "serif" },
       { text: "Sein zum Tode", face: "serif" },
       { text: "Λ_g = Λ", face: "mono" },
@@ -308,28 +310,40 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
       { text: "RMSEA ≤ .06", face: "mono" },
       { text: "WLSMV", face: "mono" },
       { text: "ω", face: "mono" },
+      // Philosophy: terms only for anyone still in copyright. Lichtung and
+      // Geworfenheit are Heidegger, who is not out until 2046; a term is not
+      // a quotation, a paragraph would be.
       { text: "Geworfenheit", face: "serif" },
-      { text: "container / contained", face: "serif" },
-      { text: "the capacity to be alone", face: "serif" },
-      { text: "the depressive position", face: "serif" },
-      { text: "projective identification", face: "serif" },
+      { text: "Lichtung", face: "serif" },
+      { text: "Nachträglichkeit", face: "serif" },
+      // One concept each, the most load-bearing one that analyst is known for.
+      // Bion gets two because both are notation rather than prose.
+      { text: "paranoid-schizoid position", face: "serif" },
+      { text: "β → α", face: "mono" },
+      { text: "L · H · K", face: "mono" },
       { text: "transitional object", face: "serif" },
-      { text: "good-enough", face: "serif" },
-      { text: "reverie", face: "serif" },
+      { text: "identification with the aggressor", face: "serif" },
+      { text: "collective unconscious", face: "serif" },
+      // Personality and trauma. Volitional personality change is the Delta Lab
+      // work, so the sector points at something he actually did.
+      { text: "volitional personality change", face: "serif" },
+      { text: "disorganised attachment", face: "serif" },
+      { text: "complex PTSD", face: "serif" },
+      { text: "dissociation", face: "serif" },
+      { text: "window of tolerance", face: "serif" },
+      { text: "posttraumatic growth", face: "serif" },
+      { text: "HEXACO", face: "mono" },
       // ⊨ is absent on purpose: it is this sector's mark on the ring, and
       // repeating it here is the one duplication that would read as an error.
+      // Φ is absent too — it is already in the knot, as JΦ.
       { text: "⊢", face: "mono" },
       { text: "∀", face: "mono" },
       { text: "∃", face: "mono" },
       { text: "¬", face: "mono" },
-      { text: "→", face: "mono" },
       { text: "□", face: "mono" },
       { text: "◇", face: "mono" },
-      { text: "≡", face: "mono" },
       { text: "∴", face: "mono" },
       { text: "λ", face: "mono" },
-      { text: "χ", face: "mono" },
-      { text: "Φ", face: "mono" },
     ],
   },
   creative: {
@@ -344,11 +358,30 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
     texture: [],
   },
   professional: {
-    // Texture only, by request — drawn flowchart primitives, no readable
-    // words. Generated in the symbol-field component, not listed here.
-    anchors: [],
-    support: [],
-    texture: [],
+    // Real citations rather than abstract flowchart shapes. 29 CFR 1910.147 is
+    // the federal lockout/tagout standard he actually wrote procedures
+    // against, so anyone in the trade recognises it on sight and everyone else
+    // reads texture. That is a better trade than invented diagram furniture.
+    anchors: [{ text: "29 CFR 1910.147", face: "mono" }],
+    support: [
+      { text: "ISO 9001", face: "mono" },
+      { text: "ISO 45001", face: "mono" },
+      { text: "Kaizen", face: "serif" },
+      { text: "takt time", face: "serif" },
+      { text: "lockout / tagout", face: "serif" },
+    ],
+    texture: [
+      { text: "6S", face: "mono" },
+      { text: "OEE", face: "mono" },
+      { text: "P&ID", face: "mono" },
+      { text: "ERP / EDI", face: "mono" },
+      { text: "SOP", face: "mono" },
+      { text: "preventive maintenance", face: "serif" },
+      { text: "order to fulfilment", face: "serif" },
+      { text: "capacity alignment", face: "serif" },
+      { text: "root cause", face: "serif" },
+      // No § here — it is this sector's mark on the ring.
+    ],
   },
 };
 
