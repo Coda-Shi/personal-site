@@ -98,7 +98,7 @@ export default async function Page({ params }: PageProps<"/[lang]/cv">) {
       </section>
 
       <section className="mt-16">
-        <h2 className="label text-bone/55">Additional</h2>
+        <h2 className="label text-bone/55">{dict.headings.additional}</h2>
         <dl className="mt-6 space-y-6">
           {SKILLS.map((group) => (
             <div key={group.heading} className="border-t border-bone/20 pt-5">

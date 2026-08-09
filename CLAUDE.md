@@ -439,11 +439,62 @@ gh pr create --fill
 - [x] 确定信息架构与视觉方案（见 §4、D7–D10）
 - [x] 实现三条线内页、`/coda`、`/cv`
 - [x] 首页重做为 trinity 圆盘（见 D10）
+- [x] 修掉 `SymbolField` 的 hydration mismatch（见 D15）
+- [x] 中英双语骨架：`/[lang]/` 路由、`proxy.ts`、语言切换开关、中文字体（见 D16、D17）
+- [x] 中文首页文案定稿并上线（简介、三条线名称与 lede、中心、提示语）
 - [ ] 把部署网址写入仓库 homepage 字段
 - [ ] **中心照片**——所有者待选。目前 `/` 的 Portrait 是圆形描边占位，换真照片只需改一个组件
 - [ ] **诗文**——只能由所有者提供，`/coda` 的 Poems 目前是空状态
 - [ ] 逐页打磨视觉（所有者原话「你先做，我们可以慢慢改」）
 - [ ] 购买域名并绑定（见 D6）
+
+### 中文版翻译进度
+
+英文是规范版本，中文按节推进。`getDictionary()` 缺键回落英文，所以未译部分**不会开天窗**，只会显示英文。
+
+| 区块 | 状态 |
+|---|---|
+| 首页简介 / 提示语 | ✅ 已定稿 |
+| 三条线名称（学术 · 实务 · 创作） | ✅ 已定稿 |
+| 三条线 lede | ✅ 已定稿 |
+| 中心（Coda 其人 / 书写与行路之人） | ✅ 已定稿 |
+| 导航与区块标题（简历 / 教育 / 行路 / 诗） | ✅ 已定稿 |
+| **CV 正文条目**（org / role / detail） | ⬜ **未开始——下一步就是这个** |
+| `/cv` 的 Additional 区块标题（其他） | ✅ 已定稿 |
+| 符号装饰层（`SYMBOL_LAYERS`） | 🚫 **按所有者要求永不翻译**——拉丁箴言、德语引文、心理测量记号保持原文 |
+
+### 下一步队列（按优先级）
+
+1. **CV 正文翻译**。条目在 `content.ts` 的 `TRACKS[].entries`、`EDUCATION`、`ADVOCACY`、`SKILLS`。译文进 `i18n.ts` 的 `zh`，需要先扩 `Dictionary` 类型。**工作量最大的一块，但纯机械。**
+2. **朱雀仿宋 vendore 进仓库**。现在 `--font-fangsong` 指向系统字体，多数 Linux 上没有。见 D17 末尾。
+3. **中文标点空隙**。全角顿号句号在 lede 字号下空得明显，且会把「迷。」这类孤字甩到下一行。可选 `text-spacing-trim: trim-start`（Chrome 支持）；`hanging-punctuation` 目前只有 Safari 支持。所有者尚未定夺。
+
+## 8.5 换机器怎么接上
+
+> 这一节是给「明天换台电脑继续改」准备的。**照着做，别跳。**
+
+```bash
+git clone git@github.com:Coda-Shi/personal-site.git
+cd personal-site
+npm install
+npm run dev
+```
+
+然后**必须做这三件事**，它们都存在 `.git/config` 或本机环境里，**不随仓库同步**：
+
+1. 🔴 **设提交邮箱**，否则真实邮箱会进公开历史（§7 隐私规则，最高优先级）：
+
+   ```bash
+   git config --local user.email "257181346+Coda-Shi@users.noreply.github.com"
+   ```
+
+   > 顺带：账号级的根治办法是 GitHub → Settings → Emails 打开 **Keep my email addresses private** 和 **Block command line pushes that expose my email**，一次设置对所有机器生效。**2026-08-09 时这两项还是关的**，所以 #1–#4 的提交作者都带着真实邮箱。已经泄漏的撤不回来，但可以止损。
+
+2. **确认 `gh` 登录状态**：`gh auth status`。没登录的话 `gh pr create` 会失败，得先 `gh auth login`，或者直接去网页开 PR。
+
+3. **`node_modules` 必须在 OneDrive 之外**。硬链接会卡死 OneDrive 同步引擎——所以仓库放 `~/dev/`，不要放进 OneDrive 目录。
+
+验证环境没问题：`npm run lint && npm run build`，应当零报错、静态生成 12 个页面（6 条路由 × 2 个 locale）。
 
 ## 9. 待决事项
 

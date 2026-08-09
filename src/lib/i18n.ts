@@ -50,7 +50,13 @@ export type Dictionary = {
     subheading: string;
   };
   nav: { cv: string; coda: string };
-  headings: { education: string; poems: string; advocacy: string; contact: string };
+  headings: {
+    education: string;
+    poems: string;
+    advocacy: string;
+    contact: string;
+    additional: string;
+  };
   /** Shown on the control that switches to the *other* language. */
   switchTo: string;
 };
@@ -76,6 +82,7 @@ const en: Dictionary = {
     poems: "Poems",
     advocacy: "Advocacy",
     contact: "Contact",
+    additional: "Additional",
   },
   switchTo: "中文",
 };
@@ -123,6 +130,7 @@ const zh: Partial<Dictionary> = {
     poems: "诗",
     advocacy: "行路",
     contact: "联系",
+    additional: "其他",
   },
   switchTo: "English",
 };
