@@ -153,11 +153,11 @@ const zh: Partial<Dictionary> = {
   tracks: {
     scholarly: {
       title: "学术",
-      lede: "哲学、心理学、公共事务。对人类那集体心灵的智识执迷。",
+      lede: "哲学、心理学、公共事务。对人类集体心灵的智识执迷与福祉关怀。",
     },
     professional: {
       title: "实务",
-      lede: "运营、合规、工业与政策研究。调查与系统设计，作为达成远大目标的方法。",
+      lede: "运营、合规、工业与政策研究。调查与系统设计，实现远大目标的努力。",
     },
     creative: {
       title: "创作",
@@ -234,6 +234,72 @@ const zh: Partial<Dictionary> = {
         "合著关于区划与可持续停车政策的政策简报，并向普罗维登斯市议会官员汇报研究发现。",
       ],
     },
+
+    // Everglory keeps its Latin name: the owner confirms the company has no
+    // Chinese one, and a translated CV is not a licence to invent one.
+    "everglory-director": {
+      period: "2025.10 — 2026.04",
+      role: "运营与合规总监",
+      location: "美国 得克萨斯州丹顿",
+      detail: [
+        "对一座产值 600 万美元的工厂握有人力、合规、设施与运营的全周期决策权，下辖五个部门、30 名员工、两条产线。",
+        "设计并推行订单到交付的作业流程、安全与主管规程、SOP、预防性维护，以及能量隔离（lockout / tagout）程序。",
+        "通过展会陌生拜访拿下一个大型零售客户，任内营收增长 15%。",
+      ],
+    },
+    "everglory-analyst": {
+      period: "2025.07 — 2025.10",
+      role: "管理分析师",
+      location: "美国 得克萨斯州丹顿",
+      detail: [
+        "在 400 万美元的工厂筹建与审计阶段支持跨部门团队。",
+        "主导针对供应商与承包商涉嫌不当行为的内部调查，并落地交叉核查控制，估计减少 50 万美元敞口。",
+      ],
+    },
+    nimte: {
+      org: "宁波材料技术与工程研究所",
+      unit: "中国科学院",
+      period: "2023.07 — 2023.09",
+      role: "战略分析实习生",
+      location: "宁波",
+      detail: [
+        "撰写 17 页的新型高分子材料与国际监管比较报告；其中关于日本自下而上塑料监管的一节被收入研究所年报。",
+        "组织十位中科院研究人员与宁波产业界企业家参与的会议，并通过后续访谈完善了一个材料应用产品项目。",
+      ],
+    },
+    "china-securities": {
+      org: "中信建投证券",
+      period: "2023.05 — 2023.06",
+      role: "研究实习生",
+      location: "远程",
+      detail: [
+        "以 SQL 与 Tableau 从市场与公司两个层面分析半导体集成电路制造，并撰写每周行业报告。",
+        "梳理全球集成电路原材料供应链，筛选细分赛道初创公司，形成四份标的简报。",
+      ],
+    },
+
+    // ELEGISTS STUDIO stays Latin — it is the studio's own wordmark.
+    elegists: {
+      period: "2026.05 — 至今",
+      role: "联合创始人兼创意总监",
+      location: "远程",
+      detail: [
+        "联合创办一家远程独立游戏工作室，管理创意与制作两条线上的全部八名成员。",
+        "构思 AI 原生推理游戏《DEAR SUSPECT》，主导其创意愿景、美学方向、叙事与玩法设计，以及设计系统建设。",
+        "撰写约十万字游戏剧本，并统筹项目的制作、发行、融资与商务拓展。",
+      ],
+    },
+    "hot-sound": {
+      org: "热音社",
+      period: "2022.03 — 2023.07",
+      role: "联合创始人兼副社长",
+      location: "美国 加利福尼亚州尔湾",
+      detail: [
+        "联合创办并带领一个百人规模的学生与艺术家文化社群，培养六支学生乐队及其运营团队。",
+        "六个月内使其成为校内五大音乐类学生社团之一。",
+        "制作三场演出，募集约 6,000 美元，累计观众逾 5,000 人次。",
+      ],
+    },
   },
 
   education: {
@@ -260,9 +326,52 @@ const zh: Partial<Dictionary> = {
     },
   },
 
-  // Still English, and falling back cleanly until translated.
-  advocacy: {},
-  skills: {},
+  advocacy: {
+    // Crisis Text Line keeps its Latin name — it is a US organisation and that
+    // is what it is called.
+    "crisis-text-line": {
+      period: "2026.03 — 至今",
+      role: "认证志愿危机咨询师",
+      location: "远程",
+      detail:
+        "完成 30 小时以上循证危机咨询训练并取得认证，累计 50 小时以上文字危机支持，议题涵盖学业压力、关系困扰、抑郁与自伤风险。",
+    },
+    xunzheng: {
+      org: "循证心理诊所",
+      period: "2021.01 — 2021.06",
+      role: "心理热线接线员",
+      location: "宁波",
+      detail:
+        "接受反映性倾听训练后参与危机热线轮班，并负责一家十二名咨询师执业机构的前台运营。",
+    },
+    "adoption-day": {
+      org: "宁波领养日",
+      period: "2024.01 — 2024.05",
+      role: "动物救助志愿者",
+      location: "宁波",
+      detail: "救助流浪猫，提供周末照护与动物急救，并与公益组织、独立救助者及收容所协作。",
+    },
+  },
+
+  // Tool and library names stay Latin: they are how the field writes them, and
+  // a Chinese rendering of "lavaan" would be less legible, not more.
+  skills: {
+    "skills-stats": { heading: "统计与编程" },
+    "skills-methods": {
+      heading: "研究方法",
+      items:
+        "有序与多组验证性因子分析 · 测量不变性检验 · Cramér's V 诊断 · 缺失值审计 · MNFA · 计量经济学 · 可复现研究流程",
+    },
+    "skills-leadership": {
+      heading: "领导与运营",
+      items:
+        "创意指导 · 叙事与玩法设计 · 项目管理 · 业务流程与组织设计 · 谈判与冲突解决 · 人力与合规体系",
+    },
+    "skills-languages": {
+      heading: "语言",
+      items: "汉语普通话（母语） · 英语（双语水平，具丰富学术写作经验）",
+    },
+  },
 };
 
 const DICTIONARIES: Record<Locale, Partial<Dictionary>> = { en, zh };

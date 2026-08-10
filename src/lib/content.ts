@@ -105,7 +105,7 @@ export const TRACKS: Track[] = [
     glyph: "⊨",
     glyphName: "double turnstile — models, satisfies",
     mark: "turnstile",
-    lede: "Philosophy, psychology, public affairs. An intellectual obsession with the collective psyche.",
+    lede: "Philosophy, psychology, public affairs. An intellectual obsession with the collective psyche and its well-being.",
     entries: [
       {
         id: "tsinghua",

@@ -473,8 +473,12 @@ gh pr create --fill
 | 三条线 lede | ✅ 已定稿 |
 | 中心（Coda 其人 / 书写与行路之人） | ✅ 已定稿 |
 | 导航与区块标题（简历 / 教育 / 行路 / 诗） | ✅ 已定稿 |
-| CV 正文：**学术条目 + 教育**（org / unit / role / location / period / detail） | ✅ 2026-08-09 完成 |
-| CV 正文：**实务条目 · 创作条目 · 行路 · 技能** | ⬜ **未开始——下一步就是这个** |
+| CV 正文：学术 · 实务 · 创作 · 教育 · 行路 · 技能 | ✅ 2026-08-09 全部完成 |
+
+**刻意保留拉丁文的机构名**（所有者确认）：`Everglory Products Corporation`（确实没有中文名）、`ELEGISTS STUDIO`（工作室自己的字标）、`Crisis Text Line`（美国机构本名）。**不要给它们编中文名**——翻译简历不是发明机构名的许可。
+`XunZheng Mental Health Clinic` = **循证心理诊所**，`Hot Sound Club` = **热音社**，均由所有者提供。
+
+工具与库名（lavaan、tidyverse、Power BI）同样保持拉丁文：那是这个领域的书写方式，译成中文只会更难读。
 | `/cv` 的 Additional 区块标题（其他） | ✅ 已定稿 |
 | 符号装饰层（`SYMBOL_LAYERS`） | 🚫 **按所有者要求永不翻译**——拉丁箴言、德语引文、心理测量记号保持原文 |
 
