@@ -6,6 +6,7 @@ import {
   Noto_Serif_SC,
   Space_Grotesk,
 } from "next/font/google";
+import localFont from "next/font/local";
 import { notFound } from "next/navigation";
 import { HTML_LANG, LOCALES, getDictionary, hasLocale } from "@/lib/i18n";
 import "../globals.css";
@@ -60,12 +61,46 @@ const notoSansSC = Noto_Sans_SC({
   preload: false,
 });
 
+/**
+ * Chinese has no italic, so D17 marks the change of voice with a change of
+ * face: where English sets a lede in Cormorant italic, Chinese sets it upright
+ * in Fangsong. That only works if the reader actually has a Fangsong — Windows
+ * and macOS ship one, most Linux does not, and a missing one drops the lede
+ * back into the same face as everything around it and erases the distinction.
+ *
+ * So the face is vendored rather than named. `scripts/subset-fangsong.py` cuts
+ * it from the 8.4 MB upstream release down to the characters this site can
+ * actually render — 37 KB — which is what makes shipping a CJK face viable at
+ * all. Re-run that script after adding Chinese copy.
+ *
+ * Zhuque Fangsong, OFL 1.1. Licence and copyright travel with it in
+ * src/app/fonts/OFL.txt.
+ *
+ * The variable must not be called `fangsong`. next/font derives the family
+ * name from it, and `fangsong` is a generic family keyword in CSS Fonts 4,
+ * alongside serif and monospace. Unquoted in a font-family list it parses as
+ * the generic and the @font-face is never consulted — the face loads, the
+ * stack looks right, and the browser quietly draws the system font instead.
+ */
+const zhuqueFangsong = localFont({
+  src: "../fonts/zhuque-fangsong-subset.woff2",
+  variable: "--font-zhuque-fangsong",
+  weight: "400",
+  style: "normal",
+  display: "swap",
+  // Latin is absent from the subset on purpose, so the browser must not be
+  // told to expect it. The :lang(zh) stack puts Cormorant first and only what
+  // Cormorant lacks reaches this face.
+  adjustFontFallback: false,
+});
+
 const FONT_VARS = [
   cormorant.variable,
   grotesk.variable,
   jetbrains.variable,
   notoSerifSC.variable,
   notoSansSC.variable,
+  zhuqueFangsong.variable,
 ].join(" ");
 
 // Both locales are known at build time, so every page stays static and the

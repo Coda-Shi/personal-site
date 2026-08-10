@@ -31,11 +31,14 @@
     monospace;
 
   /* Chinese has no italic. See the :lang(zh) rule below for why this exists.
-     TODO: vendor 朱雀仿宋 (Zhuque Fangsong, OFL 1.1) as a subset and load it
-     with next/font/local. Until then this resolves to the system fangsong,
-     which exists on Windows and macOS and is absent on most Linux — the same
-     OS-dependent lottery D9 documents for the logic glyphs. */
-  --font-fangsong: "FangSong", "STFangsong", "仿宋", var(--font-noto-serif-sc), serif;
+     Zhuque Fangsong is vendored and subset — see the localFont call in
+     [lang]/layout.tsx — so this no longer depends on the visitor owning a
+     Fangsong. The system names stay behind it as a courtesy for any character
+     added to the copy but not yet cut into the subset; Noto Serif SC is the
+     last resort, and being a Song face it loses the distinction rather than
+     the text. */
+  --font-fangsong: var(--font-zhuque-fangsong), "FangSong", "STFangsong", "仿宋",
+    var(--font-noto-serif-sc), serif;
 }
 
 @layer base {
