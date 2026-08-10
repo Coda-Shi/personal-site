@@ -105,7 +105,7 @@ export const TRACKS: Track[] = [
     glyph: "⊨",
     glyphName: "double turnstile — models, satisfies",
     mark: "turnstile",
-    lede: "Philosophy, psychology, public affairs. An intellectual obsession with the collective psyche and its well-being.",
+    lede: "Philosophy, psychology, public affairs. An intellectual obsession with the collective psyche, a care for its well-being.",
     entries: [
       {
         id: "tsinghua",
@@ -115,8 +115,10 @@ export const TRACKS: Track[] = [
         location: "Beijing",
         period: "Aug 2026 — Present",
         detail: [
-          "Interdisciplinary work spanning cultural-psychology theory, culturally grounded interventions, depression neuroimaging, and applications of AI to mental health.",
-          "Supports MRI scanning, TMS intervention, behavioural assessment, and questionnaire, physiological, and wearable-device data collection.",
+          "Supports the Center's daily research operations: project management, document organisation, meeting and academic-event coordination, and external communications.",
+          "Contributes to interdisciplinary projects spanning cultural-psychology theory, culturally grounded psychological interventions, depression neuroimaging and multimodal intervention, and applications of artificial intelligence to mental health.",
+          "Assists with literature review, study-design documentation, ethics materials, participant recruitment, and collection of questionnaire, behavioural, neuroimaging, physiological, and wearable-device data.",
+          "Supports MRI scanning, TMS intervention, behavioural assessment, data quality control, and preliminary analysis after required training; contributes figures and manuscript material under team supervision.",
           "Principal investigator: Prof. Chao-Gan Yan.",
         ],
       },
@@ -128,9 +130,10 @@ export const TRACKS: Track[] = [
         location: "Dallas, TX",
         period: "Spring 2026 — Present",
         detail: [
-          "Measurement invariance of the PHQ-9 and GAD-7 in a Shanghai tertiary-hospital psychiatric outpatient sample (N = 10,080), addressing a literature where Chinese invariance studies typically sit below N = 1,000.",
-          "Built a reproducible R pipeline in tidyverse, psych, lavaan, semTools, and flextable, following Putnick & Bornstein (2016) and Fischer & Karl (2019) reporting standards.",
-          "Manuscript in preparation; targeting a clinical-methodological journal, Fall 2026.",
+          "Leads Phase I on the full analytic sample (N = 10,080) and Phase II on a ~1,500 subsample testing Sex × Age invariance: measurement invariance of the PHQ-9 and GAD-7 in a Shanghai tertiary-hospital psychiatric outpatient sample, addressing a gap where Chinese invariance studies typically sit below N = 1,000.",
+          "Built a reproducible R pipeline in tidyverse, psych, lavaan, semTools, and flextable, following Putnick & Bornstein (2016) and Fischer & Karl (2019) reporting standards; Phase II adds ordinal multi-group CFA with the WLSMV estimator and an MNFA extension.",
+          "Completed end-to-end data cleaning, sample accounting, Table 1 demographics, and a missingness audit confirming complete PHQ-9/GAD-7 item data; produced pairwise cross-tabulations with Cramér's V and a three-tier data-quality flagging system supporting primary and sensitivity analyses.",
+          "Manuscript in preparation with Dr. Quanfa He; targeting an APS / APA / SRP poster and a clinical-methodological journal, Fall 2026.",
         ],
       },
       {
@@ -141,8 +144,7 @@ export const TRACKS: Track[] = [
         location: "Dallas, TX",
         period: "Oct 2025 — Present",
         detail: [
-          "Co-piloted two Sonar studies and coded 500 entries for an ongoing friendship research project.",
-          "Cleaned 1,500 raw questionnaire entries for a longitudinal volitional personality-change study.",
+          "Co-piloted two Sonar studies, coded 500 entries for an ongoing friendship research project, and cleaned 1,500 raw questionnaire entries for a longitudinal volitional personality-change study using SPSS syntax.",
         ],
       },
       {
@@ -153,8 +155,8 @@ export const TRACKS: Track[] = [
         location: "Providence, RI",
         period: "Jan 2025 — May 2025",
         detail: [
-          "Comparative inclusionary-zoning research across East Palo Alto, Fairfax County, and further U.S. cases, contributing to a difference-in-differences analysis.",
-          "Co-authored a policy brief on zoning and sustainable parking policy and presented findings to Providence City Council officials.",
+          "Conducted comparative inclusionary-zoning research across East Palo Alto, Fairfax County, and further U.S. cases; used HUD and local housing data to produce choropleth and dot-density maps, and contributed to the final difference-in-differences analysis.",
+          "Co-authored a policy brief on zoning and sustainable parking policy with actionable recommendations, and presented findings to Providence City Council officials.",
         ],
       },
     ],
@@ -165,41 +167,35 @@ export const TRACKS: Track[] = [
     glyph: "§",
     glyphName: "section sign",
     mark: "char",
-    lede: "Operations, compliance, industrial and policy research. Investigation and system design as means to a greater end.",
+    lede: "Operations, compliance, industrial and policy research. Investigation and system design, in service of ambitious ends.",
     entries: [
+      // The analyst post and the directorship are one continuous tenure at one
+      // company, so they read as a promotion rather than as two jobs.
       {
-        id: "everglory-director",
+        id: "everglory-ops",
         org: "Everglory Products Corporation",
-        role: "Director of Operations & Compliance",
+        role: "Management Analyst, then Director of Operations & Compliance",
         location: "Denton, TX",
-        period: "Oct 2025 — Apr 2026",
+        period: "Jul 2025 — Apr 2026",
         detail: [
-          "Full-cycle HR, compliance, facility, and operating authority for a $6M plant spanning five departments, 30 employees, and two production lines.",
-          "Designed and enforced order-to-fulfilment workflows, safety and supervisor protocols, SOPs, preventive maintenance, and lockout/tagout procedures.",
-          "Acquired a large retail account through tradeshow cold outreach, contributing to a 15% revenue increase.",
-        ],
-      },
-      {
-        id: "everglory-analyst",
-        org: "Everglory Products Corporation",
-        role: "Management Analyst",
-        location: "Denton, TX",
-        period: "Jul 2025 — Oct 2025",
-        detail: [
-          "Supported cross-department teams through a $4M factory setup and audit phase.",
-          "Led internal investigations into alleged vendor and contractor misconduct, implementing cross-check controls that reduced an estimated $500K exposure.",
+          "Held full-cycle HR, compliance, facility, and operating authority for a $6M office and paper-plate conversion plant spanning five departments, 30 employees, and two production lines; directed capacity alignment, Kaizen and 6S initiatives, and ERP/EDI data accuracy.",
+          "Designed and enforced company policies, order-to-fulfilment workflows, safety and supervisor protocols, SOPs, preventive-maintenance and lockout/tagout procedures, and production reporting and crisis-handling systems.",
+          "Acquired and developed one large retail account through tradeshow cold outreach, contributing to a 15% revenue increase during the tenure.",
+          "Supported cross-department teams through a $4M factory setup and audit phase, aligning compliance, equipment, HR, and operational documentation for a smooth launch.",
+          "Led internal investigations into alleged vendor and contractor misconduct, resulting in termination and legal escalation involving two senior employees; implemented cross-check controls reducing an estimated $500K exposure.",
         ],
       },
       {
         id: "nimte",
         org: "Ningbo Institute of Materials Technology & Engineering",
         unit: "Chinese Academy of Sciences",
-        role: "Strategic Analyst Intern",
+        role: "Strategic Analyst Intern, Department of Strategic Planning",
         location: "Ningbo",
         period: "Jul 2023 — Sep 2023",
         detail: [
           "Authored a 17-page comparative report on novel polymer materials and international regulation; its section on Japan's bottom-up plastic regulation was incorporated into the institute's annual report.",
-          "Organised a conference with ten CAS researchers and Ningbo industry entrepreneurs, and conducted follow-up interviews that refined a materials-application product project.",
+          "Processed 3,000+ policy and market data entries in Excel, built a market-data pivot table for Ningbo's new-materials sector, and produced Power BI visualisations supporting two market-research presentations.",
+          "Organised a conference with ten CAS researchers and Ningbo industry entrepreneurs, drafted interview protocols, and conducted follow-up interviews that refined a materials-application product project.",
         ],
       },
       {
@@ -209,8 +205,20 @@ export const TRACKS: Track[] = [
         location: "Remote",
         period: "May 2023 — Jun 2023",
         detail: [
-          "Analysed semiconductor IC manufacturing at market and company level in SQL and Tableau, authoring a weekly industry report.",
-          "Mapped the global IC raw-material supply chain and screened niche-sector startups into four target briefs.",
+          "Used SQL and public datasets to analyse semiconductor IC manufacturing at market and company level, visualised growth trends in Tableau, and authored a weekly five-page industry report.",
+          "Assessed policy and supply-demand drivers behind semiconductor shortages, mapped the global IC raw-material supply chain, and produced two six-page reports and two presentation decks.",
+          "Screened niche-sector startups by financing round, lead investor, and business profile, producing four detailed target briefs.",
+        ],
+      },
+      {
+        id: "everglory-project",
+        org: "Everglory Products Corporation",
+        role: "Project Assistant",
+        location: "Irving, TX",
+        period: "Jul 2022 — Nov 2022",
+        detail: [
+          "Supported Dallas-area market entry and factory and office site selection through competitive research in the North American food-grade paper-products industry; the subsidiary later reached $700K in 2023 sales, 8% of group revenue.",
+          "Defined profiles and salary bands for seven roles, built LinkedIn and Indeed talent pools, and recruited a Regional General Manager, avoiding approximately $24,000 in headhunter fees.",
         ],
       },
     ],
@@ -221,7 +229,7 @@ export const TRACKS: Track[] = [
     glyph: "𝄌",
     glyphName: "coda — the sign marking a work's final passage",
     mark: "coda",
-    lede: "Game studio, music collective, literary pieces. Visions that defy the mind's confinement.",
+    lede: "Game studio, music collective, literary pieces. Visions that defied the mind's confinement and came into being.",
     entries: [
       {
         id: "elegists",
@@ -231,7 +239,7 @@ export const TRACKS: Track[] = [
         period: "May 2026 — Present",
         detail: [
           "Co-founded a remote independent game studio and manages all eight team members across creative and production functions.",
-          "Conceived DEAR SUSPECT, an AI-native deduction game, and leads its creative vision, aesthetic direction, narrative and gameplay design, and design-system development.",
+          "Conceived DEAR SUSPECT, an AI-native deduction game, and leads its creative vision, aesthetic direction, narrative and gameplay design, planning, and design-system development.",
           "Wrote approximately 100,000 Chinese characters of game script and owns the project's production, publishing, financing, and business-development workstreams.",
         ],
       },
@@ -242,9 +250,9 @@ export const TRACKS: Track[] = [
         location: "Irvine, CA",
         period: "Mar 2022 — Jul 2023",
         detail: [
-          "Co-founded and led a cultural collective of 100 students and artists, developing six student bands and their operating teams.",
-          "Grew the organisation into one of the five largest music-focused student associations on campus within six months.",
-          "Produced three concerts, raising approximately $6,000 and drawing a combined audience of over 5,000.",
+          "Co-founded and led a cultural collective of 100 students and artists, developed six student bands and their operating teams, and helped grow it into one of the five largest music-focused student associations on campus within six months, with event attendance exceeding comparable events by 100%.",
+          "Orchestrated two large on-campus concerts and one off-campus bar concert, personally managing sponsorship acquisition, event design, promotion, and venue logistics; raised approximately $6,000 and attracted a combined audience of 5,000+.",
+          "Negotiated long-term sponsorships with six companies, partnered with two student associations on two events, and generated 5,000 social-media views.",
         ],
       },
     ],
@@ -458,7 +466,7 @@ export const ADVOCACY: CvRecord[] = [
     location: "Remote",
     period: "Mar 2026 — Present",
     detail:
-      "30+ hours of evidence-based crisis-counselling training and certification, and 50+ hours of text-based support on academic stress, relational distress, depression, and self-harm risk.",
+      "Completed 30+ hours of evidence-based crisis-counselling training and certification in February 2026, and logged 50+ hours of text-based crisis support on academic stress, relational distress, depression, and self-harm risk.",
   },
   {
     id: "xunzheng",
@@ -467,7 +475,7 @@ export const ADVOCACY: CvRecord[] = [
     location: "Ningbo",
     period: "Jan 2021 — Jun 2021",
     detail:
-      "Supported crisis-hotline rotations after reflective-listening training, and managed front-desk operations for a twelve-clinician practice.",
+      "Managed EHR records and front-desk operations for a 12-clinician practice, de-escalated waiting-room conflicts, and received six unsolicited patient commendations; after reflective-listening training, supported crisis-hotline rotations through active listening and de-escalation.",
   },
   {
     id: "adoption-day",
@@ -476,6 +484,6 @@ export const ADVOCACY: CvRecord[] = [
     location: "Ningbo",
     period: "Jan 2024 — May 2024",
     detail:
-      "Rescued stray cats, provided weekend feline care and animal first aid, and coordinated with charities, independent rescuers, and shelters.",
+      "Rescued stray cats, provided weekend feline care and animal first aid, followed up with adopters, and coordinated with charities, independent rescuers, and shelters.",
   },
 ];
