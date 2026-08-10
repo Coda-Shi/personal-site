@@ -354,7 +354,15 @@ Professional 扇区用**真实法规条号**而非抽象流程图形：`29 CFR 1
 
 实现是 `globals.css` 里的 `:lang(zh) .italic` 规则——`font-style: normal` + 换族。英文侧照常用 Cormorant 的真斜体，中文里夹的拉丁片段也照常斜，因为族栈先命中 Cormorant。
 
-> ⏳ **未完成**：仿宋目前指向**系统字体**（Windows 有、macOS 有、多数 Linux 没有），也就是 D9 那个「逐操作系统抽签」的老问题，只是范围小到三句 lede。要根治得把 [朱雀仿宋](https://github.com/TrionesType/zhuque)（OFL 1.1，覆盖 GB 2312 与通用规范汉字表，目前测试预览版）子集化后 vendore 进仓库，用 `next/font/local` 加载。**Google Fonts 上没有任何仿宋**，别去那里找。
+> ✅ **已完成（2026-08-09）**：[朱雀仿宋](https://github.com/TrionesType/zhuque) v0.212（OFL 1.1）已子集化后 vendore 进仓库，`next/font/local` 加载。**Google Fonts 上没有任何仿宋**，别去那里找。
+>
+> `scripts/subset-fangsong.py` 从上游 8.42 MB 的 ttf 里只切出站点实际用到的字符——当前 132 字、**37.3 KB**。CJK 整字体不可能直接上线，而常见的 unicode-range 分片方案是给「文案未知」的站点用的；本站所有中文都在 `src/lib/i18n.ts` 里，字符集在构建期就是已知的，所以单个小文件是更对的答案。**加了中文文案就要重跑这个脚本**，脚本会断言每个请求的字符都在输出里。
+>
+> 上游 ttf **不入库**（5.5 MB 构建输入），许可证随子集走：`src/app/fonts/OFL.txt`。
+>
+> ⚠️ **不要把 `next/font/local` 的变量命名为 `fangsong`。** next/font 用变量名生成字体族名，而 `fangsong` 是 CSS Fonts 4 里的**通用族关键字**（与 `serif`、`monospace` 同级）。不带引号出现在 `font-family` 里会被解析成通用关键字，`@font-face` 根本不被查询——字体照常加载、字体栈看起来也对，浏览器却在画系统字体。这个坑第一次就踩了。
+>
+> ⚠️ **验证中文字体不能用字宽。** CJK 字形一律 1em 全宽，任何字体在同一字号下 `measureText` 都返回相同数值——这条对拉丁字符有效的检测方法（见 D9）在中文上完全失效。要**光栅化到 canvas 后比对像素**：把同一个字分别用目标族和 `serif` 画出来，取位置加权的强度和，不同才说明字体真的生效了。
 
 ## 5. 工作流约定
 
@@ -465,8 +473,8 @@ gh pr create --fill
 
 ### 下一步队列（按优先级）
 
-1. **CV 正文翻译**。条目在 `content.ts` 的 `TRACKS[].entries`、`EDUCATION`、`ADVOCACY`、`SKILLS`。译文进 `i18n.ts` 的 `zh`，需要先扩 `Dictionary` 类型。**工作量最大的一块，但纯机械。**
-2. **朱雀仿宋 vendore 进仓库**。现在 `--font-fangsong` 指向系统字体，多数 Linux 上没有。见 D17 末尾。
+1. **CV 正文翻译**。条目在 `content.ts` 的 `TRACKS[].entries`、`EDUCATION`、`ADVOCACY`、`SKILLS`。译文进 `i18n.ts` 的 `zh`，需要先扩 `Dictionary` 类型。**工作量最大的一块，但纯机械。译完必须重跑 `scripts/subset-fangsong.py`**，否则新字符会掉回系统字体。
+2. ~~朱雀仿宋 vendore 进仓库~~ ✅ 2026-08-09 完成，见 D17。
 3. **中文标点空隙**。全角顿号句号在 lede 字号下空得明显，且会把「迷。」这类孤字甩到下一行。可选 `text-spacing-trim: trim-start`（Chrome 支持）；`hanging-punctuation` 目前只有 Safari 支持。所有者尚未定夺。
 
 ## 8.5 换机器怎么接上
