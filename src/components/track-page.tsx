@@ -1,16 +1,22 @@
 import { SiteShell } from "@/components/site-shell";
 import { TrackMark } from "@/components/track-mark";
-import { TRACK_CLASSES, type Entry, type Track } from "@/lib/content";
-import { getDictionary, type Locale } from "@/lib/i18n";
+import { TRACK_CLASSES, type CvRecord, type Entry, type Track } from "@/lib/content";
+import { getDictionary, localise, type Locale } from "@/lib/i18n";
 
 // Every surface below sits on a ground that changes per route, so nothing here
 // hardcodes a colour — text and rules are bone at varying opacity, which
 // composites correctly over black or over any of the three pigments.
-export function EntryList({ entries }: { entries: Entry[] }) {
+export function EntryList({ entries, lang }: { entries: Entry[]; lang: Locale }) {
+  const overrides = getDictionary(lang).entries;
+
   return (
     <div className="mt-12 space-y-10">
-      {entries.map((entry) => (
-        <article key={`${entry.org}-${entry.period}`} className="border-t border-bone/20 pt-6">
+      {entries.map((original) => {
+        // Keyed on the stable id, not on the rendered text — org and period are
+        // themselves translated.
+        const entry = localise(original, overrides);
+        return (
+        <article key={original.id} className="border-t border-bone/20 pt-6">
           <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
             <h2 className="font-display text-2xl leading-tight tracking-tight">{entry.org}</h2>
             <span className="label whitespace-nowrap text-bone/55">{entry.period}</span>
@@ -28,7 +34,42 @@ export function EntryList({ entries }: { entries: Entry[] }) {
             ))}
           </ul>
         </article>
-      ))}
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * Education and advocacy render identically and appeared verbatim on three
+ * pages. Once each of them also has to look up a translation, three copies is
+ * three places to get it wrong.
+ */
+export function RecordList({
+  items,
+  overrides,
+}: {
+  items: CvRecord[];
+  overrides: Record<string, Partial<CvRecord>>;
+}) {
+  return (
+    <div className="mt-6 space-y-8">
+      {items.map((original) => {
+        const item = localise(original, overrides);
+        return (
+          <article key={original.id} className="border-t border-bone/20 pt-5">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+              <h3 className="font-display text-2xl leading-tight tracking-tight">{item.org}</h3>
+              <span className="label whitespace-nowrap text-bone/55">{item.period}</span>
+            </div>
+            <p className="mt-2 text-sm font-medium">
+              {item.role}
+              <span className="text-bone/55"> · {item.location}</span>
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-bone/75">{item.detail}</p>
+          </article>
+        );
+      })}
     </div>
   );
 }
@@ -63,7 +104,7 @@ export function TrackPage({
         </p>
       </header>
 
-      <EntryList entries={track.entries} />
+      <EntryList entries={track.entries} lang={lang} />
       {children}
     </SiteShell>
   );

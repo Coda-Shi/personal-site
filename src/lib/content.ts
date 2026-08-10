@@ -1,12 +1,32 @@
 export type TrackId = "scholarly" | "professional" | "creative";
 
 export type Entry = {
+  /**
+   * Stable key for translation lookup. Deliberately not derived from org and
+   * period: those are themselves translated, and a key that moves when the copy
+   * moves fails by silently dropping back to English — the one failure mode a
+   * CV cannot afford, because it looks like an oversight rather than a bug.
+   */
+  id: string;
   org: string;
   unit?: string;
   role: string;
   location: string;
   period: string;
   detail: string[];
+};
+
+/**
+ * The flatter shape used by education and advocacy: one paragraph rather than
+ * a list of bullets. Same `id` contract as Entry — see the note there.
+ */
+export type CvRecord = {
+  id: string;
+  org: string;
+  role: string;
+  location: string;
+  period: string;
+  detail: string;
 };
 
 export type Track = {
@@ -88,6 +108,7 @@ export const TRACKS: Track[] = [
     lede: "Philosophy, psychology, public affairs. An intellectual obsession with the collective psyche.",
     entries: [
       {
+        id: "tsinghua",
         org: "Tsinghua University",
         unit: "Department of Psychology and Cognitive Science",
         role: "Research Assistant, Center for Cultural Psychology",
@@ -100,6 +121,7 @@ export const TRACKS: Track[] = [
         ],
       },
       {
+        id: "smu-invariance",
         org: "Southern Methodist University",
         unit: "Department of Psychology",
         role: "Independent Research — Lead Analyst",
@@ -112,6 +134,7 @@ export const TRACKS: Track[] = [
         ],
       },
       {
+        id: "smu-delta",
         org: "Southern Methodist University",
         unit: "Delta Adult Attachment & Personality Development Lab",
         role: "Research Assistant",
@@ -123,6 +146,7 @@ export const TRACKS: Track[] = [
         ],
       },
       {
+        id: "watson",
         org: "Providence City Council",
         unit: "Brown University Watson Institute",
         role: "Policy in Action Project Researcher",
@@ -144,6 +168,7 @@ export const TRACKS: Track[] = [
     lede: "Operations, compliance, industrial and policy research. Investigation and system design as means to a greater end.",
     entries: [
       {
+        id: "everglory-director",
         org: "Everglory Products Corporation",
         role: "Director of Operations & Compliance",
         location: "Denton, TX",
@@ -155,6 +180,7 @@ export const TRACKS: Track[] = [
         ],
       },
       {
+        id: "everglory-analyst",
         org: "Everglory Products Corporation",
         role: "Management Analyst",
         location: "Denton, TX",
@@ -165,6 +191,7 @@ export const TRACKS: Track[] = [
         ],
       },
       {
+        id: "nimte",
         org: "Ningbo Institute of Materials Technology & Engineering",
         unit: "Chinese Academy of Sciences",
         role: "Strategic Analyst Intern",
@@ -176,6 +203,7 @@ export const TRACKS: Track[] = [
         ],
       },
       {
+        id: "china-securities",
         org: "China Securities Co., Ltd.",
         role: "Research Intern",
         location: "Remote",
@@ -196,6 +224,7 @@ export const TRACKS: Track[] = [
     lede: "Game studio, music collective, literary pieces. Visions that defy the mind's confinement.",
     entries: [
       {
+        id: "elegists",
         org: "ELEGISTS STUDIO",
         role: "Co-Founder & Creative Director",
         location: "Remote",
@@ -207,6 +236,7 @@ export const TRACKS: Track[] = [
         ],
       },
       {
+        id: "hot-sound",
         org: "Hot Sound Club",
         role: "Vice President & Co-Founder",
         location: "Irvine, CA",
@@ -221,8 +251,9 @@ export const TRACKS: Track[] = [
   },
 ];
 
-export const EDUCATION = [
+export const EDUCATION: CvRecord[] = [
   {
+    id: "brown",
     org: "Brown University",
     role: "Master of Public Affairs",
     location: "Providence, RI",
@@ -230,6 +261,7 @@ export const EDUCATION = [
     detail: "Econometrics, probability, data analysis and visualisation, public policy, corporate finance, public administration.",
   },
   {
+    id: "harvard",
     org: "Harvard University",
     role: "International Business / Trade / Commerce (non-degree)",
     location: "Cambridge, MA",
@@ -237,6 +269,7 @@ export const EDUCATION = [
     detail: "Cross-registration during the Brown MPA.",
   },
   {
+    id: "uci",
     org: "University of California, Irvine",
     role: "Bachelor of Arts in Philosophy",
     location: "Irvine, CA",
@@ -387,21 +420,25 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
 
 export const SKILLS = [
   {
+    id: "skills-stats",
     heading: "Statistical & programming",
     items:
       "R (tidyverse, psych, lavaan, semTools, flextable) · Python (NumPy, pandas) · SPSS · SQL · Tableau · Power BI · Quarto / R Markdown · Git",
   },
   {
+    id: "skills-methods",
     heading: "Research methods",
     items:
       "Ordinal and multi-group CFA · measurement invariance testing · Cramér's V diagnostics · missingness audits · MNFA · econometrics · reproducible research workflows",
   },
   {
+    id: "skills-leadership",
     heading: "Leadership & operations",
     items:
       "Creative direction · narrative and gameplay design · project management · business-process and organisational design · negotiation and conflict resolution · HR and compliance systems",
   },
   {
+    id: "skills-languages",
     heading: "Languages",
     items: "Mandarin Chinese (native) · English (bilingual, extensive academic writing)",
   },
@@ -413,8 +450,9 @@ export const CONTACT_EMAIL = "shiyixuan1116@gmail.com";
 
 // The centre of the site. Deliberately carries no track colour and no glyph —
 // the three public identities are encoded; this one is not.
-export const ADVOCACY = [
+export const ADVOCACY: CvRecord[] = [
   {
+    id: "crisis-text-line",
     org: "Crisis Text Line",
     role: "Certified Volunteer Crisis Counselor",
     location: "Remote",
@@ -423,6 +461,7 @@ export const ADVOCACY = [
       "30+ hours of evidence-based crisis-counselling training and certification, and 50+ hours of text-based support on academic stress, relational distress, depression, and self-harm risk.",
   },
   {
+    id: "xunzheng",
     org: "XunZheng Mental Health Clinic",
     role: "Mental Health Hotline Operator",
     location: "Ningbo",
@@ -431,6 +470,7 @@ export const ADVOCACY = [
       "Supported crisis-hotline rotations after reflective-listening training, and managed front-desk operations for a twelve-clinician practice.",
   },
   {
+    id: "adoption-day",
     org: "Adoption Day Ningbo",
     role: "Animal Rescuer",
     location: "Ningbo",

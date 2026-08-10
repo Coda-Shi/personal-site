@@ -1,4 +1,4 @@
-import { HINT, PROFILE, TRACKS, type TrackId } from "@/lib/content";
+import { HINT, PROFILE, TRACKS, type Entry, type TrackId } from "@/lib/content";
 
 /**
  * Two locales, English canonical.
@@ -37,6 +37,44 @@ export const HTML_LANG: Record<Locale, string> = {
 
 type TrackCopy = { title: string; lede: string };
 
+/**
+ * CV overrides, keyed by the `id` on each record in content.ts.
+ *
+ * Every field is optional and merged over the English one field at a time, so a
+ * half-translated entry shows Chinese where there is Chinese and English where
+ * there is not. That is what lets the CV be translated a section at a time
+ * without ever rendering a blank line where a job used to be.
+ *
+ * Institution names are only translated where the institution actually has a
+ * Chinese name. Inventing one for a Texas company or a campus club would put a
+ * name on his CV that does not exist.
+ */
+type EntryCopy = Partial<Pick<Entry, "org" | "unit" | "role" | "location" | "period" | "detail">>;
+type RecordCopy = Partial<{
+  org: string;
+  role: string;
+  location: string;
+  period: string;
+  detail: string;
+}>;
+type SkillCopy = Partial<{ heading: string; items: string }>;
+
+/**
+ * Merge a translation over a record from content.ts, field by field.
+ *
+ * `NoInfer` on the overrides is load-bearing. Without it TypeScript infers `T`
+ * from both arguments and settles on their intersection — which for a
+ * dictionary of partials is `{ id: string }` — so every other field vanishes
+ * from the result type. The English record is the shape; the overrides only
+ * have to fit it.
+ */
+export function localise<T extends { id: string }>(
+  item: T,
+  overrides: Record<string, Partial<NoInfer<T>>>,
+): T {
+  return { ...item, ...overrides[item.id] };
+}
+
 export type Dictionary = {
   profile: string;
   hint: string;
@@ -59,6 +97,10 @@ export type Dictionary = {
   };
   /** Shown on the control that switches to the *other* language. */
   switchTo: string;
+  entries: Record<string, EntryCopy>;
+  education: Record<string, RecordCopy>;
+  advocacy: Record<string, RecordCopy>;
+  skills: Record<string, SkillCopy>;
 };
 
 const en: Dictionary = {
@@ -85,6 +127,11 @@ const en: Dictionary = {
     additional: "Additional",
   },
   switchTo: "中文",
+  // English is what content.ts already holds, so there is nothing to override.
+  entries: {},
+  education: {},
+  advocacy: {},
+  skills: {},
 };
 
 /**
@@ -133,6 +180,89 @@ const zh: Partial<Dictionary> = {
     additional: "其他",
   },
   switchTo: "English",
+
+  // ── CV, first tranche: the academic half ────────────────────────────────
+  //
+  // Dates use the numeric form common on Chinese CVs rather than 年/月. They
+  // sit in the mono label style, and 2026年8月 puts four full-width glyphs into
+  // a face built for Latin digits; 2026.08 keeps the label monospaced and
+  // leaves 至今 as the only Chinese in it.
+  entries: {
+    tsinghua: {
+      org: "清华大学",
+      period: "2026.08 — 至今",
+      unit: "心理与认知科学系",
+      role: "文化心理学研究中心 · 研究助理",
+      location: "北京",
+      detail: [
+        "跨学科课题，涵盖文化心理学理论、文化根植的心理干预、抑郁的神经影像研究，以及人工智能在心理健康领域的应用。",
+        "参与 MRI 扫描、TMS 干预、行为评估，以及问卷、生理与可穿戴设备数据的采集。",
+        "课题负责人：严超赣教授。",
+      ],
+    },
+    "smu-invariance": {
+      org: "南卫理公会大学",
+      period: "2026 春 — 至今",
+      unit: "心理学系",
+      role: "独立研究 · 主分析师",
+      location: "美国 得克萨斯州达拉斯",
+      detail: [
+        "在上海某三级甲等医院精神科门诊样本（N = 10,080）中检验 PHQ-9 与 GAD-7 的测量不变性；既有中文不变性研究的样本量多在 1,000 以下。",
+        "以 tidyverse、psych、lavaan、semTools、flextable 搭建可复现的 R 分析流程，报告标准遵循 Putnick & Bornstein (2016) 与 Fischer & Karl (2019)。",
+        "稿件撰写中，拟于 2026 年秋季投稿临床方法学期刊。",
+      ],
+    },
+    "smu-delta": {
+      org: "南卫理公会大学",
+      period: "2025.10 — 至今",
+      unit: "Delta 成人依恋与人格发展实验室",
+      role: "研究助理",
+      location: "美国 得克萨斯州达拉斯",
+      detail: [
+        "协同执行两项 Sonar 研究，并为一项进行中的友谊研究编码 500 条记录。",
+        "为一项意志性人格改变的追踪研究清洗 1,500 条原始问卷数据。",
+      ],
+    },
+    watson: {
+      org: "普罗维登斯市议会",
+      period: "2025.01 — 2025.05",
+      unit: "布朗大学沃森国际与公共事务研究所",
+      role: "Policy in Action 项目研究员",
+      location: "美国 罗德岛州普罗维登斯",
+      detail: [
+        "对东帕洛阿尔托、费尔法克斯县等美国案例作包容性区划的比较研究，并参与最终的双重差分分析。",
+        "合著关于区划与可持续停车政策的政策简报，并向普罗维登斯市议会官员汇报研究发现。",
+      ],
+    },
+  },
+
+  education: {
+    brown: {
+      org: "布朗大学",
+      period: "2024.06 — 2025.06",
+      role: "公共事务硕士",
+      location: "美国 罗德岛州普罗维登斯",
+      detail: "计量经济学、概率论、数据分析与可视化、公共政策、公司金融、公共行政。",
+    },
+    harvard: {
+      org: "哈佛大学",
+      period: "2024.08 — 2024.12",
+      role: "国际商务 / 贸易 / 商学（非学位）",
+      location: "美国 马萨诸塞州剑桥",
+      detail: "布朗大学 MPA 就读期间跨校注册。",
+    },
+    uci: {
+      org: "加州大学尔湾分校",
+      period: "2020.09 — 2023.12",
+      role: "哲学文学学士",
+      location: "美国 加利福尼亚州尔湾",
+      detail: "连续八个学季入选院长嘉许名单。心灵哲学、伦理学、符号逻辑、普通心理学、高级统计方法。",
+    },
+  },
+
+  // Still English, and falling back cleanly until translated.
+  advocacy: {},
+  skills: {},
 };
 
 const DICTIONARIES: Record<Locale, Partial<Dictionary>> = { en, zh };
