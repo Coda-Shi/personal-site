@@ -188,8 +188,9 @@ const zh: Partial<Dictionary> = {
   // a face built for Latin digits; 2026.08 keeps the label monospaced and
   // leaves 至今 as the only Chinese in it.
   //
-  // Personal names stay Latin unless the characters are certain. 严超赣 is
-  // documented; Dr. Quanfa He is a romanisation this file will not guess at.
+  // Personal names are only set in Chinese when the characters are confirmed
+  // rather than reconstructed from pinyin — 严超赣 and 何全发 both are. Guessing
+  // at the characters behind a romanisation would misname a real person.
   entries: {
     tsinghua: {
       org: "清华大学",
@@ -215,7 +216,7 @@ const zh: Partial<Dictionary> = {
         "主持第一阶段全样本（N = 10,080）与第二阶段约 1,500 人子样本的性别 × 年龄不变性检验：在上海某三级甲等医院精神科门诊样本中检验 PHQ-9 与 GAD-7 的测量不变性，填补既有中文不变性研究样本量多在 1,000 以下的空白。",
         "以 tidyverse、psych、lavaan、semTools、flextable 搭建可复现的 R 分析流程，报告标准遵循 Putnick & Bornstein (2016) 与 Fischer & Karl (2019)；第二阶段加入 WLSMV 估计的有序多组 CFA 与 MNFA 扩展。",
         "完成端到端数据清洗、样本核算、Table 1 人口学统计，以及确认 PHQ-9 / GAD-7 条目数据完整的缺失值审计；产出带 Cramér's V 的两两交叉表，以及支撑主分析与敏感性分析的三级数据质量标记体系。",
-        "与 Dr. Quanfa He 合作的稿件撰写中，拟于 2026 年秋投递 APS / APA / SRP 海报及临床方法学期刊。",
+        "与何全发博士合作的稿件撰写中，拟于 2026 年秋投递 APS / APA / SRP 海报及临床方法学期刊。",
       ],
     },
     "smu-delta": {
@@ -247,7 +248,7 @@ const zh: Partial<Dictionary> = {
       role: "管理分析师，后任运营与合规总监",
       location: "美国 得克萨斯州丹顿",
       detail: [
-        "对一座产值 600 万美元的办公与纸盘转换工厂握有人力、合规、设施与运营的全周期决策权，下辖五个部门、30 名员工、两条产线；主导产能匹配、Kaizen 与 6S 改善，以及 ERP / EDI 数据准确性。",
+        "对一座产值 600 万美元的办公与纸盘制造工厂握有人力、合规、设施与运营的全周期决策权，下辖五个部门、30 名员工、两条产线；主导产能匹配、Kaizen 与 6S 改善，以及 ERP / EDI 数据准确性。",
         "设计并推行公司制度、订单到交付流程、安全与主管规程、SOP、预防性维护与能量隔离（lockout / tagout）程序，以及生产报告与危机处理机制。",
         "通过展会陌生拜访开发并拿下一个大型零售客户，任内营收增长 15%。",
         "在 400 万美元的工厂筹建与审计阶段支持跨部门团队，对齐合规、设备、人力与运营文档，保障顺利投产。",
