@@ -32,6 +32,9 @@
 /*.doc
 /*.rtf
 /private/
+# Drop folder for source photographs. The processed, cropped derivative under
+# public/hub/ is what ships; the original never enters the history.
+/_incoming/
 
 # debug
 npm-debug.log*
