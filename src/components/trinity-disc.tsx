@@ -11,7 +11,17 @@ const CX = 200;
 const CY = 200;
 const R_OUTER = 172;
 const R_INNER = 72;
-const R_LABEL = (R_OUTER + R_INNER) / 2;
+/**
+ * Not the mid-radius, which is where it started and where it did not fit.
+ *
+ * A label block is axis-aligned, so at Scholarly's 270° only its height eats
+ * into the ring — but at Professional's 30° its *width* projects onto the
+ * radius too, and "PROFESSIONAL" pushed the block's far corner 24px past the
+ * outer arc. The ring is only 100 units thick, which is not enough for a wide
+ * box set on a diagonal. Pulling the blocks in and cutting the title down to
+ * 9px with tighter tracking clears it.
+ */
+const R_LABEL = 105;
 
 // The bezel. Ticks sit outside the ring the way they do on an astrolabe or a
 // vernier scale — classical instrument language, drawn with absolute geometry.
@@ -191,11 +201,16 @@ export function TrinityDisc({
             onBlur={() => setFocus(null)}
           >
             <span
-              className="flex flex-col items-center gap-1.5 text-center transition-opacity duration-500 ease-out"
+              className="flex flex-col items-center gap-1 text-center transition-opacity duration-500 ease-out"
               style={{ opacity: dimmed(track.id) ? 0.3 : 1 }}
             >
               <TrackMark track={track} className="font-display text-3xl leading-none md:text-4xl" />
-              <span className="label">{dict.tracks[track.id].title}</span>
+              {/* Inline rather than a utility: this has to beat `.label`'s own
+                  font-size, and two utilities of equal specificity would be
+                  decided by whichever Tailwind happened to emit last. */}
+              <span className="label" style={{ fontSize: "9px", letterSpacing: "0.09em" }}>
+                {dict.tracks[track.id].title}
+              </span>
             </span>
           </Link>
         ))}

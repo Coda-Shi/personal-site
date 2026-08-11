@@ -428,7 +428,9 @@ function layout(track: TrackId): Placed[] {
         taken.push(box);
         // Everything that signals depth keys off the same k: further out means
         // smaller, dimmer, softer, and later to arrive.
-        const period = Math.round(9000 + rand(seed * 5 + 11) * 8000);
+        // 4.5–8.5s. The first pass ran 9–17s, which was slow enough that the
+        // breathing read as nothing happening at all.
+        const period = Math.round(4500 + rand(seed * 5 + 11) * 4000);
         placed.push({
           key: `${tier}-${item.text}`,
           lines,

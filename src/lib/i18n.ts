@@ -1,4 +1,4 @@
-import { HINT, PROFILE, TRACKS, type Entry, type TrackId } from "@/lib/content";
+import { HINT, HINT_TWO, PROFILE, TRACKS, type Entry, type TrackId } from "@/lib/content";
 
 /**
  * Two locales, English canonical.
@@ -78,6 +78,7 @@ export function localise<T extends { id: string }>(
 export type Dictionary = {
   profile: string;
   hint: string;
+  hintTwo: string;
   tracks: Record<TrackId, TrackCopy>;
   hub: {
     /** The two halves of the disc's centre label. */
@@ -106,6 +107,7 @@ export type Dictionary = {
 const en: Dictionary = {
   profile: PROFILE,
   hint: HINT,
+  hintTwo: HINT_TWO,
   // Derived rather than restated, so the English disc labels cannot drift from
   // the track pages they lead to.
   tracks: Object.fromEntries(
@@ -150,6 +152,7 @@ const zh: Partial<Dictionary> = {
   profile:
     "跨学科研究者。创意总监。青年从业者。工作横跨心理学与心理测量学、AI 原生游戏制作与组织领导。",
   hint: "悬停或轻触，探索更多",
+  hintTwo: "选择你从哪一面了解到他。",
   tracks: {
     scholarly: {
       title: "学术",

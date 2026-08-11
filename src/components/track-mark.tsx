@@ -3,6 +3,13 @@ import type { Track } from "@/lib/content";
 /**
  * Renders a track's mark.
  *
+ * The three per-form scales below are not arbitrary and are not
+ * interchangeable. A drawn SVG fills its em box; a character occupies maybe
+ * 70% of one; and an outline ring lays down far less ink than a solid glyph at
+ * the same height. Set them all to the same em and they come out at 38, 50 and
+ * 56 units and read as three different sizes. These numbers are tuned so the
+ * three marks measure about 50 and, more to the point, look equal.
+ *
  * Two of the three are drawn rather than set. Cormorant Garamond carries no
  * logic or mathematical notation — every one of ⊨ ∀ ◇ ∴ Λ χ falls through to
  * the generic serif, which means the mark would be Times New Roman on Windows,
@@ -33,7 +40,7 @@ export function TrackMark({ track, className }: { track: Track; className?: stri
         {...svgProps}
         role="img"
         aria-label={track.glyphName}
-        style={{ width: "1.05em", height: "1.05em" }}
+        style={{ width: "1.32em", height: "1.32em" }}
         className={box}
       >
         {/* Thick stem, thin arms. A serif face modulates its strokes; drawn
@@ -52,30 +59,42 @@ export function TrackMark({ track, className }: { track: Track; className?: stri
         {...svgProps}
         role="img"
         aria-label={track.glyphName}
-        style={{ width: "1.15em", height: "1.15em" }}
+        style={{ width: "1.4em", height: "1.4em" }}
         className={box}
       >
         {/* The ring is modulated like a serif capital O — heavy on the
             flanks, thin across the top and bottom — so it is built from two
             ellipses with evenodd rather than stroked, which can only give a
-            uniform weight. Flanks run 2.8 units, crown and foot 1.5.
-            Butt caps on the bars: the reference has flat ends. */}
+            uniform weight. Butt caps on the bars: the reference has flat ends.
+
+            It measured *larger* than the two character marks beside it and
+            still read smaller, because an outline ring lays down far less ink
+            than a solid glyph. The answer was weight and scale together: the
+            flanks go from 2.8 units to 3.2, the bars from 1.25 to 1.6, and the
+            whole mark from 1.15em to 1.4em. */}
         <path
           fill="currentColor"
           stroke="none"
           fillRule="evenodd"
-          d="M 4.6 12 A 7.4 8.5 0 1 0 19.4 12 A 7.4 8.5 0 1 0 4.6 12 Z
-             M 6.9 12 A 5.1 7.4 0 1 1 17.1 12 A 5.1 7.4 0 1 1 6.9 12 Z"
+          d="M 4.4 12 A 7.6 8.7 0 1 0 19.6 12 A 7.6 8.7 0 1 0 4.4 12 Z
+             M 7.6 12 A 4.4 7.0 0 1 1 16.4 12 A 4.4 7.0 0 1 1 7.6 12 Z"
         />
-        <line x1="12" y1="0.9" x2="12" y2="23.1" strokeWidth={1.25} strokeLinecap="butt" />
-        <line x1="0.7" y1="12" x2="23.3" y2="12" strokeWidth={1.25} strokeLinecap="butt" />
+        <line x1="12" y1="0.7" x2="12" y2="23.3" strokeWidth={1.6} strokeLinecap="butt" />
+        <line x1="0.5" y1="12" x2="23.5" y2="12" strokeWidth={1.6} strokeLinecap="butt" />
       </svg>
     );
   }
 
+  // A character only fills part of its em box, so § came out 36 units tall
+  // against the drawn marks' 50 and read as the runt of the three.
+  //
+  // The scale has to sit on a *nested* element. Put `1.3em` on the same span
+  // that carries the size class and it resolves against the parent's font-size
+  // instead — 16px from the body, not the 36px the class sets — and the mark
+  // comes out smaller than it started.
   return (
     <span aria-hidden="true" className={className}>
-      {track.glyph}
+      <span style={{ fontSize: "1.16em" }}>{track.glyph}</span>
     </span>
   );
 }
