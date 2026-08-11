@@ -168,6 +168,33 @@
   }
 }
 
+/* Slow breathing for the symbol field. Applied to a wrapper <g>, never to the
+   text itself: the text owns an opacity transition for the reveal, and an
+   animation on the same property would win outright and the reveal would stop
+   working. Two elements, two properties, multiplied.
+
+   Each item gets its own period and a negative delay for phase, so the field
+   shimmers unevenly rather than pulsing as one block. */
+@keyframes drift {
+  0%,
+  100% {
+    opacity: 0.68;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The global rule above collapses durations to 0.01ms, which for an infinite
+     alternating animation is worse than no animation at all — it lands on an
+     arbitrary frame. Switch it off outright and hold full opacity. */
+  .drift {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -344,47 +344,46 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
       { text: "N = 10,080", face: "mono" },
       { text: "Δχ²(df)", face: "mono" },
     ],
+    // Trimmed 2026-08-10. Legible type and forty-seven items do not both fit in
+    // one 120° wedge — the arithmetic is about 1.5M square units against nearly
+    // twice that. What went is what nobody asked for: the duplicate invariance
+    // identities (Λ_g = Λ carries that idea in the tier above), a second fit
+    // index, and half the bare logic marks. Everything the owner named by hand
+    // stays.
     texture: [
-      { text: "τ_g = τ", face: "mono" },
-      { text: "Θ_g = Θ", face: "mono" },
-      { text: "ΔCFI ≤ .01", face: "mono" },
-      { text: "RMSEA ≤ .06", face: "mono" },
-      { text: "WLSMV", face: "mono" },
-      { text: "ω", face: "mono" },
-      // Philosophy: terms only for anyone still in copyright. Lichtung and
-      // Geworfenheit are Heidegger, who is not out until 2046; a term is not
-      // a quotation, a paragraph would be.
-      { text: "Geworfenheit", face: "serif" },
-      { text: "Lichtung", face: "serif" },
-      { text: "Nachträglichkeit", face: "serif" },
-      // One concept each, the most load-bearing one that analyst is known for.
-      // Bion gets two because both are notation rather than prose.
+      // Ordered by how much it would cost to lose the item, because that is
+      // exactly what the order decides. Placement runs down the queue against a
+      // board that fills as it goes, so whatever is last is what gets dropped.
+      // Everything the owner named by hand is at the front; the bare logic
+      // marks and the duplicate fit index are at the back, where nobody will
+      // miss one.
       { text: "paranoid-schizoid position", face: "serif" },
       { text: "β → α", face: "mono" },
       { text: "L · H · K", face: "mono" },
       { text: "transitional object", face: "serif" },
       { text: "identification with the aggressor", face: "serif" },
       { text: "collective unconscious", face: "serif" },
-      // Personality and trauma. Volitional personality change is the Delta Lab
-      // work, so the sector points at something he actually did.
+      // The only cultural-psychology terms in the sector. Without them the
+      // field reads as continental philosophy and gives no sign that the work
+      // at Tsinghua is quantitative and cross-cultural.
+      { text: "WEIRD samples", face: "serif" },
+      { text: "tight vs loose cultures", face: "serif" },
+      // The Delta Lab's own subject.
       { text: "volitional personality change", face: "serif" },
-      { text: "disorganised attachment", face: "serif" },
+      { text: "Lichtung", face: "serif" },
+      { text: "Nachträglichkeit", face: "serif" },
       { text: "complex PTSD", face: "serif" },
       { text: "dissociation", face: "serif" },
       { text: "window of tolerance", face: "serif" },
       { text: "posttraumatic growth", face: "serif" },
+      { text: "disorganised attachment", face: "serif" },
       { text: "HEXACO", face: "mono" },
-      // ⊨ is absent on purpose: it is this sector's mark on the ring, and
-      // repeating it here is the one duplication that would read as an error.
-      // Φ is absent too — it is already in the knot, as JΦ.
-      { text: "⊢", face: "mono" },
-      { text: "∀", face: "mono" },
-      { text: "∃", face: "mono" },
-      { text: "¬", face: "mono" },
-      { text: "□", face: "mono" },
-      { text: "◇", face: "mono" },
-      { text: "∴", face: "mono" },
-      { text: "λ", face: "mono" },
+      { text: "WLSMV", face: "mono" },
+      // The bare logic marks are gone as of 2026-08-10. Legible type and a
+      // long list do not both fit: the wedge seats about 32 items at sizes
+      // worth reading, so the list is 32. Single glyphs carried the least and
+      // went first. ⊨ was never here anyway — it is this sector's mark on the
+      // ring — and Φ lives in the knot as JΦ.
     ],
   },
   creative: {
