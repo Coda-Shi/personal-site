@@ -1,7 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+// Imported rather than referenced by public/ path: Next puts a content hash in
+// the emitted filename, so replacing the photograph can never leave the image
+// optimiser serving the previous one off a cached URL. It also supplies the
+// intrinsic dimensions.
+import portrait from "@/assets/portrait.png";
 import { SymbolField } from "@/components/symbol-field";
 import { TrackMark } from "@/components/track-mark";
 import { TRACKS, TRACK_ARCS, TRACK_CLASSES, type TrackId } from "@/lib/content";
@@ -11,7 +17,20 @@ const CX = 200;
 const CY = 200;
 const R_OUTER = 172;
 const R_INNER = 72;
-const R_LABEL = (R_OUTER + R_INNER) / 2;
+/**
+ * Not the mid-radius, which is where it started and where it did not fit.
+ *
+ * A label block is axis-aligned, so at Scholarly's 270° only its height eats
+ * into the ring — but at Professional's 30° its *width* projects onto the
+ * radius too, and "PROFESSIONAL" pushed the block's far corner 24px past the
+ * outer arc. The ring is only 100 units thick, which is not enough for a wide
+ * box set on a diagonal, so the blocks pull in instead.
+ *
+ * The trade is against type size, and it has been walked twice: 9px cleared
+ * easily but read as too small, 10.5px is the size worth having, and at that
+ * size "PROFESSIONAL" measures 126px of ink and needs the radius down here.
+ */
+const R_LABEL = 99;
 
 // The bezel. Ticks sit outside the ring the way they do on an astrolabe or a
 // vernier scale — classical instrument language, drawn with absolute geometry.
@@ -191,11 +210,16 @@ export function TrinityDisc({
             onBlur={() => setFocus(null)}
           >
             <span
-              className="flex flex-col items-center gap-1.5 text-center transition-opacity duration-500 ease-out"
+              className="flex flex-col items-center gap-1 text-center transition-opacity duration-500 ease-out"
               style={{ opacity: dimmed(track.id) ? 0.3 : 1 }}
             >
               <TrackMark track={track} className="font-display text-3xl leading-none md:text-4xl" />
-              <span className="label">{dict.tracks[track.id].title}</span>
+              {/* Inline rather than a utility: this has to beat `.label`'s own
+                  font-size, and two utilities of equal specificity would be
+                  decided by whichever Tailwind happened to emit last. */}
+              <span className="label" style={{ fontSize: "10.5px", letterSpacing: "0.13em" }}>
+                {dict.tracks[track.id].title}
+              </span>
             </span>
           </Link>
         ))}
@@ -210,20 +234,38 @@ export function TrinityDisc({
             animation: "fade-in 500ms ease-out 1700ms both",
             transform: `translate(-50%, -50%) scale(${focus === "hub" ? 1.07 : 1})`,
           }}
-          className={`absolute top-1/2 left-1/2 flex size-[30%] flex-col items-center justify-center gap-1 rounded-full border bg-void transition-[transform,border-color] duration-300 ease-out ${
+          className={`group absolute top-1/2 left-1/2 flex size-[30%] items-center justify-center overflow-hidden rounded-full border bg-void transition-[transform,border-color] duration-300 ease-out ${
             focus === "hub" ? "border-bone" : "border-bone/35"
           }`}
           onMouseEnter={() => setFocus("hub")}
           onFocus={() => setFocus("hub")}
           onBlur={() => setFocus(null)}
         >
-          <span className="font-display text-2xl italic md:text-3xl">{dict.hub.name}</span>
+          {/* The face is the resting state and the words arrive on approach.
+              At 120px there is not room for a portrait and two lines of type
+              at once — overlaying them makes both worse — and the name is
+              already in the footer nav and in this link's accessible name, so
+              nothing is lost by letting the photograph speak first.
+
+              In colour, and this is not an aesthetic call. A black-and-white
+              portrait of a living person reads as a funeral portrait to
+              Chinese viewers, and half this site is Chinese. Do not tone it to
+              bone on D9 grounds: what D9 asks of the hub is the absence of the
+              three pigments, and a photograph is not a flat field competing
+              with them. See scripts/hub-portrait.py. */}
+          <Image
+            src={portrait}
+            alt=""
+            priority
+            className="absolute inset-0 size-full object-cover transition-opacity duration-500 ease-out"
+            style={{ opacity: focus === "hub" ? 0.28 : 0.95 }}
+          />
           <span
-            className={`label transition-colors duration-300 ${
-              focus === "hub" ? "text-bone" : "text-bone/55"
-            }`}
+            className="relative flex flex-col items-center gap-1 transition-opacity duration-500 ease-out"
+            style={{ opacity: focus === "hub" ? 1 : 0 }}
           >
-            {dict.hub.qualifier}
+            <span className="font-display text-2xl italic md:text-3xl">{dict.hub.name}</span>
+            <span className="label text-bone">{dict.hub.qualifier}</span>
           </span>
         </Link>
       </div>

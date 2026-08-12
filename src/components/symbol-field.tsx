@@ -1,5 +1,10 @@
 import { BorromeanKnot, KNOT_VIEWBOX } from "@/components/borromean-knot";
-import { SYMBOL_LAYERS, TRACK_ARCS, type SymbolItem, type TrackId } from "@/lib/content";
+import {
+  SYMBOL_LAYERS,
+  TRACK_ARCS,
+  type SymbolItem,
+  type TrackId,
+} from "@/lib/content";
 
 /**
  * The faint layer of notation that fills a sector's beam once it is lit.
@@ -26,7 +31,10 @@ import { SYMBOL_LAYERS, TRACK_ARCS, type SymbolItem, type TrackId } from "@/lib/
 
 const BOARD = 2000;
 const C = BOARD / 2;
-const PAD = 16; // clear space demanded around every box, in board units
+// Clear space demanded around every box, in board units. 12 is about 4px of
+// gutter at the scale this renders — generous next to 8px type, and the 4 units
+// reclaimed from 16 buy back most of an item's worth of area across the field.
+const PAD = 12;
 
 /**
  * Radial band the field may occupy, in board units.
@@ -55,6 +63,20 @@ const EDGE = 20;
 
 type Tier = "anchor" | "support" | "texture";
 
+/**
+ * Board units, not pixels — and the two are far apart. `meet` fits the 2000-unit
+ * board into min(vw, vh), so at 1280×720 the scale is 0.36 and a size of 12
+ * lands at 4.3px on screen. The tier sizes below were originally tuned under
+ * `slice`, where the scale was 1.0; switching to `meet` to stop the field
+ * rendering off screen shrank every glyph by 64% and the numbers were never
+ * re-cut. These are: roughly 18–22px, 12–17px and 8–11px at that scale.
+ *
+ * There is no setting at which all forty-seven items are legible. The wedge
+ * offers about 1.5M square units and legible type would want double that, so
+ * the field is stratified instead: a foreground that can be read, and a
+ * background that is out of focus on purpose. `blur` is what makes the
+ * difference read as distance rather than as a rendering fault.
+ */
 const TIERS: Record<
   Tier,
   {
@@ -68,15 +90,84 @@ const TIERS: Record<
     /** Reveal window: base delay plus jitter, so the field arrives unevenly. */
     d0: number;
     d1: number;
+    /** Depth-of-field, in board units, reached at the far edge of the field. */
+    blur: number;
+    /**
+     * Longest line before wrapping. Per tier, not global: a single threshold
+     * broke the anchors, which are short and set large — "Amplectere omnia" at
+     * 62 units is sixteen characters against a fifteen-character budget, so it
+     * split in two. Anchors are given a cap they cannot reach.
+     */
+    maxLine: number;
   }
 > = {
-  // The ceiling is deliberately low. Solved widths want to push the short
-  // anchors past 40, which shouted over everything else; 32 keeps the top of
-  // the hierarchy roughly a third larger than support rather than double.
-  anchor: { width: 220, min: 24, max: 32, r0: 600, r1: 820, o0: 0.34, o1: 0.26, d0: 0, d1: 160 },
-  support: { width: 175, min: 15, max: 24, r0: 590, r1: 1000, o0: 0.24, o1: 0.13, d0: 130, d1: 330 },
-  texture: { width: 90, min: 12, max: 19, r0: 585, r1: 1180, o0: 0.17, o1: 0.07, d0: 280, d1: 520 },
+  anchor: {
+    width: 470,
+    min: 50,
+    max: 62,
+    r0: 620,
+    r1: 900,
+    o0: 0.54,
+    o1: 0.44,
+    d0: 0,
+    d1: 160,
+    blur: 0,
+    maxLine: 9999,
+  },
+  support: {
+    width: 330,
+    min: 34,
+    max: 46,
+    r0: 600,
+    r1: 1120,
+    o0: 0.4,
+    o1: 0.26,
+    d0: 130,
+    d1: 330,
+    blur: 0.9,
+    maxLine: 370,
+  },
+  texture: {
+    width: 190,
+    min: 24,
+    max: 31,
+    r0: 600,
+    r1: 1360,
+    o0: 0.28,
+    o1: 0.13,
+    d0: 280,
+    d1: 520,
+    blur: 2.6,
+    // Tighter than it looks like it should be. A wide flat box is the hardest
+    // shape to seat in an annular wedge, and the items that kept getting
+    // dropped were always the longest phrases. Wrapping them to a near-square
+    // block placed every one of them.
+    maxLine: 205,
+  },
 };
+
+/**
+ * Placement is random-with-rejection, and it stays that way.
+ *
+ * A polar ring flow was tried, twice — items flowed around concentric rings,
+ * wrapping outward when the arc ran out. On paper it packs far better. In this
+ * geometry it does not: the wedge leaves the square board along its bisector
+ * past radius ~980, the reserved knot occupies the middle of the best rings,
+ * and a ring that cannot seat an item pushes the frontier outward for every
+ * item behind it. Two attempts at bounding that produced 20 and then 4 items
+ * placed out of 39, against 37 for the scatter it replaced. The scatter packs
+ * worse in theory and much better here.
+ */
+
+/**
+ * How much an item shrinks at the far edge of its band.
+ *
+ * Without this the depth cues disagree: blur keys off radius while size keys
+ * off tier, so a large support item far out came through bigger *and* softer
+ * than a small texture item near in — reading as a focus fault rather than as
+ * distance. Size, dimness and blur now all track the same k.
+ */
+const FAR_SHRINK = 0.22;
 
 /**
  * Two advance tables, because the two jobs want opposite errors.
@@ -92,6 +183,40 @@ const TIERS: Record<
  */
 const ADVANCE = { mono: 0.62, serif: 0.46 } as const;
 const BOX_ADVANCE = { mono: 0.78, serif: 0.52 } as const;
+
+/**
+ * Greedy word wrap. A single long word is left to overrun.
+ *
+ * Wrapping rather than shrinking is the trick that makes a dense field legible.
+ * Solving size from width alone drove a sixty-character sentence down to the
+ * minimum and stretched it to 938 units — illegible *and* sprawling. The same
+ * sentence set three lines deep at full size occupies 430×128: smaller
+ * footprint, larger type. Shrinking trades legibility for space; wrapping
+ * trades height for it, and height is the cheaper currency here.
+ */
+function wrap(
+  text: string,
+  size: number,
+  face: SymbolItem["face"],
+  maxLine: number,
+): string[] {
+  const maxChars = Math.max(6, Math.floor(maxLine / (size * ADVANCE[face])));
+  if (text.length <= maxChars) return [text];
+
+  const lines: string[] = [];
+  let current = "";
+  for (const word of text.split(" ")) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (candidate.length > maxChars && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = candidate;
+    }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
 
 /**
  * Round to a fixed grid. Multiply, round, divide are all exactly specified by
@@ -131,13 +256,18 @@ function rand(seed: number) {
 type Box = { x: number; y: number; w: number; h: number };
 type Placed = {
   key: string;
-  text: string;
+  lines: string[];
   face: SymbolItem["face"];
   cx: number;
   cy: number;
   size: number;
   opacity: number;
   delay: number;
+  /** Board units. Grows with distance, so the far field falls out of focus. */
+  blur: number;
+  /** Breathing period and phase, both ms. Phase is applied as a negative delay. */
+  period: number;
+  phase: number;
 };
 
 function overlaps(a: Box, b: Box) {
@@ -159,7 +289,8 @@ function insideWedge(box: Box, start: number, end: number) {
       [box.x + box.w, box.y + box.h],
     ] as const
   ).every(([x, y]) => {
-    if (x < EDGE || x > BOARD - EDGE || y < EDGE || y > BOARD - EDGE) return false;
+    if (x < EDGE || x > BOARD - EDGE || y < EDGE || y > BOARD - EDGE)
+      return false;
     const dx = x - C;
     const dy = y - C;
     const r = Math.hypot(dx, dy);
@@ -210,9 +341,23 @@ const PLATES = [
 const KNOT_BOX: Box = { x: 800, y: 32, w: 400, h: 416 }; // 300×312 local, ×1.333
 const KNOT_DELAY = 90;
 
+/**
+ * Lays a tier out as concentric rings rather than scattering it.
+ *
+ * Random placement with rejection was the first approach and it packs badly:
+ * at legible sizes it left a quarter of the field on the floor no matter how
+ * many candidates it tried, and no amount of parameter tuning fixed that,
+ * because the failure is in the method. Items are flowed around each ring
+ * instead, wrapping to the next ring out when the arc runs out — polar text
+ * flow. It packs close to optimally, it always terminates, and the faint
+ * concentric structure it leaves behind belongs to the same instrument
+ * vocabulary as the tick bezel.
+ *
+ * Jitter keeps it from reading as a table. Small, and bounded by the row
+ * height, so it disturbs the rhythm without breaking the packing.
+ */
 function layout(track: TrackId): Placed[] {
   const arc = TRACK_ARCS[track];
-  const span = arc.end - arc.start;
   const taken: Box[] =
     track === "creative"
       ? PLATES.map((p) => p.box)
@@ -222,33 +367,57 @@ function layout(track: TrackId): Placed[] {
   const placed: Placed[] = [];
   let seed = track.length * 97 + 5;
 
-  const tiers: [Tier, SymbolItem[]][] = [
-    ["anchor", SYMBOL_LAYERS[track].anchors],
-    ["support", SYMBOL_LAYERS[track].support],
-    ["texture", SYMBOL_LAYERS[track].texture],
+  const queue: [Tier, SymbolItem][] = [
+    ...SYMBOL_LAYERS[track].anchors.map(
+      (i) => ["anchor", i] as [Tier, SymbolItem],
+    ),
+    ...SYMBOL_LAYERS[track].support.map(
+      (i) => ["support", i] as [Tier, SymbolItem],
+    ),
+    ...SYMBOL_LAYERS[track].texture.map(
+      (i) => ["texture", i] as [Tier, SymbolItem],
+    ),
   ];
+
+  const span = arc.end - arc.start;
 
   // Anchors go down first and nearest the arc, so the largest things claim the
   // calmest space and everything else arranges itself around them.
-  for (const [tier, items] of tiers) {
+  for (const [tier, item] of queue) {
     const t = TIERS[tier];
-    for (const item of items) {
-      const raw = t.width / Math.max(1, item.text.length * ADVANCE[item.face]);
-      const size = Math.min(t.max, Math.max(t.min, raw));
-      const w = item.text.length * size * BOX_ADVANCE[item.face];
-      const h = size * 1.25;
+    const raw = t.width / Math.max(1, item.text.length * ADVANCE[item.face]);
+    const base = Math.min(t.max, Math.max(t.min, raw));
 
-      for (let attempt = 0; attempt < 80; attempt += 1) {
+    /**
+     * Two passes at decreasing size. One modest step down recovers most of what
+     * a single pass leaves on the floor, and an item that ends up smaller reads
+     * as further away, which the depth cues already say.
+     *
+     * A third, harsher step was tried and removed: it did raise the count, but
+     * by pushing the smallest type to 5.4px, which is the exact complaint this
+     * pass exists to fix. Coverage is not worth buying with legibility — the
+     * content list was cut instead.
+     */
+    let settled = false;
+    for (const step of [1, 0.88]) {
+      if (settled) break;
+
+      // Size, wrapping and box all depend on where the item lands, so they are
+      // solved per candidate rather than once up front.
+      for (let attempt = 0; attempt < 140 && !settled; attempt += 1) {
         seed += 1;
         const angle = arc.start + 3 + rand(seed * 2) * (span - 6);
         const radius = t.r0 + rand(seed * 2 + 1) * (t.r1 - t.r0);
+        const k = (radius - t.r0) / (t.r1 - t.r0);
+        const size = snap(base * step * (1 - FAR_SHRINK * k), 1e3);
+        const lines = wrap(item.text, size, item.face, t.maxLine);
+        const longest = Math.max(...lines.map((l) => l.length));
+        const w = longest * size * BOX_ADVANCE[item.face];
+        const h = lines.length * size * 1.25;
         // Snapped before the box is built, so collision detection and the
-        // rendered attribute are the same number — otherwise the two engines
-        // could accept different candidates and produce genuinely different
-        // layouts, not merely different digits. cos/sin are the last
-        // implementation-defined step in the pipeline; 1e-3 board units is
-        // 4e-4 of a pixel at the size this board renders, and ten orders of
-        // magnitude coarser than the ulp they disagree by.
+        // rendered attribute are the same number — otherwise two engines could
+        // accept different candidates and produce genuinely different layouts,
+        // not merely different digits.
         const cx = snap(C + Math.cos((angle * Math.PI) / 180) * radius, 1e3);
         const cy = snap(C + Math.sin((angle * Math.PI) / 180) * radius, 1e3);
         const box: Box = { x: cx - w / 2, y: cy - h / 2, w, h };
@@ -257,22 +426,29 @@ function layout(track: TrackId): Placed[] {
         if (taken.some((b) => overlaps(b, box))) continue;
 
         taken.push(box);
-        const k = (radius - t.r0) / (t.r1 - t.r0);
+        // Everything that signals depth keys off the same k: further out means
+        // smaller, dimmer, softer, and later to arrive.
+        // 4.5–8.5s. The first pass ran 9–17s, which was slow enough that the
+        // breathing read as nothing happening at all.
+        const period = Math.round(4500 + rand(seed * 5 + 11) * 4000);
         placed.push({
           key: `${tier}-${item.text}`,
-          text: item.text,
+          lines,
           face: item.face,
           cx,
           cy,
           size,
           opacity: t.o0 + (t.o1 - t.o0) * k,
           delay: Math.round(t.d0 + rand(seed * 3 + 7) * (t.d1 - t.d0)),
+          blur: snap(t.blur * k, 1e2),
+          period,
+          phase: Math.round(rand(seed * 7 + 13) * period),
         });
-        break;
+        settled = true;
       }
-      // An item that finds nowhere is dropped. A gap reads as composition;
-      // an overlap reads as a bug.
     }
+    // Still nowhere: dropped. A gap reads as composition; an overlap reads as
+    // a bug.
   }
 
   return placed;
@@ -284,7 +460,13 @@ const LAYOUTS: Record<TrackId, Placed[]> = {
   professional: layout("professional"),
 };
 
-export function SymbolField({ track, active }: { track: TrackId; active: boolean }) {
+export function SymbolField({
+  track,
+  active,
+}: {
+  track: TrackId;
+  active: boolean;
+}) {
   const arc = TRACK_ARCS[track];
   const items = LAYOUTS[track];
   const plates = track === "creative" ? PLATES : [];
@@ -333,23 +515,56 @@ export function SymbolField({ track, active }: { track: TrackId; active: boolean
         />
       ))}
 
-      {items.map((item) => (
-        <text
-          key={item.key}
-          x={item.cx}
-          y={item.cy}
-          textAnchor="middle"
-          dominantBaseline="central"
-          fill="currentColor"
-          fontSize={item.size}
-          fontFamily={item.face === "serif" ? "var(--font-display)" : "var(--font-mono)"}
-          fontStyle={item.face === "serif" ? "italic" : undefined}
-          letterSpacing={item.face === "serif" ? 0 : 1.1}
-          style={reveal(item.opacity, item.delay)}
-        >
-          {item.text}
-        </text>
-      ))}
+      {items.map((item) => {
+        const leading = item.size * 1.25;
+        return (
+          // Breathing lives on the wrapper and the reveal on the text. They
+          // cannot share an element: an animation and a transition on the same
+          // property is a fight the animation always wins, and the reveal would
+          // simply stop happening.
+          <g
+            key={item.key}
+            className="drift"
+            style={{
+              animation: `drift ${item.period}ms ease-in-out ${-item.phase}ms infinite`,
+            }}
+          >
+            <text
+              x={item.cx}
+              y={item.cy}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fill="currentColor"
+              fontSize={item.size}
+              fontFamily={
+                item.face === "serif"
+                  ? "var(--font-display)"
+                  : "var(--font-mono)"
+              }
+              fontStyle={item.face === "serif" ? "italic" : undefined}
+              letterSpacing={item.face === "serif" ? 0 : 1.1}
+              style={{
+                ...reveal(item.opacity, item.delay),
+                filter: item.blur ? `blur(${item.blur}px)` : undefined,
+              }}
+            >
+              {item.lines.map((line, i) => (
+                <tspan
+                  key={line}
+                  x={item.cx}
+                  // dominantBaseline centres a single line; for a stack the
+                  // first tspan has to be lifted by half the block instead.
+                  dy={
+                    i === 0 ? -((item.lines.length - 1) * leading) / 2 : leading
+                  }
+                >
+                  {line}
+                </tspan>
+              ))}
+            </text>
+          </g>
+        );
+      })}
     </svg>
   );
 }

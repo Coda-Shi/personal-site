@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SiteShell } from "@/components/site-shell";
-import { EntryList } from "@/components/track-page";
+import { EntryList, RecordList } from "@/components/track-page";
 import {
   ADVOCACY,
   CONTACT_EMAIL,
@@ -11,7 +11,7 @@ import {
   TRACKS,
   TRACK_CLASSES,
 } from "@/lib/content";
-import { getDictionary, hasLocale } from "@/lib/i18n";
+import { getDictionary, hasLocale, localise } from "@/lib/i18n";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/cv">): Promise<Metadata> {
   const { lang } = await params;
@@ -45,21 +45,7 @@ export default async function Page({ params }: PageProps<"/[lang]/cv">) {
 
       <section className="mt-16">
         <h2 className="label text-bone/55">{dict.headings.education}</h2>
-        <div className="mt-6 space-y-8">
-          {EDUCATION.map((item) => (
-            <article key={item.org} className="border-t border-bone/20 pt-5">
-              <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-                <h3 className="font-display text-2xl leading-tight tracking-tight">{item.org}</h3>
-                <span className="label whitespace-nowrap text-bone/55">{item.period}</span>
-              </div>
-              <p className="mt-2 text-sm font-medium">
-                {item.role}
-                <span className="text-bone/55"> · {item.location}</span>
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-bone/75">{item.detail}</p>
-            </article>
-          ))}
-        </div>
+        <RecordList items={EDUCATION} overrides={dict.education} />
       </section>
 
       {TRACKS.map((track) => (
@@ -74,38 +60,27 @@ export default async function Page({ params }: PageProps<"/[lang]/cv">) {
             />
             {dict.tracks[track.id].title}
           </h2>
-          <EntryList entries={track.entries} />
+          <EntryList entries={track.entries} lang={lang} />
         </section>
       ))}
 
       <section className="mt-16">
         <h2 className="label text-bone/55">{dict.headings.advocacy}</h2>
-        <div className="mt-6 space-y-8">
-          {ADVOCACY.map((item) => (
-            <article key={item.org} className="border-t border-bone/20 pt-5">
-              <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-                <h3 className="font-display text-2xl leading-tight tracking-tight">{item.org}</h3>
-                <span className="label whitespace-nowrap text-bone/55">{item.period}</span>
-              </div>
-              <p className="mt-2 text-sm font-medium">
-                {item.role}
-                <span className="text-bone/55"> · {item.location}</span>
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-bone/75">{item.detail}</p>
-            </article>
-          ))}
-        </div>
+        <RecordList items={ADVOCACY} overrides={dict.advocacy} />
       </section>
 
       <section className="mt-16">
         <h2 className="label text-bone/55">{dict.headings.additional}</h2>
         <dl className="mt-6 space-y-6">
-          {SKILLS.map((group) => (
-            <div key={group.heading} className="border-t border-bone/20 pt-5">
-              <dt className="text-sm font-medium">{group.heading}</dt>
-              <dd className="mt-2 text-sm leading-relaxed text-bone/75">{group.items}</dd>
-            </div>
-          ))}
+          {SKILLS.map((original) => {
+            const group = localise(original, dict.skills);
+            return (
+              <div key={original.id} className="border-t border-bone/20 pt-5">
+                <dt className="text-sm font-medium">{group.heading}</dt>
+                <dd className="mt-2 text-sm leading-relaxed text-bone/75">{group.items}</dd>
+              </div>
+            );
+          })}
         </dl>
       </section>
     </SiteShell>

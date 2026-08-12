@@ -61,6 +61,11 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
           <p className="label mt-3 w-fit text-bone/45" style={recede}>
             {dict.hint}
           </p>
+          {/* The instruction proper. The line above says the disc responds;
+              this one says what choosing actually means. */}
+          <p className="label mt-1.5 w-fit text-bone/35" style={recede}>
+            {dict.hintTwo}
+          </p>
         </div>
       </header>
 
