@@ -40,15 +40,15 @@ export function TrackMark({ track, className }: { track: Track; className?: stri
         {...svgProps}
         role="img"
         aria-label={track.glyphName}
-        style={{ width: "1.32em", height: "1.32em" }}
+        style={{ width: "1.12em", height: "1.12em" }}
         className={box}
       >
         {/* Thick stem, thin arms. A serif face modulates its strokes; drawn
             flat, this would read as a different typographic system from the
             § sitting on the next sector. */}
-        <line x1="6.2" y1="2.8" x2="6.2" y2="21.2" strokeWidth={2.4} />
-        <line x1="6.2" y1="9.5" x2="19.6" y2="9.5" strokeWidth={1.35} />
-        <line x1="6.2" y1="14.5" x2="19.6" y2="14.5" strokeWidth={1.35} />
+        <line x1="6.2" y1="2.8" x2="6.2" y2="21.2" strokeWidth={1.9} />
+        <line x1="6.2" y1="9.5" x2="19.6" y2="9.5" strokeWidth={1.05} />
+        <line x1="6.2" y1="14.5" x2="19.6" y2="14.5" strokeWidth={1.05} />
       </svg>
     );
   }
@@ -59,7 +59,7 @@ export function TrackMark({ track, className }: { track: Track; className?: stri
         {...svgProps}
         role="img"
         aria-label={track.glyphName}
-        style={{ width: "1.4em", height: "1.4em" }}
+        style={{ width: "1.18em", height: "1.18em" }}
         className={box}
       >
         {/* The ring is modulated like a serif capital O — heavy on the
@@ -67,20 +67,19 @@ export function TrackMark({ track, className }: { track: Track; className?: stri
             ellipses with evenodd rather than stroked, which can only give a
             uniform weight. Butt caps on the bars: the reference has flat ends.
 
-            It measured *larger* than the two character marks beside it and
-            still read smaller, because an outline ring lays down far less ink
-            than a solid glyph. The answer was weight and scale together: the
-            flanks go from 2.8 units to 3.2, the bars from 1.25 to 1.6, and the
-            whole mark from 1.15em to 1.4em. */}
+            An outline ring lays down far less ink than a solid glyph, so this
+            once measured larger than its neighbours and still read smaller.
+            Correcting that overshot the other way — heavy enough that the
+            three marks read as blunt — and these are the settled values. */}
         <path
           fill="currentColor"
           stroke="none"
           fillRule="evenodd"
           d="M 4.4 12 A 7.6 8.7 0 1 0 19.6 12 A 7.6 8.7 0 1 0 4.4 12 Z
-             M 7.6 12 A 4.4 7.0 0 1 1 16.4 12 A 4.4 7.0 0 1 1 7.6 12 Z"
+             M 7.2 12 A 4.8 7.4 0 1 1 16.8 12 A 4.8 7.4 0 1 1 7.2 12 Z"
         />
-        <line x1="12" y1="0.7" x2="12" y2="23.3" strokeWidth={1.6} strokeLinecap="butt" />
-        <line x1="0.5" y1="12" x2="23.5" y2="12" strokeWidth={1.6} strokeLinecap="butt" />
+        <line x1="12" y1="0.7" x2="12" y2="23.3" strokeWidth={1.25} strokeLinecap="butt" />
+        <line x1="0.5" y1="12" x2="23.5" y2="12" strokeWidth={1.25} strokeLinecap="butt" />
       </svg>
     );
   }
@@ -94,7 +93,7 @@ export function TrackMark({ track, className }: { track: Track; className?: stri
   // comes out smaller than it started.
   return (
     <span aria-hidden="true" className={className}>
-      <span style={{ fontSize: "1.16em" }}>{track.glyph}</span>
+      <span style={{ fontSize: "1.02em" }}>{track.glyph}</span>
     </span>
   );
 }
