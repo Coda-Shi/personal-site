@@ -35,6 +35,8 @@
 # Drop folder for source photographs. The processed, cropped derivative under
 # public/hub/ is what ships; the original never enters the history.
 /_incoming/
+# Comparison output from scripts/hub-portrait.py. Only portrait.png ships.
+/src/assets/portrait-mono.png
 
 # debug
 npm-debug.log*

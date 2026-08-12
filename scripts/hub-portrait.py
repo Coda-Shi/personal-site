@@ -4,17 +4,27 @@ Cut the hub portrait out of a photograph.
     python scripts/hub-portrait.py path/to/photo.jpg
     python scripts/hub-portrait.py path/to/photo.jpg --box 120 40 980 900
 
-Writes two files so the choice can be made by looking rather than by arguing:
+    src/assets/portrait.png       colour — this is the one that ships
+    src/assets/portrait-mono.png  bone monochrome, for comparison only
 
-    public/hub/portrait.png         bone monochrome
-    public/hub/portrait-colour.png  untouched colour
+Written under src/ rather than public/ so it is imported as a module and Next
+fingerprints it. A file in public/ keeps its URL when its contents change, and
+the image optimiser caches on that URL: replacing this portrait in place once
+left /_next/image serving the previous version, greyscale, with no error
+anywhere to say so. A content hash in the filename makes that class of staleness
+impossible rather than merely unlikely.
 
-Monochrome is the one that fits the system. D9 gives each track a pigment —
-Klein blue, oxblood, old gold — and leaves the hub deliberately uncoloured,
-which is how the composition says the three public identities are encoded and
-the private one is not. A full-colour photograph in the middle introduces a
-fourth colour into a scheme where colour carries meaning, and quietly breaks
-that rule. Toning it to bone keeps the face and drops the argument.
+Colour, and not on aesthetic grounds. **A black-and-white portrait of a living
+person reads as a funeral portrait to Chinese viewers** — 遗像 — and this site
+has a Chinese half. That is not a preference to be weighed against composition;
+it is a meaning the image carries whether or not it was intended.
+
+The argument monochrome was chosen on, before the owner pointed this out: D9
+gives each track a pigment and leaves the hub uncoloured, so a colour
+photograph would put a fourth colour into a scheme where colour identifies a
+track. It was also overstated. A photograph is not a flat field and does not
+compete with the pigments; what D9 actually requires of the hub is the absence
+of Klein blue, oxblood and old gold, and a portrait breaks none of that.
 
 The circular alpha is feathered by a pixel or so. A hard-edged circle scaled
 into a 145px hub aliases into a visible staircase.
@@ -27,7 +37,7 @@ import numpy as np
 from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "public" / "hub"
+OUT = ROOT / "src" / "assets"
 SIZE = 640  # generous for a hub that renders around 145px, and still tiny
 BONE = (242, 239, 233)
 
@@ -73,7 +83,7 @@ def main() -> None:
 
     colour = img.copy()
     colour.putalpha(mask)
-    colour.save(OUT / "portrait-colour.png", optimize=True)
+    colour.save(OUT / "portrait.png", optimize=True)
 
     # Luminance, then tinted toward bone rather than left neutral grey — a pure
     # greyscale face reads cold against a warm off-white palette.
@@ -82,9 +92,9 @@ def main() -> None:
     toned = np.dstack([grey * c for c in BONE]).astype(np.uint8)
     mono = Image.fromarray(toned, "RGB")
     mono.putalpha(mask)
-    mono.save(OUT / "portrait.png", optimize=True)
+    mono.save(OUT / "portrait-mono.png", optimize=True)
 
-    for name in ("portrait.png", "portrait-colour.png"):
+    for name in ("portrait.png", "portrait-mono.png"):
         path = OUT / name
         print(f"{path.relative_to(ROOT)}  {SIZE}x{SIZE}  {path.stat().st_size / 1024:.0f} KB")
 

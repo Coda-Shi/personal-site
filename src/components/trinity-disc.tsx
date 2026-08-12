@@ -3,6 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+// Imported rather than referenced by public/ path: Next puts a content hash in
+// the emitted filename, so replacing the photograph can never leave the image
+// optimiser serving the previous one off a cached URL. It also supplies the
+// intrinsic dimensions.
+import portrait from "@/assets/portrait.png";
 import { SymbolField } from "@/components/symbol-field";
 import { TrackMark } from "@/components/track-mark";
 import { TRACKS, TRACK_ARCS, TRACK_CLASSES, type TrackId } from "@/lib/content";
@@ -242,15 +247,15 @@ export function TrinityDisc({
               already in the footer nav and in this link's accessible name, so
               nothing is lost by letting the photograph speak first.
 
-              Toned to bone rather than left in colour: D9 gives each track a
-              pigment and leaves the hub uncoloured, and a full-colour
-              photograph would put a fourth colour into a scheme where colour
-              is what tells you which of the three you are looking at. */}
+              In colour, and this is not an aesthetic call. A black-and-white
+              portrait of a living person reads as a funeral portrait to
+              Chinese viewers, and half this site is Chinese. Do not tone it to
+              bone on D9 grounds: what D9 asks of the hub is the absence of the
+              three pigments, and a photograph is not a flat field competing
+              with them. See scripts/hub-portrait.py. */}
           <Image
-            src="/hub/portrait.png"
+            src={portrait}
             alt=""
-            width={640}
-            height={640}
             priority
             className="absolute inset-0 size-full object-cover transition-opacity duration-500 ease-out"
             style={{ opacity: focus === "hub" ? 0.28 : 0.95 }}
