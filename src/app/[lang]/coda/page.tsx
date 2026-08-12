@@ -4,12 +4,17 @@ import { SiteShell } from "@/components/site-shell";
 import { RecordList } from "@/components/track-page";
 import { ADVOCACY, POEM } from "@/lib/content";
 import { getDictionary, hasLocale } from "@/lib/i18n";
+import { localeAlternates } from "@/lib/site";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/coda">): Promise<Metadata> {
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const dict = getDictionary(lang);
-  return { title: dict.hub.heading, description: dict.hub.subheading };
+  return {
+    title: dict.hub.heading,
+    description: dict.hub.subheading,
+    alternates: localeAlternates(lang, "/coda"),
+  };
 }
 
 // No ground colour, no glyph, a narrower measure, more serif. The three public

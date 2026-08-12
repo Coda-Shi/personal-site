@@ -6,7 +6,7 @@
 >
 > **维护约定**：做了新决策、完成了里程碑、或发现了新陷阱，就更新本文件，并同步「最后更新」日期。决策只增不删——推翻旧决策时把它标记为「已废弃」并说明原因，保留推理链比保留结论更有价值。
 
-**最后更新**：2026-08-09
+**最后更新**：2026-08-12
 
 ---
 
@@ -371,6 +371,44 @@ Professional 扇区用**真实法规条号**而非抽象流程图形：`29 CFR 1
 >
 > ⚠️ **验证中文字体不能用字宽。** CJK 字形一律 1em 全宽，任何字体在同一字号下 `measureText` 都返回相同数值——这条对拉丁字符有效的检测方法（见 D9）在中文上完全失效。要**光栅化到 canvas 后比对像素**：把同一个字分别用目标族和 `serif` 画出来，取位置加权的强度和，不同才说明字体真的生效了。
 
+### D18 — 上线元数据：绝对 URL、逐页 hreflang、预览不收录 ✅ 生效中（2026-08-12）
+
+**决策**：补齐 `metadataBase` / canonical / hreflang / Open Graph / `robots.txt` / `sitemap.xml`，并生成品牌图（favicon、apple-icon、OG 卡片）。站点地址由 `src/lib/site.ts` 统一解析。
+
+**地址解析顺序**：`NEXT_PUBLIC_SITE_URL` → `VERCEL_PROJECT_PRODUCTION_URL` → `localhost:3000`。
+
+**故意不读 `VERCEL_URL`**（那是单次部署的地址）。预览构建也要报出**生产**域名，否则每个预览部署都会把自己声明成 canonical，等于自己和自己抢排名。
+
+**代价**：本地 `npm run build` 出来的绝对 URL 全是 `localhost:3000`。这是对的（本地就是那个地址），但看构建产物时别误以为是 bug。
+
+> 🔴 **canonical 和 hreflang 必须逐页声明，不能写在 layout 里。**
+> 元数据是**继承**的：在 `[lang]/layout.tsx` 上写 `canonical: "/en"`，`/en/cv` 和 `/en/scholarly` 会一起继承它——等于告诉爬虫这些页面都是首页的副本，应当从索引里删掉。同理，layout 级的 hreflang 会让 `/en/scholarly` 指向 `/zh` 而不是 `/zh/scholarly`。
+>
+> **这个 bug 在补元数据之前就已经存在**（原 layout 里那段 `languages: { en: "/en", "zh-Hans": "/zh" }`），只在首页是对的。现在由 `localeAlternates(lang, path)` 逐页生成，六个页面各自调用。
+
+> 🔴 **`openGraph` 在路由段之间是「替换」不是「合并」。**
+> 把 `opengraph-image.png` 放在 `src/app/` 根段、同时在 `[lang]/layout.tsx` 里声明 `openGraph`，结果是**所有页面都没有 `og:image`**——深层段的 `openGraph` 整个盖掉了根段贡献的 `images`。症状很隐蔽：`og:title`、`og:description` 都在，只有图没了，而 `/_not-found`（在根段）反倒有图。
+>
+> 把文件移进 `[lang]/` 能让合并生效，但**换来一个更糟的 URL**：动态段下的图片路由没有自己的 `generateStaticParams`，Next 用占位符填参数，emit 出 `https://host/-/opengraph-image.png`，指向不存在的地址。
+>
+> 现行解法：文件留在根段（以 `/opengraph-image.png` 无参数提供），在 layout 里**手写 `images: [OG_IMAGE]`**。相对路径会按 `metadataBase` 解析成绝对地址。**移动这个文件不会改变实际生效的图**，改路径要同时改 layout。
+
+**预览部署一律 noindex**：`INDEXABLE = process.env.VERCEL_ENV !== "preview"`，同时作用于 `robots.txt`（`Disallow: /`）和每页的 `<meta name="robots">`。两层都要，因为 `robots.txt` 挡的是抓取、`meta` 挡的是「别人直接贴了预览链接」导致的收录。非 Vercel 环境（本地、CI）按可收录处理，这样本地构建出来的就是生产会有的东西，而不是一个永远没人检查的特例。
+
+**sitemap 不写 `lastModified`**：构建期唯一能拿到的日期是构建时间本身，那会把 12 个页面每次部署都标成「刚改过」。Google 认得出不可信的 lastmod 并直接忽略——不写比编一个更有价值。
+
+**品牌图由 `scripts/brand-images.py` 生成**，几何直接取自 `trinity-disc.tsx`（角度、半径比例、骨白描边、刻度环）。
+
+- **favicon 不用真值色**。克莱茵蓝/酒红/旧金是为「整屏看」调的，16px 下三色糊成一坨黑。图标里三色都提亮到在标签栏还能分辨为三色为止，并且**不放头像**（16px 的脸是一团泥）。OG 卡片相反，只会被大图看到，所以保留真值、骨白描边、刻度环和头像。
+- **卡片的骨白描边比页面重**（1.7 单位 / alpha 140，页面是 1.1 / 0.45）。链接预览经常只渲染到三分之一宽，页面那个权重在那里直接消失、圆环塌成饼图。实测：按页面数值时外弧边缘像素只抬到 `(60,97,192)`。
+- 字体从 `.next` 里 next/font 产出的 woff2 捞（fontTools 转 ttf 供 Pillow 用），所以卡片是站点真正的字面，不是 Georgia 之类的替身。
+
+> ⚠️ **从 `.next` 里找字体不能只匹配家族名。** next/font 按**用量**切分，不是按字系切分：排序后第一个 JetBrains Mono 文件只有 **10 个字形**，含 `A` 不含 `S`。只判断家族名（甚至只判断「有没有 A」）会选中它，卡片上就是一排豆腐块。正确做法是**要求该文件覆盖即将绘制的每一个字符**，并在符合的文件里取 cmap 最大的那个。
+
+> ⚠️ **Pillow 的 `ImageDraw` 是「写像素」不是「合成」。** 直接在 RGBA 图上画半透明骨白，会把底下的颜料**抠掉**换成半透明骨白，看起来是一条黑边而不是细线。所有半透明笔画先画在独立图层上，最后 `alpha_composite` 上去。合成放在最后一步，这样内弧描边压在 void 圆上、中心环压在头像上，和页面的叠放次序一致。
+
+**`proxy.ts` 的 matcher 排除了带点的路径**，所以 `/robots.txt`、`/sitemap.xml`、`/icon.png`、`/opengraph-image.png` 不会被加上语言前缀。**改 matcher 时要重新确认这一点。**
+
 ## 5. 工作流约定
 
 **不要直接改 `main`。** 标准循环：
@@ -457,11 +495,14 @@ gh pr create --fill
 - [x] 修掉 `SymbolField` 的 hydration mismatch（见 D15）
 - [x] 中英双语骨架：`/[lang]/` 路由、`proxy.ts`、语言切换开关、中文字体（见 D16、D17）
 - [x] 中文首页文案定稿并上线（简介、三条线名称与 lede、中心、提示语）
+- [x] **中心照片**——彩色圆形头像已上线（见 D9 的红色警示与 `scripts/hub-portrait.py`）
+- [x] 上线元数据：canonical、hreflang、OG 卡片、favicon、`robots.txt`、`sitemap.xml`（见 D18）
+- [x] 删掉 `create-next-app` 留下的 5 个示例 SVG 和默认 favicon
 - [ ] 把部署网址写入仓库 homepage 字段
-- [ ] **中心照片**——所有者待选。目前 `/` 的 Portrait 是圆形描边占位，换真照片只需改一个组件
+- [ ] 🔴 **关闭 Vercel Deployment Protection**——**只有所有者能做，这是上线的头号阻塞项**。当前所有 `*.vercel.app` 地址都 302 跳到 Vercel SSO 登录页并带 `X-Robots-Tag: noindex`，匿名访客和爬虫都进不来。见 §9
 - [ ] **诗文**——只能由所有者提供，`/coda` 的 Poems 目前是空状态
 - [ ] 逐页打磨视觉（所有者原话「你先做，我们可以慢慢改」）
-- [ ] 购买域名并绑定（见 D6）
+- [ ] 购买域名并绑定（见 D6）；域名到手后在 Vercel 设 `NEXT_PUBLIC_SITE_URL`，否则 canonical 会一直指向 `*.vercel.app`
 
 ### 中文版翻译进度
 
@@ -526,6 +567,7 @@ npm run dev
 
 | 问题 | 状态 |
 |---|---|
+| 🔴 **Vercel Deployment Protection 未关** | **上线的头号阻塞项，只有所有者能在 Vercel 面板里改。** 2026-08-12 实测：`personal-site-<hash>-coda4.vercel.app`、`personal-site-coda4.vercel.app`、`personal-site-git-main-coda4.vercel.app` 全部 **302 跳到 `vercel.com/sso-api`** 并带 `X-Robots-Tag: noindex`——没登录 Vercel 的人看不到网站，搜索引擎也收不了。位置：Vercel → 项目 → Settings → Deployment Protection → Vercel Authentication，对 **Production** 设为 Disabled（Preview 建议保留保护）。<br>顺带：`personal-site.vercel.app`（不带 `-coda4`）返回 200 但**是别人的站**，标题 `Create Next App`，不要拿它当自己的地址。 |
 | 全局 `user.email` 是否也改为 noreply？ | **未定**。改了则所有新仓库默认匿名，但影响机器上全部项目。已向所有者提出，等答复。 |
 | 网站要有哪些内容/板块？ | 未讨论。设计方向、信息架构、视觉风格全部空白。 |
 | 是否加备用邮箱到 GitHub 账号？ | 未做。GitHub 已警告只有单一验证邮箱，丢失即无法找回账号。 |

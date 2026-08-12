@@ -9,6 +9,7 @@ import {
 import localFont from "next/font/local";
 import { notFound } from "next/navigation";
 import { HTML_LANG, LOCALES, getDictionary, hasLocale } from "@/lib/i18n";
+import { INDEXABLE, OG_LOCALE, SITE_URL } from "@/lib/site";
 import "../globals.css";
 
 // The typographic collision the whole design rests on: a Garamond-lineage serif
@@ -109,25 +110,69 @@ export function generateStaticParams() {
   return LOCALES.map((lang) => ({ lang }));
 }
 
+const NAME = 'Yixuan "Coda" Shi';
+
+/**
+ * Named by hand rather than left to the app/opengraph-image.png convention,
+ * and it has to be this way round.
+ *
+ * `openGraph` is replaced between route segments, not merged, so the block
+ * below overrides whatever the root segment contributed — a root-level
+ * opengraph-image.png produces og:title and og:description but silently no
+ * og:image. Moving the file into [lang]/ fixes the merge but breaks the URL
+ * instead: an image route under a dynamic segment has no generateStaticParams
+ * of its own, so Next fills the parameter with a placeholder and emits
+ * `/-/opengraph-image.png`, which resolves to nothing.
+ *
+ * The file therefore stays at the root, where it is served unparameterised at
+ * /opengraph-image.png, and is pointed at from here. Relative is fine: it
+ * resolves against metadataBase. Regenerate with scripts/brand-images.py.
+ */
+const OG_IMAGE = {
+  url: "/opengraph-image.png",
+  width: 1200,
+  height: 630,
+  alt: `The trinity disc — Scholarly, Professional and Creative around a portrait of ${NAME}`,
+};
+
 export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Promise<Metadata> {
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const dict = getDictionary(lang);
 
   return {
+    // Everything relative below — canonicals, hreflang, and the og:image Next
+    // derives from app/opengraph-image.png — is resolved against this. Omit it
+    // and Next warns at build and emits localhost URLs into production.
+    metadataBase: SITE_URL,
     title: {
-      default: 'Yixuan "Coda" Shi',
-      template: '%s — Yixuan "Coda" Shi',
+      default: NAME,
+      template: `%s — ${NAME}`,
     },
     description: dict.profile,
-    // Tells crawlers the two versions are one document in two languages, so
-    // both get indexed instead of the redirect collapsing them into one.
-    alternates: {
-      languages: {
-        en: "/en",
-        "zh-Hans": "/zh",
-      },
+    authors: [{ name: NAME }],
+    creator: NAME,
+    // No `alternates` here. Metadata is inherited, so a canonical set on the
+    // layout would tell crawlers that /en/cv is a duplicate of /en. Each page
+    // declares its own via localeAlternates().
+    openGraph: {
+      type: "website",
+      siteName: NAME,
+      title: NAME,
+      description: dict.profile,
+      locale: OG_LOCALE[lang],
+      alternateLocale: LOCALES.filter((l) => l !== lang).map((l) => OG_LOCALE[l]),
+      images: [OG_IMAGE],
     },
+    twitter: {
+      card: "summary_large_image",
+      title: NAME,
+      description: dict.profile,
+      images: [OG_IMAGE],
+    },
+    // Belt and braces with robots.txt: preview URLs get crawled if anyone links
+    // one, and a per-page noindex survives being linked directly.
+    ...(INDEXABLE ? {} : { robots: { index: false, follow: false } }),
   };
 }
 

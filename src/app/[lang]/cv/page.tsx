@@ -12,12 +12,17 @@ import {
   TRACK_CLASSES,
 } from "@/lib/content";
 import { getDictionary, hasLocale, localise } from "@/lib/i18n";
+import { localeAlternates } from "@/lib/site";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/cv">): Promise<Metadata> {
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const dict = getDictionary(lang);
-  return { title: dict.nav.cv, description: dict.profile };
+  return {
+    title: dict.nav.cv,
+    description: dict.profile,
+    alternates: localeAlternates(lang, "/cv"),
+  };
 }
 
 // The entries themselves are still English — translation is landing section by
