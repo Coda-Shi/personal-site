@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { TrackPage } from "@/components/track-page";
 import { TRACKS } from "@/lib/content";
 import { getDictionary, hasLocale } from "@/lib/i18n";
+import { localeAlternates } from "@/lib/site";
 
 const track = TRACKS.find((t) => t.id === "creative")!;
 
@@ -12,7 +13,11 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const copy = getDictionary(lang).tracks[track.id];
-  return { title: copy.title, description: copy.lede };
+  return {
+    title: copy.title,
+    description: copy.lede,
+    alternates: localeAlternates(lang, "/creative"),
+  };
 }
 
 export default async function Page({ params }: PageProps<"/[lang]/creative">) {
