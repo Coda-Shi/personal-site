@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 // Imported rather than referenced by public/ path: Next puts a content hash in
 // the emitted filename, so replacing the photograph can never leave the image
 // optimiser serving the previous one off a cached URL. It also supplies the
@@ -18,19 +19,11 @@ const CY = 200;
 const R_OUTER = 172;
 const R_INNER = 72;
 /**
- * Not the mid-radius, which is where it started and where it did not fit.
- *
- * A label block is axis-aligned, so at Scholarly's 270° only its height eats
- * into the ring — but at Professional's 30° its *width* projects onto the
- * radius too, and "PROFESSIONAL" pushed the block's far corner 24px past the
- * outer arc. The ring is only 100 units thick, which is not enough for a wide
- * box set on a diagonal, so the blocks pull in instead.
- *
- * The trade is against type size, and it has been walked twice: 9px cleared
- * easily but read as too small, 10.5px is the size worth having, and at that
- * size "PROFESSIONAL" measures 126px of ink and needs the radius down here.
+ * Where the label blocks start. It is corrected on mount by
+ * useBalancedLabelRadius, so this only has to be close enough that the first
+ * layout is sane.
  */
-const R_LABEL = 99;
+const R_LABEL_START = 112;
 
 // The bezel. Ticks sit outside the ring the way they do on an astrolabe or a
 // vernier scale — classical instrument language, drawn with absolute geometry.
@@ -79,9 +72,136 @@ function tickRing() {
 
 const TICKS = tickRing();
 
-function labelPosition(mid: number) {
-  const p = polar(R_LABEL, mid);
+function labelPosition(mid: number, radius: number) {
+  const p = polar(radius, mid);
   return { left: `${(p.x / 400) * 100}%`, top: `${(p.y / 400) * 100}%` };
+}
+
+/** Corners of a block's ink, offset from that block's own centre. */
+type Offsets = ReadonlyArray<readonly [number, number]>;
+
+/** How far in and how far out one block's ink reaches, if placed at `radius`. */
+function radialSpan(offsets: Offsets, mid: number, radius: number) {
+  const rad = (mid * Math.PI) / 180;
+  const bx = radius * Math.cos(rad);
+  const by = radius * Math.sin(rad);
+  let lo = Infinity;
+  let hi = 0;
+  for (const [dx, dy] of offsets) {
+    const d = Math.hypot(bx + dx, by + dy);
+    if (d < lo) lo = d;
+    if (d > hi) hi = d;
+  }
+  return { lo, hi };
+}
+
+// useLayoutEffect on the server is a no-op React warns about, and this is a
+// client component that Next still renders server-side.
+const useBrowserLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
+/**
+ * Finds the single radius at which all three label blocks sit centred in the
+ * ring, and keeps it correct as things change.
+ *
+ * A hand-set constant cannot do this job, which is why the one that used to
+ * live here was wrong. Three things move at once: the blocks are axis-aligned
+ * while the constraint is radial, so how much ring a block consumes depends on
+ * its angle; the labels are typeset, so their width depends on the language;
+ * and the disc scales with the viewport while the type does not, so the ratio
+ * between them changes with the window. Measured, the balancing radius wants
+ * 108 for English in a short window and 120 for Chinese in a tall one — no
+ * constant satisfies both.
+ *
+ * The old constant was also derived from the wrong shape. It used each block's
+ * bounding box, whose corners are empty because the mark and the caption are
+ * centred in it, and pulled the blocks inward until the boxes cleared the outer
+ * arc. What actually cleared the arc was empty space, and the real type ended
+ * up overlapping the hub: at 1280×600 the Creative block's ink reached 10 units
+ * inside it. So this measures the two ink boxes, not their container.
+ *
+ * One radius for all three, not one each: at equal radius the set is
+ * rotationally symmetric, which is what reads as balanced. Individually
+ * optimal radii would leave the three sitting at visibly different depths.
+ */
+function useBalancedLabelRadius(
+  stage: RefObject<HTMLElement | null>,
+  blocks: RefObject<Map<TrackId, HTMLElement>>,
+) {
+  const [radius, setRadius] = useState(R_LABEL_START);
+
+  useBrowserLayoutEffect(() => {
+    const el = stage.current;
+    if (!el) return;
+
+    const measure = () => {
+      const board = el.getBoundingClientRect();
+      if (!board.width) return;
+      // The board is 400 viewBox units wide however many CSS pixels that is.
+      const unit = 400 / board.width;
+
+      const measured: { mid: number; offsets: Offsets }[] = [];
+      for (const [id, block] of blocks.current) {
+        const b = block.getBoundingClientRect();
+        if (!b.width) continue;
+        const bx = b.left + b.width / 2;
+        const by = b.top + b.height / 2;
+        // Relative to the block's own centre, so these do not depend on the
+        // radius — which is what lets the radius be solved for rather than
+        // converged on by nudging and re-measuring.
+        const offsets: [number, number][] = [];
+        for (const ink of Array.from(block.children)) {
+          const r = ink.getBoundingClientRect();
+          if (!r.width) continue;
+          for (const x of [r.left, r.right]) {
+            for (const y of [r.top, r.bottom]) {
+              offsets.push([(x - bx) * unit, (y - by) * unit]);
+            }
+          }
+        }
+        if (offsets.length) measured.push({ mid: TRACK_ARCS[id].mid, offsets });
+      }
+      if (!measured.length) return;
+
+      // Inner clearance minus outer clearance, taken across all three blocks.
+      // Negative means the set is too far in. Strictly increasing in radius,
+      // since moving out grows the inner clearance and shrinks the outer one.
+      const balance = (r: number) => {
+        let lo = Infinity;
+        let hi = 0;
+        for (const { mid, offsets } of measured) {
+          const span = radialSpan(offsets, mid, r);
+          lo = Math.min(lo, span.lo);
+          hi = Math.max(hi, span.hi);
+        }
+        return lo - R_INNER - (R_OUTER - hi);
+      };
+
+      // Bisection rather than a closed form: `balance` runs through a hypot per
+      // corner, so it has no clean inverse. Bracketing by the ring itself also
+      // means a pathological measurement can only ever park the labels
+      // somewhere inside the ring, never off the disc.
+      let low = R_INNER;
+      let high = R_OUTER;
+      for (let i = 0; i < 24; i += 1) {
+        const mid = (low + high) / 2;
+        if (balance(mid) < 0) low = mid;
+        else high = mid;
+      }
+      setRadius(Math.round((low + high) * 50) / 100);
+    };
+
+    measure();
+    // Web fonts arrive after the first layout and Cormorant is appreciably
+    // wider than the fallback serif, so a single measurement at mount would
+    // size the ring to type the visitor never sees.
+    void document.fonts?.ready.then(measure);
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [stage, blocks]);
+
+  return radius;
 }
 
 // Focus is owned by the page rather than by the disc: lighting a sector also
@@ -98,6 +218,9 @@ export function TrinityDisc({
   setFocus: (next: Focus) => void;
 }) {
   const router = useRouter();
+  const stage = useRef<HTMLDivElement>(null);
+  const labelBlocks = useRef(new Map<TrackId, HTMLElement>());
+  const labelRadius = useBalancedLabelRadius(stage, labelBlocks);
 
   /** True whenever something is lit and it is not this track. */
   const dimmed = (id: TrackId) => focus !== null && focus !== id;
@@ -139,6 +262,7 @@ export function TrinityDisc({
       ))}
 
       <div
+        ref={stage}
         className="relative mx-auto aspect-square w-full max-w-[min(56vh,30rem)]"
         onMouseLeave={() => setFocus(null)}
       >
@@ -201,7 +325,7 @@ export function TrinityDisc({
             key={track.id}
             href={`/${lang}/${track.id}`}
             style={{
-              ...labelPosition(TRACK_ARCS[track.id].mid),
+              ...labelPosition(TRACK_ARCS[track.id].mid, labelRadius),
               animation: `fade-in 500ms ease-out ${1250 + i * 150}ms both`,
             }}
             className="absolute -translate-x-1/2 -translate-y-1/2"
@@ -210,6 +334,12 @@ export function TrinityDisc({
             onBlur={() => setFocus(null)}
           >
             <span
+              // The radius is solved from these two children's boxes, so this
+              // span must hold nothing but them.
+              ref={(node) => {
+                if (node) labelBlocks.current.set(track.id, node);
+                else labelBlocks.current.delete(track.id);
+              }}
               className="flex flex-col items-center gap-1 text-center transition-opacity duration-500 ease-out"
               style={{ opacity: dimmed(track.id) ? 0.3 : 1 }}
             >
