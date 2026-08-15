@@ -347,7 +347,13 @@ export function TrinityDisc({
               {/* Inline rather than a utility: this has to beat `.label`'s own
                   font-size, and two utilities of equal specificity would be
                   decided by whichever Tailwind happened to emit last. */}
-              <span className="label" style={{ fontSize: "10.5px", letterSpacing: "0.13em" }}>
+              {/* The size is a variable so the English classical treatment can
+                  raise it without the two rules racing on equal specificity —
+                  Cormorant needs more than 10.5px to hold up. */}
+              <span
+                className="label"
+                style={{ fontSize: "var(--disc-label-size, 10.5px)", letterSpacing: "0.13em" }}
+              >
                 {dict.tracks[track.id].title}
               </span>
             </span>

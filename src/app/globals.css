@@ -120,6 +120,46 @@
   font-family: var(--font-cormorant), var(--font-fangsong), serif;
 }
 
+/* ── The home screen sets classical in English ────────────────────────────
+   D8's three-way collision stays everywhere else, but it does not land evenly
+   across the two scripts. Space Grotesk and JetBrains Mono both carry a
+   contemporary, technical register, and that register only exists in Latin —
+   on the Chinese side the same stacks resolve to Source Han, which reads
+   neutral. So the same screen came out markedly more modern in English than
+   in Chinese. The owner asked for the Latin side pulled classical; Chinese
+   was already right and is untouched, hence the :lang(en) scope.
+
+   Scoped to the home screen rather than to .label globally, because D12 rests
+   on .label staying mono: a year in tabular lining figures beside the same
+   year in Cormorant's old-style figures is the whole point of the CV pages,
+   and setting both in Cormorant would erase it.
+
+   Cormorant runs light at small sizes (D8), so sizes go up and weight goes to
+   600. Uppercase Cormorant at 13px on wide tracking reads as inscriptional
+   rather than as fine print. */
+:lang(en) .home-stage {
+  --disc-label-size: 12px;
+}
+
+:lang(en) .home-stage .label {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+}
+
+:lang(en) .home-stage .intro-copy {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+@media (min-width: 768px) {
+  :lang(en) .home-stage .intro-copy {
+    font-size: 1.125rem;
+  }
+}
+
 /* ── Entrance ─────────────────────────────────────────────────────────────
    The disc is plotted rather than faded in: the tick bezel appears first, the
    three sectors are drawn onto it one after another, then the pigment inks in
