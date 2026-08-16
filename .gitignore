@@ -53,3 +53,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Upstream Fangsong build input for scripts/subset-fangsong.py — 8.4 MB, OFL 1.1.
+# The subset ships; the source does not. See D17.
+ZhuqueFangsong-*.zip
+ZhuqueFangsong-*.ttf

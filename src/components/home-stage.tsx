@@ -80,6 +80,22 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
         className="absolute inset-x-6 bottom-6 z-10 flex flex-wrap items-center gap-x-8 gap-y-2 md:inset-x-10 md:bottom-8"
         style={{ animation: "rise-in 700ms ease-out 1850ms both" }}
       >
+        {/* Set apart from the utility links, and in the display face rather
+            than in .label, because it is a place and they are tools.
+
+            It goes in the footer and not on the disc on purpose. The ring
+            encodes the three public identities; D9 requires the private self
+            to stay unencoded, and the writing is the deepest part of that — a
+            fourth sector or a fourth mark would contradict the one thing the
+            composition is saying. The footer is also the half of the screen
+            that does not recede when a beam fires, so the door stays open
+            while the visitor is exploring. */}
+        <Link
+          href={`/${lang}/writing`}
+          className="border-r border-bone/25 pr-8 font-display text-lg italic text-bone/70 transition-colors hover:text-bone"
+        >
+          {dict.nav.writing}
+        </Link>
         <Link href={`/${lang}/cv`} className="label text-bone/55 transition-colors hover:text-bone">
           {dict.nav.cv}
         </Link>
