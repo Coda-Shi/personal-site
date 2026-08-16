@@ -2,22 +2,22 @@ import type { Piece } from "@/lib/writing";
 
 /**
  * Given by the owner on 2026-08-10, previously inlined on /coda as POEM.
+ * Titled 真我 by the owner on 2026-08-16 — it was carried untitled until then.
  *
- * Untitled, and it stays that way — `title` is omitted rather than filled in,
- * so the index identifies it by its opening line. Do not name it; that is the
- * author's to do.
- *
- * The slug is not a title either. It is a URL segment, and it has to be Latin
- * and stable, so it paraphrases the first line. Rename it freely before the
- * link is shared anywhere; not after.
+ * The slug is not the title, it is a URL segment, so it has to be Latin and
+ * stable: `true-self` renders 真我 rather than inventing anything, and the
+ * closing line asks the reader to become their true self. It was renamed from
+ * `ten-thousand-dusks` (taken from the opening line, back when the piece had
+ * no title) the same day it shipped — safe then, not safe once a link is out.
  *
  * Chinese only, and that is not an omission awaiting a translation.
  */
-export const tenThousandDusks: Piece = {
-  slug: "ten-thousand-dusks",
+export const trueSelf: Piece = {
+  slug: "true-self",
   kind: "verse",
   text: {
     zh: {
+      title: "真我",
       body: [
         "你的身上已藏着一万个黄昏",
         "可当晨曦照亮你泪痕闪烁的脸庞",

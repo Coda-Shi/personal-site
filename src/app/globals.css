@@ -137,11 +137,18 @@
    Cormorant runs light at small sizes (D8), so sizes go up and weight goes to
    600. Uppercase Cormorant at 13px on wide tracking reads as inscriptional
    rather than as fine print. */
-:lang(en) .home-stage {
+/* The labels go classical in *both* languages, not just English.
+   The first pass scoped this to :lang(en) on the reasoning that Chinese
+   already read neutral — but that was reasoning about Chinese characters,
+   and the footer is mostly not Chinese characters. Set beside a serif 诗文,
+   ELEGISTS STUDIO and GITHUB in JetBrains Mono read as a different site.
+   The Chinese half follows the same stack into Source Han Serif, which is
+   the Song face and the classical register there. */
+.home-stage {
   --disc-label-size: 12px;
 }
 
-:lang(en) .home-stage .label {
+.home-stage .label {
   font-family: var(--font-display);
   font-size: 0.8125rem;
   font-weight: 600;

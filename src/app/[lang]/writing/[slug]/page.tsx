@@ -63,7 +63,7 @@ export default async function Page({ params }: PageProps<"/[lang]/writing/[slug]
             and then again as the first line reads as a mistake, and inventing
             one is not ours to do. */}
         {text.title ? (
-          <h1 className="mt-8 font-display text-4xl leading-tight font-light tracking-tight md:text-5xl">
+          <h1 className="mt-8 font-display text-2xl leading-tight font-light tracking-tight md:text-3xl">
             {text.title}
           </h1>
         ) : null}

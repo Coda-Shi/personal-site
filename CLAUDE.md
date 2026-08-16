@@ -492,7 +492,11 @@ Professional 扇区用**真实法规条号**而非抽象流程图形：`29 CFR 1
 
 **根因**：D8 的三体对撞**在两种文字里不对称**。Space Grotesk 与 JetBrains Mono 都带着当代／技术的调性，而**这个调性只存在于拉丁文**——中文侧同一套字体栈落到思源，读起来是中性的。于是同一块屏幕，英文版明显比中文版现代。
 
-**做法**：`:lang(en) .home-stage` 作用域下，`.label` 与简介段落改用 Cormorant，字号上调、字重 600。中文完全不动（已实测：`/zh` 仍是 Space Grotesk 14px + JetBrains Mono 11px/10.5px）。
+**做法**：`.home-stage` 作用域下，`.label` 改用 `--font-display`，13px / 字重 600 / 0.18em；简介段落（`.intro-copy`）另外改，**仅限英文**。
+
+> ⚠️ **`.label` 这一档最初只作用于 `:lang(en)`，2026-08-16 改成两种语言都作用。**
+> 原来的理由是「中文侧落到思源、本来就中性」——但那是在推理**汉字**，而页脚大半不是汉字。`诗文` 是衬线，紧挨着的 `ELEGISTS STUDIO`、`GITHUB` 却是 JetBrains Mono，并排读起来像两个网站。所有者原话：「中文版左下角的这一部分字体你没有修好啊」。
+> 中文侧顺着同一套栈落到思源宋（Song 面），正是中文里对应的古典档位。**简介段落仍只改英文**——所有者没提它，而它是正文不是标签。
 
 > 🔴 **绝对不要把这套改成全局 `.label`。** D12 依赖 `.label` 保持等宽：`/cv` 上「等宽的表格数字」与「Cormorant 的老式数字」并置，同一个年份读作两个文明——两边都变成 Cormorant，这个对撞就没了。所以作用域挂在 `HomeStage` 的 `.home-stage` 上，`SiteShell` 那条线的页面一律不受影响。
 
@@ -668,7 +672,8 @@ gh pr create --fill
 | 导航与区块标题（简历 / 教育 / 行路 / 诗） | ✅ 已定稿 |
 | CV 正文：学术 · 实务 · 创作 · 教育 · 行路 · 技能 | ✅ 2026-08-09 全部完成 |
 
-**刻意保留拉丁文的机构名**（所有者确认）：`Everglory Products Corporation`（确实没有中文名）、`ELEGISTS STUDIO`（工作室自己的字标）、`Crisis Text Line`（美国机构本名）。**不要给它们编中文名**——翻译简历不是发明机构名的许可。
+**刻意保留拉丁文的机构名**（所有者确认）：`Everglory Products Corporation`（确实没有中文名）、`Crisis Text Line`（美国机构本名）。
+~~`ELEGISTS STUDIO`~~ **已于 2026-08-16 更正——工作室的中文名是「唱诗人工作室」**，由所有者提供，现走 `dict.nav.studio`。**不要给它们编中文名**——翻译简历不是发明机构名的许可。
 `XunZheng Mental Health Clinic` = **循证心理诊所**，`Hot Sound Club` = **热音社**，均由所有者提供。
 
 工具与库名（lavaan、tidyverse、Power BI）同样保持拉丁文：那是这个领域的书写方式，译成中文只会更难读。
