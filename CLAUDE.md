@@ -532,9 +532,19 @@ Professional 扇区用**真实法规条号**而非抽象流程图形：`29 CFR 1
 
 > ⚠️ `localeAlternates()` 的 `path` 参数已从 `ROUTES` 的联合类型放宽为 `string`——`/writing/[slug]` 是动态的，没法枚举进类型。
 
-> 🔴 **上游 `ZhuqueFangsong-Regular.ttf` 不在机器 A 上，`subset-fangsong.py` 现在跑不了。** 本轮新增中文文案后实测缺 4 个字（`仅 代 此 篇`）。**没有硬凑**——改写了文案，用的全是子集里已有的字，实测缺字为 0。但这是权宜：**下次加中文文案前必须先把上游 ttf 放回来**（[TrionesType/zhuque](https://github.com/TrionesType/zhuque) releases，OFL 1.1），否则要么缺字掉回系统字体，要么继续被字体子集反过来限制文案——后者是本末倒置。
+> ⚠️ **加中文文案后必须重跑 `scripts/subset-fangsong.py <上游ttf>`。** 本轮从 734 字涨到 738 字、230 KB。
 >
-> 查缺字的办法（不需要上游 ttf）：读 `src/app/fonts/zhuque-fangsong-subset.woff2` 的 cmap，和 `src/lib/i18n.ts` + `src/content/writing/*.ts` 里所有 CJK 字符求差集。
+> **上游 ttf 的取得方式**（它不入库，见 D17；`.gitignore` 已封 `ZhuqueFangsong-*.{zip,ttf}`）：
+>
+> ```bash
+> curl -sSL -o ZhuqueFangsong-v0.212.zip https://github.com/TrionesType/zhuque/releases/download/v0.212/ZhuqueFangsong-v0.212.zip
+> ```
+>
+> 解压出 `ZhuqueFangsong-Regular.ttf`（8.4 MB）放仓库根目录即可。机器 A 上已备好。
+>
+> 🔴 **绝不要因为某个字不在子集里就改文案。** 本轮一度这么做过，被所有者当场否掉——**「别改我的字」**。字体是为文案服务的，不是反过来。缺字就去把上游 ttf 弄回来重切，这是唯一正确的处理。
+>
+> 不需要上游 ttf 也能查缺字：读 `src/app/fonts/zhuque-fangsong-subset.woff2` 的 cmap，与 `src/lib/i18n.ts` + `src/content/writing/*.ts` 里所有 CJK 字符求差集。
 
 ## 5. 工作流约定
 
@@ -632,7 +642,7 @@ gh pr create --fill
 - [x] 标签半径改为运行时求解（见 D19）
 - [ ] 🔴 **把 Vercel 的 Preview 保护开回来**（Production 保持关闭）。2026-08-12 为了上线整个关掉了，Preview 一直敞着意味着未定稿的文案和半成品页面都能被人翻到。**所有者要求提醒他这件事**
 - [x] **诗文 section**（Verse & Prose）已建，见 D22。现有一首，等所有者继续加
-- [ ] 🔴 把上游 `ZhuqueFangsong-Regular.ttf` 放回机器 A，否则加中文文案会缺字（见 D22）
+- [x] 上游 `ZhuqueFangsong-Regular.ttf` 已下回机器 A（v0.212），子集脚本可正常重跑
 - [ ] 逐页打磨视觉（所有者原话「你先做，我们可以慢慢改」）
 - [ ] 提交 sitemap 到 Google Search Console
 - [ ] 符号层排布方案 A/B/C 待所有者选（见 D13）

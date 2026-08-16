@@ -139,9 +139,9 @@ const en: Dictionary = {
   nav: { cv: "Curriculum vitae", coda: "Coda himself", writing: "Verse & Prose" },
   writing: {
     title: "Verse & Prose",
-    lede: "Written outside all three — the part of him that stands apart from society.",
+    lede: "Written apart from any of the three — the part of him that answers to nobody.",
     kinds: { verse: "Verse", prose: "Prose" },
-    onlyIn: "Chinese original",
+    onlyIn: "In Chinese only",
     all: "All verse & prose",
     more: "Verse & Prose",
   },
@@ -201,9 +201,9 @@ const zh: Partial<Dictionary> = {
   nav: { cv: "简历", coda: "Coda 其人", writing: "诗文" },
   writing: {
     title: "诗文",
-    lede: "写在三条线之外，独立于社会之外的那一部分。",
+    lede: "写在三条线之外——他不对任何人交代的那一部分。",
     kinds: { verse: "诗", prose: "文" },
-    onlyIn: "英文原作",
+    onlyIn: "此篇仅有英文",
     all: "全部诗文",
     more: "诗文",
   },
