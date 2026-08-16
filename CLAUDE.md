@@ -6,7 +6,7 @@
 >
 > **维护约定**：做了新决策、完成了里程碑、或发现了新陷阱，就更新本文件，并同步「最后更新」日期。决策只增不删——推翻旧决策时把它标记为「已废弃」并说明原因，保留推理链比保留结论更有价值。
 
-**最后更新**：2026-08-12
+**最后更新**：2026-08-15
 
 ---
 
@@ -20,8 +20,9 @@ Yixuan "Coda" Shi（GitHub [@Coda-Shi](https://github.com/Coda-Shi)）的个人�
 | 本地路径 | **因机器而异**，见 §6。已知：`C:\Users\shiyi\dev\personal-site`、`C:\Users\Yixuan Shi\dev\personal-site` |
 | 主分支 | `main`（受保护） |
 | 托管 | Vercel（scope: `coda4`） |
-| 生产部署 | https://personal-site-dwz5h3837-coda4.vercel.app （该次部署的固定地址；稳定别名见 Vercel 面板） |
-| 正式域名 | 未购买，暂用 `*.vercel.app` 子域名 |
+| **正式域名** | **https://yixuancodashi.com** （2026-08-15 上线） |
+| www | `www.yixuancodashi.com` → **308** → 根域名。根域名是主，不要反过来，见 D20 |
+| Vercel 生产别名 | `personal-site-kappa-eight-52.vercel.app` → 307 → 正式域名。**不是** `personal-site-coda4.vercel.app`（那个是次级别名，Vercel 给它加 `X-Robots-Tag: noindex`） |
 | 开发环境 | Windows 11、PowerShell、Node v24.18.1、npm 11.16.0 |
 
 ## 2. 技术栈
@@ -86,7 +87,10 @@ Yixuan "Coda" Shi（GitHub [@Coda-Shi](https://github.com/Coda-Shi)）的个人�
 
 **何时重新评估**：等所有者对 PR 流程熟练后，或有真实协作者加入时，改为 `enforce_admins = true`。
 
-### D6 — 域名暂不购买 ⏸ 待执行
+### D6 — 域名暂不购买 ✅ 已执行（2026-08-15 买入 `yixuancodashi.com`）
+
+> **结果**：按本条的选购原则在 **Porkbun** 买了 `yixuancodashi.com`，$11.06/年，首年与续费同价，WHOIS 隐私免费且**已验证生效**（公开 RDAP 只返回 Porkbun 自己，registrant 一栏完全不公开）。NS 留在 Porkbun，只用 A/CNAME 指向 Vercel——**没有**把 nameserver 交给 Vercel 托管。绑定过程踩的坑见 D20。原推理保留如下。
+
 
 **理由**：先用免费的 `*.vercel.app`，等网站成型再决定。**绑定自定义域名的迁移成本为零**，随时可加。
 
@@ -446,6 +450,39 @@ Professional 扇区用**真实法规条号**而非抽象流程图形：`29 CFR 1
 >
 > **所以「改了视口 R 没变」在这个环境里是工具的假象，不是 bug。** 要在这里验证不同视口，得**先改视口再重新导航**，靠挂载时那次同步测量出结果。别为了这个假象去改代码。
 
+### D20 — 根域名是主，www 是 308 重定向 ✅ 生效中（2026-08-15）
+
+**决策**：`yixuancodashi.com` 是唯一正式地址；`www.yixuancodashi.com` 以 **308 永久重定向**指向它。
+
+> 🔴 **不要接受 Vercel 添加域名弹窗里那个默认勾上的「Redirect apex domains to www (recommended)」。** 它是反的。
+>
+> 勾上之后根域名会跳去 www，而 `NEXT_PUBLIC_SITE_URL`、canonical、og:image、sitemap 全部写的是**根域名**。结果是「canonical 指向一个自己会跳走的地址」——自相矛盾的信号，搜索引擎多半改用 www，于是上述四处**全部作废、要推倒重设**。
+>
+> Vercel 标 "recommended" 有历史原因（根域名不能用 CNAME、根域名的 cookie 会漏给所有子域名），**这两条对静态个人站都不成立**。
+>
+> 它还会连带报一个看不懂的错：`You have redirected another domain (…vercel.app) to this domain. In turn, you cannot redirect this one.` 真正的原因是 `vercel.app → 根域名 → www` 构成了重定向链，而 Vercel 不允许链。**取消那个勾，错误自己消失。**
+
+**www 用 308 不用 307**：307 是临时，等于让搜索引擎两个地址都收录；308 是永久，把权重并给根域名。Vercel 弹窗默认给的是 307，要手动改。
+
+**绑定路线**：NS 留在 Porkbun，只在 DNS 里指记录。根域名 `A → 216.198.79.1`，`www` `CNAME → cname.vercel-dns.com`。
+
+> ⚠️ **Vercel 那一页上「Nameservers」和「CNAME 记录」两块挨得很近，别抄错。** 曾把 www 的 CNAME 填成 `ns1.vercel-dns.com`——那是**域名服务器**（解析到 `198.51.44.13`，只跑 DNS 不跑 HTTP），属于「把整个域名托管给 Vercel」那条**互斥**路线。症状：明文 HTTP 有 `Server: Vercel` 的 308，HTTPS 却握手失败。
+
+> ⚠️ **证书签不出来，先查该域名在不在 Vercel 项目的 Domains 列表里，不要干等。** 曾经 DNS 全对、等了 5 分钟仍 `SEC_E_WRONG_PRINCIPAL`，原因是 `www` 根本没加进项目——Vercel 只给登记过的域名签证书。**决定性的判据是看证书的 SAN**：
+>
+> ```bash
+> openssl s_client -connect yixuancodashi.com:443 -servername yixuancodashi.com </dev/null 2>/dev/null \
+>   | openssl x509 -noout -text | grep -A3 "Subject Alternative Name"
+> ```
+>
+> 只列出根域名就说明 www 没登记，等多久都不会有。另外：**项目级 Domains 页在 `/<team>/<project>/settings/domains`**，账号级的 `/<team>/~/domains` 只管「你名下有哪些域名」，加不了子域名。
+
+**Porkbun 的默认记录必须清掉**：新域名自带 `ALIAS @ → uixie.porkbun.com` 和 `CNAME * → uixie.porkbun.com`（停放页），还有 **URL Forwarding**，三者都要清。**保留** MX ×2 + SPF TXT（免费邮件转发，以后要 `hi@yixuancodashi.com` 用得上）和 `_acme-challenge` TXT（Porkbun 自己的证书校验，无害）。
+
+**Porkbun 的 Host 栏留空代表根域名**，不要填 `@`、更不要填完整域名——它会自动补后缀，填 `yixuancodashi.com` 会变成 `yixuancodashi.com.yixuancodashi.com`。
+
+> ℹ️ Vercel 面板对 www 显示 **DNS Change Recommended**，建议改成项目专属的 `63eddaae7969fbe8.vercel-dns-017.com`。**这是建议不是错误**，Vercel 自己的说明写着 `cname.vercel-dns.com` 与 `76.76.21.21` 会继续可用。改了能消掉那个黄色感叹号。
+
 ## 5. 工作流约定
 
 **不要直接改 `main`。** 标准循环：
@@ -535,11 +572,18 @@ gh pr create --fill
 - [x] **中心照片**——彩色圆形头像已上线（见 D9 的红色警示与 `scripts/hub-portrait.py`）
 - [x] 上线元数据：canonical、hreflang、OG 卡片、favicon、`robots.txt`、`sitemap.xml`（见 D18）
 - [x] 删掉 `create-next-app` 留下的 5 个示例 SVG 和默认 favicon
-- [ ] 把部署网址写入仓库 homepage 字段
-- [ ] 🔴 **关闭 Vercel Deployment Protection**——**只有所有者能做，这是上线的头号阻塞项**。当前所有 `*.vercel.app` 地址都 302 跳到 Vercel SSO 登录页并带 `X-Robots-Tag: noindex`，匿名访客和爬虫都进不来。见 §9
+- [x] 关闭 Vercel Deployment Protection（2026-08-12）
+- [x] 购买并绑定域名 `yixuancodashi.com`（2026-08-15，见 D6、D20）
+- [x] Vercel 设 `NEXT_PUBLIC_SITE_URL=https://yixuancodashi.com`（Production）并 Redeploy
+- [x] 把部署网址写入仓库 homepage 字段
+- [x] 标签半径改为运行时求解（见 D19）
+- [ ] 🔴 **把 Vercel 的 Preview 保护开回来**（Production 保持关闭）。2026-08-12 为了上线整个关掉了，Preview 一直敞着意味着未定稿的文案和半成品页面都能被人翻到。**所有者要求提醒他这件事**
 - [ ] **诗文**——只能由所有者提供，`/coda` 的 Poems 目前是空状态
 - [ ] 逐页打磨视觉（所有者原话「你先做，我们可以慢慢改」）
-- [ ] 购买域名并绑定（见 D6）；域名到手后在 Vercel 设 `NEXT_PUBLIC_SITE_URL`，否则 canonical 会一直指向 `*.vercel.app`
+- [ ] 提交 sitemap 到 Google Search Console
+- [ ] 符号层排布方案 A/B/C 待所有者选（见 D13）
+
+**2026-08-15 上线验证**（全绿）：12 个页面全 200；OG 卡片 / icon / apple-icon 正常；sitemap 12 条且**无一条**指向旧地址；生产站无 `X-Robots-Tag` 也无 `robots` meta（可收录）；`www` 308 → 根域名 → 307 → `/en` → 200；旧的 `personal-site-kappa-eight-52.vercel.app` 307 → 正式域名。
 
 ### 中文版翻译进度
 
@@ -604,7 +648,7 @@ npm run dev
 
 | 问题 | 状态 |
 |---|---|
-| 🔴 **Vercel Deployment Protection 未关** | **上线的头号阻塞项，只有所有者能在 Vercel 面板里改。** 2026-08-12 实测：`personal-site-<hash>-coda4.vercel.app`、`personal-site-coda4.vercel.app`、`personal-site-git-main-coda4.vercel.app` 全部 **302 跳到 `vercel.com/sso-api`** 并带 `X-Robots-Tag: noindex`——没登录 Vercel 的人看不到网站，搜索引擎也收不了。位置：Vercel → 项目 → Settings → Deployment Protection → Vercel Authentication，对 **Production** 设为 Disabled（Preview 建议保留保护）。<br>顺带：`personal-site.vercel.app`（不带 `-coda4`）返回 200 但**是别人的站**，标题 `Create Next App`，不要拿它当自己的地址。 |
+| 🔴 **Vercel 的 Preview 保护还开着吗？** | 2026-08-12 为了上线，Deployment Protection **整个**关掉了（Production + Preview）。Production 必须保持关闭，但 **Preview 应当开回来**——否则每个 PR 的预览部署都是公开的，未定稿文案、半成品页面都能被人翻到。**所有者明确要求提醒他这件事。** 位置：Vercel → 项目 → Settings → Deployment Protection → Vercel Authentication，只对 **Preview** 启用。 |
 | 全局 `user.email` 是否也改为 noreply？ | **未定**。改了则所有新仓库默认匿名，但影响机器上全部项目。已向所有者提出，等答复。 |
 | 网站要有哪些内容/板块？ | 未讨论。设计方向、信息架构、视觉风格全部空白。 |
 | 是否加备用邮箱到 GitHub 账号？ | 未做。GitHub 已警告只有单一验证邮箱，丢失即无法找回账号。 |
