@@ -33,7 +33,10 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
   };
 
   return (
-    <main className="relative grid h-dvh w-full place-items-center overflow-hidden">
+    // `home-stage` carries no layout. It is the scope for the classical
+    // English treatment in globals.css, which must not reach the CV pages —
+    // see D12.
+    <main className="home-stage relative grid h-dvh w-full place-items-center overflow-hidden">
       <header className="absolute inset-x-6 top-6 z-10 md:inset-x-10 md:top-9">
         {/* Every line is w-fit or width-capped. A full-width block box at
             top-left reaches under the centred disc even when its text does
@@ -51,7 +54,7 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             never gets a say. */}
         <div style={{ animation: "rise-in 700ms ease-out 130ms both" }}>
           <p
-            className="hide-when-short mt-3 max-w-xs text-xs leading-relaxed text-bone/70 md:max-w-sm md:text-sm xl:max-w-md"
+            className="intro-copy hide-when-short mt-3 max-w-xs text-xs leading-relaxed text-bone/70 md:max-w-sm md:text-sm xl:max-w-md"
             style={recede}
           >
             {dict.profile}

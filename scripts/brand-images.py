@@ -194,11 +194,46 @@ def tracked(d, xy, text, font, fill, em):
     return x - extra
 
 
+def coda_mark(size: int) -> Image.Image:
+    """
+    The coda sign, on the same 24-unit grid as track-mark.tsx.
+
+    Bone on void, carrying none of the three pigments — the mark is Coda
+    himself, not one of the three tracks, and D9 asks the private centre to
+    stay unencoded.
+
+    The ring is an outer ellipse with an inner one punched out, not a stroked
+    ellipse: that is what gives the serif modulation, heavy on the flanks
+    (2.8 units) and thin across the top and bottom (1.3). A stroke can only be
+    uniform.
+    """
+    s = size * 4
+    img = Image.new("RGBA", (s, s), VOID + (255,))
+    d = ImageDraw.Draw(img)
+
+    span = 0.82  # how much of the tile the 24-unit grid fills
+    u = s * span / 24
+    origin = (s - 24 * u) / 2
+
+    def at(x: float, y: float) -> tuple[float, float]:
+        return origin + x * u, origin + y * u
+
+    d.ellipse([*at(4.4, 3.3), *at(19.6, 20.7)], fill=BONE + (255,))
+    d.ellipse([*at(7.2, 4.6), *at(16.8, 19.4)], fill=VOID + (255,))
+
+    # Heavier than the page's 1.25 units. At a 16px tab icon that weight lands
+    # at 0.8px and washes out to nothing in the downsample, taking the sign's
+    # defining feature with it — a coda without its cross is just a ring.
+    bar = 2.1
+    d.rectangle([*at(12 - bar / 2, 0.7), *at(12 + bar / 2, 23.3)], fill=BONE + (255,))
+    d.rectangle([*at(0.5, 12 - bar / 2), *at(23.5, 12 + bar / 2)], fill=BONE + (255,))
+
+    return img.resize((size, size), Image.LANCZOS)
+
+
 def write_icons() -> None:
     for name, size in (("icon.png", 512), ("apple-icon.png", 180)):
-        canvas = Image.new("RGBA", (size, size), VOID + (255,))
-        canvas.alpha_composite(disc(size, ICON_PIGMENT, bezel=False, hairline=False, portrait=None))
-        canvas.save(APP / name, optimize=True)
+        coda_mark(size).save(APP / name, optimize=True)
         print(f"  {name:22} {size}×{size}  {(APP / name).stat().st_size / 1024:>5.0f} KB")
 
 
