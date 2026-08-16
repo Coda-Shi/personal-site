@@ -38,7 +38,7 @@ function Row({ piece, lang }: { piece: Piece; lang: Locale }) {
         href={`/${lang}/writing/${piece.slug}`}
         className="group flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-5 transition-colors"
       >
-        <span className="font-display text-2xl leading-snug tracking-tight text-bone/85 transition-colors group-hover:text-bone md:text-3xl">
+        <span className="font-display text-lg leading-snug tracking-tight text-bone/85 transition-colors group-hover:text-bone md:text-xl">
           {pieceLabel(shown)}
         </span>
         <span className="label whitespace-nowrap text-bone/40">
@@ -57,7 +57,7 @@ export default async function Page({ params }: PageProps<"/[lang]/writing">) {
   return (
     <SiteShell lang={lang}>
       <header>
-        <h1 className="font-display text-5xl leading-none font-light tracking-tight md:text-6xl">
+        <h1 className="font-display text-4xl leading-none font-light tracking-tight md:text-5xl">
           {dict.writing.title}
         </h1>
         <span aria-hidden="true" className="mt-6 block h-px w-24 bg-bone/50" />

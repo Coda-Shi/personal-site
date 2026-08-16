@@ -99,12 +99,14 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
         <Link href={`/${lang}/cv`} className="label text-bone/55 transition-colors hover:text-bone">
           {dict.nav.cv}
         </Link>
+        {/* The studio does have a Chinese name — 唱诗人工作室 — so unlike
+            Everglory or Crisis Text Line it is not left in Latin. */}
         <a
           href="https://elegists.studio"
           className="label text-bone/55 transition-colors hover:text-bone"
           rel="noreferrer"
         >
-          Elegists Studio
+          {dict.nav.studio}
         </a>
         <a
           href="https://github.com/Coda-Shi"

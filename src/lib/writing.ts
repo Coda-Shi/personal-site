@@ -1,4 +1,4 @@
-import { tenThousandDusks } from "@/content/writing/ten-thousand-dusks";
+import { trueSelf } from "@/content/writing/true-self";
 import type { Locale } from "@/lib/i18n";
 
 /**
@@ -51,7 +51,7 @@ export type Piece = {
 };
 
 /** Curatorial order, newest first. Not sorted by date: most pieces have none. */
-export const PIECES: readonly Piece[] = [tenThousandDusks];
+export const PIECES: readonly Piece[] = [trueSelf];
 
 /**
  * What to call a piece in a list.

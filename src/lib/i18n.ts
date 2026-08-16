@@ -88,7 +88,7 @@ export type Dictionary = {
     heading: string;
     subheading: string;
   };
-  nav: { cv: string; coda: string; writing: string };
+  nav: { cv: string; coda: string; writing: string; studio: string };
   writing: {
     title: string;
     lede: string;
@@ -136,7 +136,12 @@ const en: Dictionary = {
     heading: "Coda himself",
     subheading: "as a writer and an advocate",
   },
-  nav: { cv: "Curriculum vitae", coda: "Coda himself", writing: "Verse & Prose" },
+  nav: {
+    cv: "Curriculum vitae",
+    coda: "Coda himself",
+    writing: "Verse & Prose",
+    studio: "Elegists Studio",
+  },
   writing: {
     title: "Verse & Prose",
     lede: "Written apart from any of the three — the part of him that answers to nobody.",
@@ -198,7 +203,7 @@ const zh: Partial<Dictionary> = {
     heading: "Coda 其人",
     subheading: "书写与行路之人",
   },
-  nav: { cv: "简历", coda: "Coda 其人", writing: "诗文" },
+  nav: { cv: "简历", coda: "Coda 其人", writing: "诗文", studio: "唱诗人工作室" },
   writing: {
     title: "诗文",
     lede: "写在三条线之外——他不对任何人交代的那一部分。",
