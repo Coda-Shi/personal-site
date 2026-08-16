@@ -48,7 +48,15 @@ export const INDEXABLE = process.env.VERCEL_ENV !== "preview";
 export const OG_LOCALE: Record<Locale, string> = { en: "en_US", zh: "zh_CN" };
 
 /** Every route under [lang]. Keep in step with the app directory. */
-export const ROUTES = ["", "/scholarly", "/professional", "/creative", "/coda", "/cv"] as const;
+export const ROUTES = [
+  "",
+  "/scholarly",
+  "/professional",
+  "/creative",
+  "/coda",
+  "/cv",
+  "/writing",
+] as const;
 
 /**
  * Self-canonical plus hreflang for one page.
@@ -60,11 +68,14 @@ export const ROUTES = ["", "/scholarly", "/professional", "/creative", "/coda", 
  * makes a layout-level hreflang point /en/scholarly at /zh instead of
  * /zh/scholarly.
  *
+ * `path` is a plain string, not the ROUTES union: /writing/[slug] is dynamic
+ * and cannot be enumerated in a type.
+ *
  * x-default names the copy to serve a reader whose language matches neither.
  * It points at English rather than at `/`, because `/` is a redirect and
  * hreflang should resolve in one hop.
  */
-export function localeAlternates(lang: Locale, path: (typeof ROUTES)[number] = "") {
+export function localeAlternates(lang: Locale, path: string = "") {
   const languages: Record<string, string> = { "x-default": `/${DEFAULT_LOCALE}${path}` };
   for (const locale of LOCALES) {
     languages[HTML_LANG[locale]] = `/${locale}${path}`;

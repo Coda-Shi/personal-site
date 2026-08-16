@@ -25,8 +25,8 @@ dark smudge. The icon lifts all three until the ring still reads as three
 colours in a browser tab, which is the only job it has. The icon also drops the
 portrait — a face at 16px is mud.
 
-The card keeps the true pigments, the bone hairlines, the bezel and the
-portrait, because it is only ever seen large.
+The card keeps the true pigments, the bone hairlines and the portrait, because
+it is only ever seen large.
 """
 
 import io
@@ -52,9 +52,10 @@ ICON_PIGMENT = {"scholarly": (31, 79, 216), "creative": (168, 40, 58), "professi
 ARCS = {"scholarly": (212, 328), "creative": (92, 208), "professional": (332, 448)}
 
 # Radii as fractions of the board, taken from trinity-disc.tsx over its 400 unit
-# viewBox so the proportions survive any output size.
+# viewBox so the proportions survive any output size. The tick bezel that used
+# to ring this was removed from the disc, so it is gone here too — the card and
+# the page have to show the same mark.
 R_OUTER, R_INNER = 172 / 400, 72 / 400
-R_TICK_OUT, R_TICK_MINOR, R_TICK_MAJOR = 196 / 400, 189 / 400, 181 / 400
 R_HUB = 0.15  # the hub is size-[30%] of the container
 
 
@@ -118,7 +119,7 @@ def annular_sector(c: float, s: float, start: float, end: float) -> list[tuple[f
     )
 
 
-def disc(size: int, pigments, *, bezel: bool, hairline: bool, portrait: Path | None) -> Image.Image:
+def disc(size: int, pigments, *, hairline: bool, portrait: Path | None) -> Image.Image:
     """The ring, drawn at 4× and downsampled — Pillow does not anti-alias."""
     s = size * 4
     img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
@@ -144,17 +145,6 @@ def disc(size: int, pigments, *, bezel: bool, hairline: bool, portrait: Path | N
         for start, end in ARCS.values():
             pts = annular_sector(c, s, start, end)
             pen.line(pts + [pts[0]], fill=BONE + (140,), width=max(1, round(s * 1.7 / 400)), joint="curve")
-
-    if bezel:
-        for a in range(0, 360, 3):
-            r0 = (R_TICK_MAJOR if a % 15 == 0 else R_TICK_MINOR) * s
-            rad = math.radians(a)
-            pen.line(
-                [c + math.cos(rad) * r0, c + math.sin(rad) * r0,
-                 c + math.cos(rad) * R_TICK_OUT * s, c + math.sin(rad) * R_TICK_OUT * s],
-                fill=BONE + (61,),
-                width=max(1, round(s * 0.6 / 400)),
-            )
 
     if portrait is not None:
         # The hub sits on the void, not on a hole: on the page the beam's apex
@@ -241,7 +231,7 @@ def write_og() -> None:
     W, H, D = 1200, 630, 470
     canvas = Image.new("RGB", (W, H), VOID)
 
-    ring = disc(D, PIGMENT, bezel=True, hairline=True, portrait=ROOT / "src" / "assets" / "portrait.png")
+    ring = disc(D, PIGMENT, hairline=True, portrait=ROOT / "src" / "assets" / "portrait.png")
     canvas.paste(ring, (W - D - 70, (H - D) // 2), ring)
 
     d = ImageDraw.Draw(canvas)

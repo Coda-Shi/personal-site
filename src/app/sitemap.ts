@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
-import { DEFAULT_LOCALE, HTML_LANG, LOCALES } from "@/lib/i18n";
+import { DEFAULT_LOCALE, HTML_LANG, LOCALES, type Locale } from "@/lib/i18n";
 import { ROUTES, SITE_URL } from "@/lib/site";
+import { PIECES } from "@/lib/writing";
 
 const absolute = (path: string) => new URL(path, SITE_URL).toString();
 
@@ -16,20 +17,30 @@ const absolute = (path: string) => new URL(path, SITE_URL).toString();
  * Google discounts a lastmod it can see is untrue, so an absent one is worth
  * more than a fabricated one.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
-  return LOCALES.flatMap((lang) =>
-    ROUTES.map((path) => ({
-      url: absolute(`/${lang}${path}`),
-      changeFrequency: "monthly" as const,
-      priority: path === "" ? 1 : 0.8,
-      alternates: {
-        languages: {
-          ...Object.fromEntries(
-            LOCALES.map((locale) => [HTML_LANG[locale], absolute(`/${locale}${path}`)]),
-          ),
-          "x-default": absolute(`/${DEFAULT_LOCALE}${path}`),
-        },
+function entry(lang: Locale, path: string, priority: number) {
+  return {
+    url: absolute(`/${lang}${path}`),
+    changeFrequency: "monthly" as const,
+    priority,
+    alternates: {
+      languages: {
+        ...Object.fromEntries(
+          LOCALES.map((locale) => [HTML_LANG[locale], absolute(`/${locale}${path}`)]),
+        ),
+        "x-default": absolute(`/${DEFAULT_LOCALE}${path}`),
       },
-    })),
-  );
+    },
+  };
+}
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return LOCALES.flatMap((lang) => [
+    ...ROUTES.map((path) => entry(lang, path, path === "" ? 1 : 0.8)),
+    // Every piece is prerendered in both languages — one written only in
+    // Chinese still has an /en URL that serves it as written and says so —
+    // so every piece belongs in the sitemap under both, and the hreflang
+    // cluster is complete. Listing only the languages a piece was written in
+    // would leave half a cluster, which Google discards whole.
+    ...PIECES.map((piece) => entry(lang, `/writing/${piece.slug}`, 0.6)),
+  ]);
 }

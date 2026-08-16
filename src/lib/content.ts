@@ -60,26 +60,6 @@ export const PROFILE =
 export const HINT = "Hover and tap to explore more";
 export const HINT_TWO = "Select which part you came to know him by";
 
-/**
- * The owner's own poem, given 2026-08-10.
- *
- * Set in the original and marked `lang="zh-Hans"` wherever it renders, on both
- * locales — that is what puts it in Zhuque Fangsong rather than letting the
- * English page hand it to a fallback face. It is not translated: translating
- * someone's poetry is authorship rather than localisation, and it is not mine
- * to do.
- */
-export const POEM = [
-  "你的身上已藏着一万个黄昏",
-  "可当晨曦照亮你泪痕闪烁的脸庞",
-  "你还是忍不住问",
-  "生命的意义究竟是什么？",
-  "在那顷刻间，强风骤起",
-  "卷起花瓣柳絮，幻化成你挚爱的一切",
-  "你听见他们轻吟着你遗忘已久的名字——",
-  "他们说，去成为真正的你自己",
-];
-
 // Tailwind cannot see class names assembled at runtime, so every track's classes
 // are written out in full here rather than interpolated from the track id.
 // `cssVar` is for SVG fills and inline transforms, where a utility class won't do.

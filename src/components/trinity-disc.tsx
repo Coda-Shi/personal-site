@@ -25,12 +25,6 @@ const R_INNER = 72;
  */
 const R_LABEL_START = 112;
 
-// The bezel. Ticks sit outside the ring the way they do on an astrolabe or a
-// vernier scale — classical instrument language, drawn with absolute geometry.
-const R_TICK_OUT = 196;
-const R_TICK_MINOR = 189;
-const R_TICK_MAJOR = 181;
-
 /** The hub is a fourth focus target, but it lights nothing and colours nothing. */
 export type Focus = TrackId | "hub" | null;
 
@@ -55,22 +49,6 @@ function annularSector(start: number, end: number) {
     "Z",
   ].join(" ");
 }
-
-// 120 minor ticks and 24 major ones as a single path — 144 separate <line>
-// elements would be 144 nodes for something that never needs to be addressed
-// individually.
-function tickRing() {
-  const segments: string[] = [];
-  for (let a = 0; a < 360; a += 3) {
-    const inner = a % 15 === 0 ? R_TICK_MAJOR : R_TICK_MINOR;
-    const p1 = polar(inner, a);
-    const p2 = polar(R_TICK_OUT, a);
-    segments.push(`M ${p1.x.toFixed(1)} ${p1.y.toFixed(1)} L ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`);
-  }
-  return segments.join(" ");
-}
-
-const TICKS = tickRing();
 
 function labelPosition(mid: number, radius: number) {
   const p = polar(radius, mid);
@@ -275,18 +253,12 @@ export function TrinityDisc({
               completely hidden until it clears this radius. */}
           <circle cx={CX} cy={CY} r={R_INNER} fill="var(--color-void)" />
 
-          {/* The bezel is plotted before anything is drawn onto it. */}
-          <path
-            d={TICKS}
-            fill="none"
-            stroke="rgba(242, 239, 233, 0.24)"
-            strokeWidth={0.6}
-            style={{ animation: "fade-in 600ms ease-out 150ms both" }}
-          />
-
           {TRACKS.map((track, i) => {
+            // 200ms, not the 350 it was under the bezel. That delay existed so
+            // the instrument could arrive before anything was drawn onto it;
+            // with the bezel gone it is a dead beat on an empty screen.
+            const drawDelay = 200 + i * 180;
             const arc = TRACK_ARCS[track.id];
-            const drawDelay = 350 + i * 180;
             return (
               <path
                 key={track.id}
@@ -297,12 +269,21 @@ export function TrinityDisc({
                 strokeLinejoin="round"
                 pathLength={1}
                 strokeDasharray={1}
-                className="cursor-pointer transition-opacity duration-500 ease-out"
+                className="cursor-pointer"
                 style={{
                   // Safe to set inline: the entry animations touch
-                  // stroke-dashoffset and fill-opacity, never opacity, so
-                  // animation fill-mode does not override this.
+                  // stroke-dashoffset and fill-opacity, never opacity or
+                  // stroke-opacity, so animation fill-mode does not override
+                  // either of these.
                   opacity: dimmed(track.id) ? 0.28 : 1,
+                  // The outline goes when this sector fires. The beam leaves
+                  // the sector's own inner arc in the same pigment and floods
+                  // to the page edge, so a hairline sitting across that join
+                  // reads as a seam in what should be one continuous field.
+                  // Faster than the dim (260 against 500) for the same reason
+                  // the intro copy leaves quickly: the beam is already moving.
+                  strokeOpacity: focus === track.id ? 0 : 1,
+                  transition: "opacity 500ms ease-out, stroke-opacity 260ms ease-out",
                   animation: `plot-stroke 700ms cubic-bezier(0.65, 0, 0.35, 1) ${drawDelay}ms both, ink-in 500ms ease-out ${drawDelay + 700}ms both`,
                 }}
                 onMouseEnter={() => setFocus(track.id)}

@@ -88,7 +88,23 @@ export type Dictionary = {
     heading: string;
     subheading: string;
   };
-  nav: { cv: string; coda: string };
+  nav: { cv: string; coda: string; writing: string };
+  writing: {
+    title: string;
+    lede: string;
+    kinds: { verse: string; prose: string };
+    /**
+     * Shown on a piece written in the language not being read. Phrased as a
+     * fact about the work rather than as a shortfall — "Chinese original",
+     * not "no English version". These are originals; there is nothing
+     * missing.
+     */
+    onlyIn: string;
+    /** Link back from a single piece to the index. */
+    all: string;
+    /** The /coda section heading, and its link into the section. */
+    more: string;
+  };
   headings: {
     education: string;
     poems: string;
@@ -120,7 +136,15 @@ const en: Dictionary = {
     heading: "Coda himself",
     subheading: "as a writer and an advocate",
   },
-  nav: { cv: "Curriculum vitae", coda: "Coda himself" },
+  nav: { cv: "Curriculum vitae", coda: "Coda himself", writing: "Verse & Prose" },
+  writing: {
+    title: "Verse & Prose",
+    lede: "Written outside all three — the part of him that stands apart from society.",
+    kinds: { verse: "Verse", prose: "Prose" },
+    onlyIn: "Chinese original",
+    all: "All verse & prose",
+    more: "Verse & Prose",
+  },
   headings: {
     education: "Education",
     poems: "Poems",
@@ -174,7 +198,15 @@ const zh: Partial<Dictionary> = {
     heading: "Coda 其人",
     subheading: "书写与行路之人",
   },
-  nav: { cv: "简历", coda: "Coda 其人" },
+  nav: { cv: "简历", coda: "Coda 其人", writing: "诗文" },
+  writing: {
+    title: "诗文",
+    lede: "写在三条线之外，独立于社会之外的那一部分。",
+    kinds: { verse: "诗", prose: "文" },
+    onlyIn: "英文原作",
+    all: "全部诗文",
+    more: "诗文",
+  },
   headings: {
     education: "教育",
     poems: "诗",
