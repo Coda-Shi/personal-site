@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { RecordList, TrackPage } from "@/components/track-page";
+import { EntryList, RecordList, TrackPage } from "@/components/track-page";
 import { EDUCATION, QUESTIONS, TRACKS } from "@/lib/content";
 import { getDictionary, hasLocale, localise } from "@/lib/i18n";
 import { localeAlternates } from "@/lib/site";
@@ -26,7 +26,7 @@ export default async function Page({ params }: PageProps<"/[lang]/scholarly">) {
   const dict = getDictionary(lang);
 
   return (
-    <TrackPage lang={lang} track={track}>
+    <TrackPage lang={lang} track={track} ownEntries>
       {/* Leads the track, ahead of the posts held. The lede says what the
           field is; this says what he is actually asking inside it, which is
           the part a reader can disagree with. */}
@@ -43,6 +43,13 @@ export default async function Page({ params }: PageProps<"/[lang]/scholarly">) {
             );
           })}
         </ul>
+      </section>
+
+      {/* The posts held come after the questions, and under a heading of
+          their own — the same shape Creative uses for its music. */}
+      <section className="mt-16">
+        <h2 className="label text-bone/75">{dict.headings.record}</h2>
+        <EntryList entries={track.entries} lang={lang} collapsible />
       </section>
 
       <section className="mt-16">

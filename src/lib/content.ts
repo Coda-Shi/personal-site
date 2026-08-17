@@ -64,31 +64,27 @@ export type Question = { id: string; lead: string; note: string };
 
 export const QUESTIONS: Question[] = [
   {
-    id: "death",
-    lead: "Death.",
-    note: "Its phenomenological structure, the ways different cultures find to house it, and what it means to those still living. No single discipline holds the whole of it — phenomenology, anthropology, metaphysics and psychometrics each see one face.",
+    id: "death-suffering",
+    lead: "Death, and mental suffering.",
+    note: "The phenomenological structure and the value of both, the different meanings cultures find to house them in, and what they mean to the living.",
+  },
+  {
+    id: "intervention",
+    lead: "How mindfulness-based, psychodynamic and existential interventions actually work.",
+    note: "How the efficacy of mindfulness, existential and traditional-cultural therapies can be established, and the conditions under which each holds; and how, in practice, to relieve another person’s suffering and their fear of death.",
   },
   {
     id: "selfhood",
     lead: "Whether the need for a coherent self is itself culturally specific.",
-    note: "If it is, every theory of personality and development that presupposes it has a boundary it does not declare. Meaning may be one of the mechanisms that holds self-continuity together — which is what turns the question from a position into something testable.",
-  },
-  {
-    id: "trauma",
-    lead: "How trauma and personality shape one another.",
-    note: "Not only how trauma alters personality, but how personality decides what becomes trauma in the first place.",
+    note: "If it is, every theory of personality and development that presupposes it has a boundary it does not declare. Meaning may be one of the mechanisms that holds self-continuity together.",
   },
   {
     id: "measurement",
-    lead: "How precisely a psychological construct can be measured, and how far it travels.",
+    lead: "How precisely a psychological construct can be measured.",
     note: "Measurement precision and cross-cultural invariance are the precondition for every other finding in the field standing up.",
   },
-  {
-    id: "intervention",
-    lead: "Under what conditions mindfulness-based, psychodynamic and existential interventions work.",
-    note: "Comparative efficacy is the easy half of the question; the mechanism is the half worth having.",
-  },
 ];
+
 
 export const ROLES = "Psychology scholar · Game producer · Organizational leader";
 
