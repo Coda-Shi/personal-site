@@ -324,3 +324,18 @@
     display: block;
   }
 }
+
+/* The two addresses sit above the footer nav on a phone, and they should read
+   as quieter than it. `.label` sets its own font-size, and an arbitrary
+   Tailwind size is the same kind of utility, so which one wins is down to
+   Tailwind's own ordering — measured 12.48px where 9px was asked for. This
+   rule is unlayered, so it beats both without a fight. */
+.email-link {
+  font-size: 0.63rem;
+}
+
+@media (min-width: 768px) {
+  .email-link {
+    font-size: 0.78rem;
+  }
+}

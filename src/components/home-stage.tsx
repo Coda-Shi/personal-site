@@ -27,36 +27,34 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
   const lit = focus !== null && focus !== "hub";
   const recede = {
     opacity: lit ? 0 : 1,
-    // Out of the way quickly, back slowly: the beam takes 700ms to arrive and
+    // Out of the way quickly, back slowly: the beam takes 900ms to arrive and
     // the copy should be gone before it lands, but returning in a hurry snaps.
     transition: `opacity ${lit ? 260 : 620}ms ease-out`,
   };
+
+  const emails = EMAILS.map((address) => (
+    <a
+      key={address}
+      href={`mailto:${address}`}
+      className="label email-link text-bone/55 transition-colors hover:text-bone"
+    >
+      {address}
+    </a>
+  ));
 
   return (
     // `home-stage` carries no layout. It is the scope for the classical
     // English treatment in globals.css, which must not reach the CV pages —
     // see D12.
     <main className="home-stage relative grid h-dvh w-full place-items-center overflow-hidden">
-      {/* Top-right, opposite the name, and outside the header so it does not
-          recede with the intro copy when a beam fires — a way to reach him
-          should not disappear while he is being read about.
+      {/* From md up: top-right, opposite the name, outside the header so it
+          does not recede with the intro copy when a beam fires.
 
-          Stacked and smaller under md: one address is 228px and the name
-          already holds the left of that line, so side by side they collide on
-          a phone. Right-aligned so the two read as one block. */}
-      <div
-        className="absolute top-6 right-6 z-10 flex flex-col items-end gap-0.5 md:top-9 md:right-10"
-        style={{ animation: "rise-in 700ms ease-out 1850ms both" }}
-      >
-        {EMAILS.map((address) => (
-          <a
-            key={address}
-            href={`mailto:${address}`}
-            className="label text-[9px] text-bone/55 transition-colors hover:text-bone md:text-[0.78rem]"
-          >
-            {address}
-          </a>
-        ))}
+          On a phone it moves above the footer nav instead. Top-right does not
+          work there — at 375 the block runs back across the profile paragraph
+          and sits on top of the symbol field, which now fills the screen. */}
+      <div className="absolute top-6 right-6 z-10 hidden flex-col items-end gap-0.5 md:flex md:top-9 md:right-10">
+        {emails}
       </div>
 
       <header className="absolute inset-x-6 top-6 z-10 md:inset-x-10 md:top-9">
@@ -94,9 +92,13 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
       </div>
 
       <footer
-        className="absolute inset-x-6 bottom-6 z-10 flex flex-wrap items-center gap-x-8 gap-y-2 md:inset-x-10 md:bottom-8"
+        className="absolute inset-x-6 bottom-6 z-10 md:inset-x-10 md:bottom-8"
         style={{ animation: "rise-in 700ms ease-out 1850ms both" }}
       >
+        {/* Phones only — the same two links live top-right from md up. */}
+        <div className="mb-3 flex flex-col gap-0.5 md:hidden">{emails}</div>
+
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
         {/* Set apart from the utility links, and in the display face rather
             than in .label, because it is a place and they are tools.
 
@@ -132,7 +134,8 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
         >
           GitHub
         </a>
-        <LanguageToggle lang={lang} label={dict.switchTo} />
+          <LanguageToggle lang={lang} label={dict.switchTo} />
+        </div>
       </footer>
     </main>
   );
