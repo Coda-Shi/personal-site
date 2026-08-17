@@ -25,6 +25,13 @@ const R_INNER = 72;
  */
 const R_LABEL_START = 112;
 
+/**
+ * How long a tap holds the beam before the route changes. Matched to the
+ * beam's own 700ms transition, so the pigment has reached the edge of the
+ * screen by the time the next page — which is that same pigment — arrives.
+ */
+const BEAM_HOLD = 680;
+
 /** The hub is a fourth focus target, but it lights nothing and colours nothing. */
 export type Focus = TrackId | "hub" | null;
 
@@ -196,6 +203,30 @@ export function TrinityDisc({
   setFocus: (next: Focus) => void;
 }) {
   const router = useRouter();
+  const leaving = useRef(false);
+
+  /**
+   * On touch, light the sector first and follow the beam a moment later.
+   *
+   * A phone has no hover, so the first tap is the tap that navigates and the
+   * beam — which is the transition, not decoration: the destination page uses
+   * that same pigment as its ground (D10) — is never seen. Holding for the
+   * length of the beam means the colour reaches the edge of the screen and the
+   * next page simply continues it.
+   *
+   * Pointer devices are unaffected: hover has already run the beam by the time
+   * the click happens, so delaying it there would just make the site feel slow.
+   */
+  const open = (id: TrackId) => (event: { preventDefault: () => void }) => {
+    if (window.matchMedia("(hover: hover)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    event.preventDefault();
+    if (leaving.current) return; // a second tap must not queue a second push
+    leaving.current = true;
+    setFocus(id);
+    window.setTimeout(() => router.push(`/${lang}/${id}`), BEAM_HOLD);
+  };
+
   const stage = useRef<HTMLDivElement>(null);
   const labelBlocks = useRef(new Map<TrackId, HTMLElement>());
   const labelRadius = useBalancedLabelRadius(stage, labelBlocks);
@@ -241,7 +272,13 @@ export function TrinityDisc({
 
       <div
         ref={stage}
-        className="relative mx-auto aspect-square w-full max-w-[min(56vh,30rem)]"
+        // The 62vw cap only ever binds on a portrait phone, and it is what keeps
+        // the symbol field off the disc. The field's board is fitted with
+        // `meet`, so on portrait it scales to the width and D13's R_MIN of 580
+        // units lands at 0.29·vw from centre; the disc's outer arc sits at
+        // 0.43·width, so the disc has to stay under 0.674·vw or the symbols
+        // render underneath it. 62vw leaves about 9px of margin at 375.
+        className="relative mx-auto aspect-square w-full max-w-[min(56vh,30rem,62vw)]"
         onMouseLeave={() => setFocus(null)}
       >
         <svg viewBox="0 0 400 400" className="size-full" aria-hidden="true">
@@ -287,7 +324,10 @@ export function TrinityDisc({
                   animation: `plot-stroke 700ms cubic-bezier(0.65, 0, 0.35, 1) ${drawDelay}ms both, ink-in 500ms ease-out ${drawDelay + 700}ms both`,
                 }}
                 onMouseEnter={() => setFocus(track.id)}
-                onClick={() => router.push(`/${lang}/${track.id}`)}
+                onClick={(event) => {
+                  open(track.id)(event);
+                  if (!event.defaultPrevented) router.push(`/${lang}/${track.id}`);
+                }}
               />
             );
           })}
@@ -310,6 +350,7 @@ export function TrinityDisc({
               animation: `fade-in 500ms ease-out ${1250 + i * 150}ms both`,
             }}
             className="absolute -translate-x-1/2 -translate-y-1/2"
+            onClick={open(track.id)}
             onMouseEnter={() => setFocus(track.id)}
             onFocus={() => setFocus(track.id)}
             onBlur={() => setFocus(null)}

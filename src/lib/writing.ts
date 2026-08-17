@@ -1,4 +1,20 @@
 import { trueSelf } from "@/content/writing/true-self";
+import { train } from "@/content/writing/train";
+import { belonging } from "@/content/writing/belonging";
+import { resistance } from "@/content/writing/resistance";
+import { wordlessRevelryI } from "@/content/writing/wordless-revelry-i";
+import { wordlessRevelryII } from "@/content/writing/wordless-revelry-ii";
+import { wordlessRevelryIII } from "@/content/writing/wordless-revelry-iii";
+import { thoseWhoAsk } from "@/content/writing/those-who-ask";
+import { response } from "@/content/writing/response";
+import { lovePoemI } from "@/content/writing/love-poem-i";
+import { lovePoemII } from "@/content/writing/love-poem-ii";
+import { aMachine } from "@/content/writing/a-machine";
+import { giveYourself } from "@/content/writing/give-yourself";
+import { lala } from "@/content/writing/lala";
+import { toBecomeACreator } from "@/content/writing/to-become-a-creator";
+import { letterI } from "@/content/writing/letter-i";
+import { letterII } from "@/content/writing/letter-ii";
 import type { Locale } from "@/lib/i18n";
 
 /**
@@ -21,14 +37,22 @@ import type { Locale } from "@/lib/i18n";
  * silently dropping it would misstate the size of the body of work.
  */
 
-export type PieceKind = "verse" | "prose";
+export type PieceKind = "verse" | "prose" | "letter";
 
 /** Kinds in the order the index presents them. */
-export const KIND_ORDER: readonly PieceKind[] = ["verse", "prose"];
+export const KIND_ORDER: readonly PieceKind[] = ["verse", "prose", "letter"];
 
 export type PieceText = {
   /** Absent when the work is untitled. See pieceLabel. */
   title?: string;
+  /**
+   * A second line under the title — the part number of a sequence, say. Kept
+   * separate so the three parts of one sequence share a title and read as one
+   * work in three pieces rather than as three unrelated ones.
+   */
+  subtitle?: string;
+  /** A closing note: a dedication, a provenance. Set under the piece. */
+  note?: string;
   /**
    * Lines for verse, paragraphs for prose. An empty string is a stanza or
    * section break.
@@ -50,8 +74,30 @@ export type Piece = {
   text: Partial<Record<Locale, PieceText>>;
 };
 
-/** Curatorial order, newest first. Not sorted by date: most pieces have none. */
-export const PIECES: readonly Piece[] = [trueSelf];
+/**
+ * Curatorial order, not chronological — almost none of these carry a date.
+ * The index groups by kind and preserves this order inside each group, so
+ * this list is the running order of the section.
+ */
+export const PIECES: readonly Piece[] = [
+  trueSelf,
+  train,
+  belonging,
+  resistance,
+  wordlessRevelryI,
+  wordlessRevelryII,
+  wordlessRevelryIII,
+  thoseWhoAsk,
+  response,
+  lovePoemI,
+  lovePoemII,
+  aMachine,
+  giveYourself,
+  lala,
+  toBecomeACreator,
+  letterI,
+  letterII,
+];
 
 /**
  * What to call a piece in a list.
@@ -61,7 +107,11 @@ export const PIECES: readonly Piece[] = [trueSelf];
  * someone else's work — see the note on poems in CLAUDE.md §4.
  */
 export function pieceLabel(text: PieceText): string {
-  return text.title ?? text.body.find((line) => line.trim() !== "") ?? "";
+  if (text.title) return text.title;
+  const opening = text.body.find((line) => line.trim() !== "") ?? "";
+  // Some untitled pieces open with a whole paragraph, and one is a single
+  // unbroken line repeated nine times. An index has to stay an index.
+  return opening.length > 24 ? opening.slice(0, 24) + "…" : opening;
 }
 
 export function findPiece(slug: string): Piece | undefined {

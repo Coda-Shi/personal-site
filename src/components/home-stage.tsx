@@ -1,67 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { LanguageToggle } from "@/components/language-toggle";
 import { TrinityDisc, type Focus } from "@/components/trinity-disc";
 import { NAME } from "@/lib/content";
 import type { Dictionary, Locale } from "@/lib/i18n";
-
-/**
- * On a touch screen the disc never explains itself.
- *
- * Every reaction it has is bound to hover, and a phone has no hover: the first
- * tap on a sector is the tap that navigates, so the beam — the thing the whole
- * composition is built around, and the thing that previews where the tap
- * goes — is never seen by anyone on a phone.
- *
- * The usual fix is to make the first tap light the sector and the second one
- * follow it. That is worse: it doubles the cost of the ordinary action to
- * teach something the visitor did not ask to be taught.
- *
- * So the disc demonstrates itself once, straight after the entrance, and then
- * gets out of the way. Tapping still navigates on the first tap, and any touch
- * cancels the demonstration immediately rather than fighting it.
- *
- * The three steps run back to back with no gap, which matters: `lit` stays
- * continuously true across all three, so the intro copy recedes once and
- * returns once instead of flickering three times.
- */
-function useTouchDemo(setFocus: (next: Focus) => void) {
-  const cancelled = useRef(false);
-
-  useEffect(() => {
-    // `(hover: hover)` rather than a width test — a small window on a laptop
-    // still has a pointer, and a large tablet still does not.
-    if (window.matchMedia("(hover: hover)").matches) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    // The entrance finishes around 1.9s; this starts after it has settled.
-    const steps: [number, Focus][] = [
-      [2100, "scholarly"],
-      [2850, "professional"],
-      [3600, "creative"],
-      [4350, null],
-    ];
-    const timers = steps.map(([at, next]) =>
-      window.setTimeout(() => {
-        if (!cancelled.current) setFocus(next);
-      }, at),
-    );
-
-    const stop = () => {
-      cancelled.current = true;
-      timers.forEach(clearTimeout);
-      setFocus(null);
-    };
-    window.addEventListener("pointerdown", stop, { once: true });
-
-    return () => {
-      timers.forEach(clearTimeout);
-      window.removeEventListener("pointerdown", stop);
-    };
-  }, [setFocus]);
-}
 
 /**
  * Owns which sector is lit, because two separate things react to it: the disc,
@@ -78,7 +22,6 @@ function useTouchDemo(setFocus: (next: Focus) => void) {
  */
 export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
   const [focus, setFocus] = useState<Focus>(null);
-  useTouchDemo(setFocus);
 
   // The hub lights no beam, so it should not clear the copy either.
   const lit = focus !== null && focus !== "hub";
