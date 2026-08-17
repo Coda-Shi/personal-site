@@ -1,6 +1,7 @@
 import {
   HINT,
   PROFILE,
+  type Question,
   ROLES,
   TRACKS,
   type Entry,
@@ -123,6 +124,8 @@ export type Dictionary = {
     music: string;
     /** The one piece of work Creative leads with. */
     selected: string;
+    /** The questions Scholarly is organised around. */
+    questions: string;
     poems: string;
     advocacy: string;
     contact: string;
@@ -134,6 +137,7 @@ export type Dictionary = {
   education: Record<string, RecordCopy>;
   advocacy: Record<string, RecordCopy>;
   skills: Record<string, SkillCopy>;
+  questionCopy: Record<string, Partial<Question>>;
   music: Record<string, Partial<Performance>>;
   /** Label on the link out to his covers. */
   covers: string;
@@ -182,6 +186,7 @@ const en: Dictionary = {
     life: "A life, in his own words",
     music: "Music",
     selected: "Selected work",
+    questions: "Questions I am working on",
     poems: "Poems",
     advocacy: "Advocacy",
     contact: "Contact",
@@ -194,6 +199,28 @@ const en: Dictionary = {
   advocacy: {},
   skills: {},
   music: {},
+  questionCopy: {
+    death: {
+      lead: "死亡。",
+      note: "它的现象学结构，它在不同文化里被安置的方式，以及它对尚在生者意味着什么。这个题目容不下单一学科——现象学、人类学、形而上学与心理测量各自看见它的一面。",
+    },
+    selfhood: {
+      lead: "自我同一性，是否本身就是一种文化特定的需求。",
+      note: "若是，那么以它为前提的人格与发展理论都有一道它们未曾声明的边界。而意义感可能正是维持自我连续性的机制之一——这一步把一个立场变成了可检验的假设。",
+    },
+    trauma: {
+      lead: "创伤与人格如何互相塑造。",
+      note: "不只是创伤如何改变人格，也包括人格如何决定了什么会成为创伤。",
+    },
+    measurement: {
+      lead: "心理构念能被测得多准，又能走多远。",
+      note: "测量精度与跨文化等值性，是这个领域里其余一切结论能否成立的前提。",
+    },
+    intervention: {
+      lead: "以正念为本、精神动力取向与存在主义取向的干预，各自在什么条件下有效。",
+      note: "比较有效性是这个问题容易的一半；值得要的是机制那一半。",
+    },
+  },
   covers: "Covers on Bilibili",
   creative: {
     workNote: "My most ambitious writing so far.",
@@ -223,7 +250,7 @@ const zh: Partial<Dictionary> = {
   tracks: {
     scholarly: {
       title: "学术",
-      lede: "哲学、心理学、公共事务。对人类集体心灵的智识执迷与福祉关怀。",
+      lede: "哲学、公共事务、心理学研究与实践。对人类集体心灵的智识执迷与福祉关怀。",
     },
     professional: {
       title: "实务",
@@ -256,6 +283,7 @@ const zh: Partial<Dictionary> = {
     life: "生活自述",
     music: "音乐履历",
     selected: "精选作品",
+    questions: "我关心的问题",
     poems: "诗",
     advocacy: "行路",
     contact: "联系",

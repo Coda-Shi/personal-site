@@ -55,6 +55,41 @@ export type Track = {
 export const NAME = 'Yixuan "Coda" Shi';
 
 /** The three faces, named. Sits between the name and the sentence below it. */
+/**
+ * The questions the Scholarly track is actually organised around. Each carries
+ * a second line, because a bare list of topics says what he reads and not what
+ * he thinks — the angle is the content.
+ */
+export type Question = { id: string; lead: string; note: string };
+
+export const QUESTIONS: Question[] = [
+  {
+    id: "death",
+    lead: "Death.",
+    note: "Its phenomenological structure, the ways different cultures find to house it, and what it means to those still living. No single discipline holds the whole of it — phenomenology, anthropology, metaphysics and psychometrics each see one face.",
+  },
+  {
+    id: "selfhood",
+    lead: "Whether the need for a coherent self is itself culturally specific.",
+    note: "If it is, every theory of personality and development that presupposes it has a boundary it does not declare. Meaning may be one of the mechanisms that holds self-continuity together — which is what turns the question from a position into something testable.",
+  },
+  {
+    id: "trauma",
+    lead: "How trauma and personality shape one another.",
+    note: "Not only how trauma alters personality, but how personality decides what becomes trauma in the first place.",
+  },
+  {
+    id: "measurement",
+    lead: "How precisely a psychological construct can be measured, and how far it travels.",
+    note: "Measurement precision and cross-cultural invariance are the precondition for every other finding in the field standing up.",
+  },
+  {
+    id: "intervention",
+    lead: "Under what conditions mindfulness-based, psychodynamic and existential interventions work.",
+    note: "Comparative efficacy is the easy half of the question; the mechanism is the half worth having.",
+  },
+];
+
 export const ROLES = "Psychology scholar · Game producer · Organizational leader";
 
 export const PROFILE =
@@ -177,7 +212,7 @@ export const TRACKS: Track[] = [
     glyph: "⊨",
     glyphName: "double turnstile — models, satisfies",
     mark: "turnstile",
-    lede: "Philosophy, psychology, public affairs. An intellectual obsession with the collective psyche, a care for its well-being.",
+    lede: "Philosophy, public affairs, psychological research and practice. An intellectual obsession with the collective psyche, a care for its well-being.",
     entries: [
       {
         id: "tsinghua",

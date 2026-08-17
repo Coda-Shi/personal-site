@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RecordList, TrackPage } from "@/components/track-page";
-import { EDUCATION, TRACKS } from "@/lib/content";
-import { getDictionary, hasLocale } from "@/lib/i18n";
+import { EDUCATION, QUESTIONS, TRACKS } from "@/lib/content";
+import { getDictionary, hasLocale, localise } from "@/lib/i18n";
 import { localeAlternates } from "@/lib/site";
 
 const track = TRACKS.find((t) => t.id === "scholarly")!;
@@ -27,6 +27,24 @@ export default async function Page({ params }: PageProps<"/[lang]/scholarly">) {
 
   return (
     <TrackPage lang={lang} track={track}>
+      {/* Leads the track, ahead of the posts held. The lede says what the
+          field is; this says what he is actually asking inside it, which is
+          the part a reader can disagree with. */}
+      <section className="mt-16">
+        <h2 className="label text-bone/75">{dict.headings.questions}</h2>
+        <ul className="mt-8 space-y-7">
+          {QUESTIONS.map((original) => {
+            const q = localise(original, dict.questionCopy);
+            return (
+              <li key={original.id} className="max-w-xl border-l border-bone/25 pl-5">
+                <p className="font-display text-xl leading-snug text-bone/90">{q.lead}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-bone/65">{q.note}</p>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
       <section className="mt-16">
         <h2 className="label text-bone/55">{dict.headings.education}</h2>
         <RecordList items={EDUCATION} overrides={dict.education} />
