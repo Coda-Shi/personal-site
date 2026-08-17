@@ -73,7 +73,52 @@ export default async function Page({ params }: PageProps<"/[lang]/creative">) {
           <span className="label whitespace-nowrap text-bone/55">elegists.studio &rarr;</span>
         </a>
 
+      </section>
+
+      <section className="mt-16">
+        <h2 className="label text-bone/75">{dict.headings.game}</h2>
         <EntryList entries={entry("elegists")} lang={lang} collapsible />
+      </section>
+
+      {/* The music half mirrors the game half: one selected thing, then the
+          record behind it. */}
+      <section className="mt-16">
+        <h2 className="label text-bone/75">{dict.headings.selected}</h2>
+
+        <VideoEmbed
+          bvid={COVER.bvid}
+          title={COVER.title}
+          caption={dict.creative.coverCaption}
+          playLabel={dict.creative.play}
+        />
+        <p className="mt-4 max-w-lg text-sm leading-relaxed text-bone/55">
+          {dict.creative.coverNote}
+        </p>
+
+        <a
+          href={BILIBILI}
+          rel="noreferrer"
+          className="label mt-6 inline-flex items-center gap-2.5 border border-bone/40 px-5 py-2.5 text-bone/90 transition-colors hover:border-bone hover:bg-bone hover:text-void"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="size-[1.15em]"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.6}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M7.5 2.6 10 5.4" />
+            <path d="M16.5 2.6 14 5.4" />
+            <rect x="2.6" y="5.4" width="18.8" height="16" rx="3.2" />
+            <path d="M7.4 10.4v2.2" />
+            <path d="M16.6 10.4v2.2" />
+            <path d="M8.6 16.4c1.9 1.5 4.9 1.5 6.8 0" />
+          </svg>
+          {dict.covers}
+        </a>
       </section>
 
       <section className="mt-16">
@@ -108,38 +153,6 @@ export default async function Page({ params }: PageProps<"/[lang]/creative">) {
           })}
         </ul>
 
-        <VideoEmbed
-          bvid={COVER.bvid}
-          title={COVER.title}
-          caption={dict.creative.coverCaption}
-          playLabel={dict.creative.play}
-        />
-
-        {/* Under the video: the one cover is the sample, the channel is the rest. */}
-        <a
-          href={BILIBILI}
-          rel="noreferrer"
-          className="label mt-6 inline-flex items-center gap-2.5 border border-bone/40 px-5 py-2.5 text-bone/90 transition-colors hover:border-bone hover:bg-bone hover:text-void"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            className="size-[1.15em]"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.6}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M7.5 2.6 10 5.4" />
-            <path d="M16.5 2.6 14 5.4" />
-            <rect x="2.6" y="5.4" width="18.8" height="16" rx="3.2" />
-            <path d="M7.4 10.4v2.2" />
-            <path d="M16.6 10.4v2.2" />
-            <path d="M8.6 16.4c1.9 1.5 4.9 1.5 6.8 0" />
-          </svg>
-          {dict.covers}
-        </a>
       </section>
     </TrackPage>
   );

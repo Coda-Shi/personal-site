@@ -124,6 +124,8 @@ export type Dictionary = {
     music: string;
     /** The posts held, inside Scholarly. */
     record: string;
+    /** The posts held, inside Creative's game half. */
+    game: string;
     /** The one piece of work Creative leads with. */
     selected: string;
     /** The questions Scholarly is organised around. */
@@ -149,6 +151,7 @@ export type Dictionary = {
     workSub: string;
     studioCard: string;
     coverCaption: string;
+    coverNote: string;
     play: string;
   };
 };
@@ -190,6 +193,7 @@ const en: Dictionary = {
     life: "A life, in his own words",
     music: "Music",
     record: "Academic record",
+    game: "Game record",
     selected: "Selected work",
     questions: "Questions I am working on",
     poems: "Poems",
@@ -229,6 +233,7 @@ const en: Dictionary = {
     workSub: "About love and guilt, and how to trust your own voice.",
     studioCard: "The studio’s own site",
     coverCaption: "A cover, on Bilibili",
+    coverNote: "The heavy music I love, and the intensity only it can carry.",
     play: "Play the video",
   },
 };
@@ -286,6 +291,7 @@ const zh: Partial<Dictionary> = {
     life: "生活自述",
     music: "音乐履历",
     record: "学术履历",
+    game: "游戏履历",
     selected: "精选作品",
     questions: "我关心的问题",
     poems: "诗",
@@ -486,6 +492,7 @@ const zh: Partial<Dictionary> = {
     workSub: "有关爱与罪恶，和如何相信自己的声音。",
     studioCard: "工作室自己的站点",
     coverCaption: "翻唱，在 bilibili",
+    coverNote: "我钟爱的重型音乐，和只有它才能表达的激烈情绪。",
     play: "播放视频",
   },
   music: {
