@@ -140,6 +140,8 @@ export type Dictionary = {
   };
   /** Shown on the control that switches to the *other* language. */
   switchTo: string;
+  /** Link from a preview into the whole thing. */
+  readOn: string;
   entries: Record<string, EntryCopy>;
   education: Record<string, RecordCopy>;
   advocacy: Record<string, RecordCopy>;
@@ -199,13 +201,14 @@ const en: Dictionary = {
     game: "Game record",
     selected: "Selected work",
     selectedCover: "Selected cover",
-    questions: "Questions I am working on",
+    questions: "Questions I keep returning to",
     poems: "Poems",
     advocacy: "Advocacy",
     contact: "Contact",
     additional: "Additional",
   },
   switchTo: "中文",
+  readOn: "Read on",
   // English is what content.ts already holds, so there is nothing to override.
   entries: {},
   education: {},
@@ -252,8 +255,8 @@ const zh: Partial<Dictionary> = {
       note: "若是，那么以它为前提的人格与发展理论都有一道它们未曾声明的边界。而意义感可能正是维持自我连续性的机制之一。",
     },
     measurement: {
-      lead: "心理构念能够被测量得多么准确。",
-      note: "测量精度与跨文化等值性，是这个领域里其余一切结论能否成立的前提。",
+      lead: "一份临床工具在不同人群里，测的是不是同一个东西。",
+      note: "跨性别、年龄与文化的测量等值性，是这个领域一切比较的前提——而多数筛查工具从未在足以定论的样本上被检验过。",
     },
   },
   roles: "心理学学者 · 游戏制作人 · 组织领导",
@@ -306,6 +309,7 @@ const zh: Partial<Dictionary> = {
     additional: "其他",
   },
   switchTo: "English",
+  readOn: "继续读",
 
   // ── CV ─────────────────────────────────────────────────────────────────
   //

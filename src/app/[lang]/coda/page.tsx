@@ -57,11 +57,21 @@ export default async function Page({ params }: PageProps<"/[lang]/coda">) {
             this is the one page that is not making a case, and the writing
             should read the way it was written. The one-line paragraphs carry
             the pacing, so they keep the same spacing as the long ones. */}
+        {/* The opening only — the whole thing has its own room at /life. Cut
+            after the third paragraph because that is where he turns from the
+            name to the rain, so the preview ends on an opening rather than
+            mid-thought. */}
         <div className="mt-8 space-y-5 leading-[1.9] text-bone/80">
-          {LIFE[lang].map((paragraph) => (
+          {LIFE[lang].slice(0, 3).map((paragraph) => (
             <p key={paragraph}>{paragraph}</p>
           ))}
         </div>
+        <Link
+          href={`/${lang}/life`}
+          className="label mt-8 inline-block border border-bone/40 px-5 py-2.5 text-bone/90 transition-colors hover:border-bone hover:bg-bone hover:text-void"
+        >
+          {dict.readOn} &rarr;
+        </Link>
       </section>
 
       {/* A few pieces, not the whole shelf — the full list is at /writing. The
