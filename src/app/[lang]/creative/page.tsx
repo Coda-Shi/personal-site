@@ -45,18 +45,16 @@ export default async function Page({ params }: PageProps<"/[lang]/creative">) {
           {dict.creative.workSub}
         </p>
 
-        {/* Still the figure plate, not the full key art: the key art source is
-            not in the repo yet. Drop it in _incoming/ and run
-            scripts/keyart-lineart.py, then this becomes a one-line swap to
-            /creative/dear-suspect-key-art.png with width 1200 height 660.
-            Never reference a key art file raw — every plate on this site is
-            keyed to bone first (D14). */}
+        {/* The full key art, keyed to bone — never referenced raw (D14). The
+            source is the studio's, kept out of the repo in _incoming/; the ink
+            metric is max(R,G,B), because the red strokes sit near 0.1
+            luminance and would vanish under one. */}
         <Image
-          src="/creative/dear-suspect-figure.png"
+          src="/creative/dear-suspect-key-art.png"
           alt=""
-          width={380}
-          height={460}
-          className="mt-8 h-auto w-full max-w-[17rem] opacity-75"
+          width={1200}
+          height={688}
+          className="mt-8 h-auto w-full opacity-90"
         />
 
         <a
@@ -83,7 +81,7 @@ export default async function Page({ params }: PageProps<"/[lang]/creative">) {
       {/* The music half mirrors the game half: one selected thing, then the
           record behind it. */}
       <section className="mt-16">
-        <h2 className="label text-bone/75">{dict.headings.selected}</h2>
+        <h2 className="label text-bone/75">{dict.headings.selectedCover}</h2>
 
         <VideoEmbed
           bvid={COVER.bvid}

@@ -128,6 +128,9 @@ export type Dictionary = {
     game: string;
     /** The one piece of work Creative leads with. */
     selected: string;
+    /** Its counterpart over the music half — two identical headings on one
+     *  page would be indistinguishable to a screen reader. */
+    selectedCover: string;
     /** The questions Scholarly is organised around. */
     questions: string;
     poems: string;
@@ -195,6 +198,7 @@ const en: Dictionary = {
     record: "Academic record",
     game: "Game record",
     selected: "Selected work",
+    selectedCover: "Selected cover",
     questions: "Questions I am working on",
     poems: "Poems",
     advocacy: "Advocacy",
@@ -293,6 +297,7 @@ const zh: Partial<Dictionary> = {
     record: "学术履历",
     game: "游戏履历",
     selected: "精选作品",
+    selectedCover: "精选翻唱",
     questions: "我关心的问题",
     poems: "诗",
     advocacy: "行路",
