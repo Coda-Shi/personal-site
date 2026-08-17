@@ -12,6 +12,7 @@ export const wordlessRevelryIII: Piece = {
     zh: {
       title: "无言的狂欢",
       subtitle: "组诗之三",
+      date: "~2024",
       body: [
         "那能流血的和能流泪的，",
         "朝向不同，相背而去。",

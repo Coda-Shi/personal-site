@@ -1,4 +1,4 @@
-import { HINT, HINT_TWO, PROFILE, TRACKS, type Entry, type TrackId } from "@/lib/content";
+import { HINT, PROFILE, TRACKS, type Entry, type TrackId } from "@/lib/content";
 
 /**
  * Two locales, English canonical.
@@ -78,7 +78,6 @@ export function localise<T extends { id: string }>(
 export type Dictionary = {
   profile: string;
   hint: string;
-  hintTwo: string;
   tracks: Record<TrackId, TrackCopy>;
   hub: {
     /** The two halves of the disc's centre label. */
@@ -88,11 +87,13 @@ export type Dictionary = {
     heading: string;
     subheading: string;
   };
-  nav: { cv: string; coda: string; writing: string; studio: string };
+  nav: { cv: string; coda: string; writing: string; studio: string; email: string };
   writing: {
     title: string;
     lede: string;
     kinds: { verse: string; prose: string; letter: string };
+    /** Placeholder under a section that has no content yet. */
+    soon: string;
     /**
      * Shown on a piece written in the language not being read. Phrased as a
      * fact about the work rather than as a shortfall — "Chinese original",
@@ -107,6 +108,10 @@ export type Dictionary = {
   };
   headings: {
     education: string;
+    /** Coda's own account of his life. Empty for now — he writes it. */
+    life: string;
+    /** The music résumé, inside Creative. */
+    music: string;
     poems: string;
     advocacy: string;
     contact: string;
@@ -123,7 +128,6 @@ export type Dictionary = {
 const en: Dictionary = {
   profile: PROFILE,
   hint: HINT,
-  hintTwo: HINT_TWO,
   // Derived rather than restated, so the English disc labels cannot drift from
   // the track pages they lead to.
   tracks: Object.fromEntries(
@@ -141,17 +145,21 @@ const en: Dictionary = {
     coda: "Coda himself",
     writing: "Verse & Prose",
     studio: "Elegists Studio",
+    email: "Email",
   },
   writing: {
     title: "Verse & Prose",
     lede: "The part of him that is lost within himself.",
     kinds: { verse: "Verse", prose: "Prose", letter: "Letters" },
+    soon: "Not yet written",
     onlyIn: "In Chinese only",
     all: "All verse & prose",
     more: "Verse & Prose",
   },
   headings: {
     education: "Education",
+    life: "A life, in his own words",
+    music: "Music",
     poems: "Poems",
     advocacy: "Advocacy",
     contact: "Contact",
@@ -179,9 +187,8 @@ const en: Dictionary = {
  */
 const zh: Partial<Dictionary> = {
   profile:
-    "跨学科研究者。创意总监。青年从业者。工作横跨心理学与心理测量学、AI 原生游戏制作与组织领导。",
-  hint: "悬停或轻触，探索更多",
-  hintTwo: "选择你从哪一面了解到他。",
+    "精神健康与心理学研究，独立音乐、文学与游戏创作；组织领导。",
+  hint: "悬停或轻触；选择你从哪一面了解到他。",
   tracks: {
     scholarly: {
       title: "学术",
@@ -203,17 +210,20 @@ const zh: Partial<Dictionary> = {
     heading: "Coda 其人",
     subheading: "书写与行路之人",
   },
-  nav: { cv: "简历", coda: "Coda 其人", writing: "诗文", studio: "唱诗人工作室" },
+  nav: { cv: "简历", coda: "Coda 其人", writing: "诗文", studio: "唱诗人工作室", email: "邮箱" },
   writing: {
     title: "诗文",
     lede: "他迷失在他自己之中的那一部分。",
     kinds: { verse: "诗", prose: "文", letter: "信" },
+    soon: "待补",
     onlyIn: "此篇仅有英文",
     all: "全部诗文",
     more: "诗文",
   },
   headings: {
     education: "教育",
+    life: "生活自述",
+    music: "音乐履历",
     poems: "诗",
     advocacy: "行路",
     contact: "联系",

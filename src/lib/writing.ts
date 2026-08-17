@@ -102,6 +102,25 @@ export const PIECES: readonly Piece[] = [
 ];
 
 /**
+ * The handful shown on /coda. That page is an introduction, not a table of
+ * contents — the full list lives at /writing.
+ */
+export const FEATURED: readonly string[] = [
+  "those-who-ask",
+  "wordless-revelry-i",
+  "wordless-revelry-ii",
+  "wordless-revelry-iii",
+  "train",
+  "resistance",
+  "lala",
+];
+
+/** FEATURED resolved to pieces, in that order, skipping any that vanish. */
+export function featuredPieces(): Piece[] {
+  return FEATURED.map(findPiece).filter((piece): piece is Piece => Boolean(piece));
+}
+
+/**
  * What to call a piece in a list.
  *
  * Untitled work is identified by its opening line, which is the convention for

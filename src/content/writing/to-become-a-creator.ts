@@ -10,6 +10,7 @@ export const toBecomeACreator: Piece = {
   kind: "prose",
   text: {
     en: {
+      date: "~2026",
       body: [
         "To become a creator sometimes means the contrary of choosing to create - the act of creating chooses you, as it is your only mode of being. Without it, your mind spins in circles in the hunger for meaning; without it, your mind cannibalizes itself.",
       ],

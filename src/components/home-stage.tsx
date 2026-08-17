@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { LanguageToggle } from "@/components/language-toggle";
 import { TrinityDisc, type Focus } from "@/components/trinity-disc";
-import { NAME } from "@/lib/content";
+import { EMAIL, NAME } from "@/lib/content";
 import type { Dictionary, Locale } from "@/lib/i18n";
 
 /**
@@ -37,6 +37,21 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
     // English treatment in globals.css, which must not reach the CV pages —
     // see D12.
     <main className="home-stage relative grid h-dvh w-full place-items-center overflow-hidden">
+      {/* Top-right, opposite the name, and outside the header so it does not
+          recede with the intro copy when a beam fires — a way to reach him
+          should not disappear while he is being read about. */}
+      <a
+        href={`mailto:${EMAIL}`}
+        className="label absolute top-6 right-6 z-10 text-bone/55 transition-colors hover:text-bone md:top-9 md:right-10"
+        style={{ animation: "rise-in 700ms ease-out 1850ms both" }}
+      >
+        {/* The full address needs 228px and the name already occupies the left
+            of that line, so on a phone the two collide. Short label there, the
+            address from md up where both fit. */}
+        <span className="md:hidden">{dict.nav.email}</span>
+        <span className="hidden md:inline">{EMAIL}</span>
+      </a>
+
       <header className="absolute inset-x-6 top-6 z-10 md:inset-x-10 md:top-9">
         {/* Every line is w-fit or width-capped. A full-width block box at
             top-left reaches under the centred disc even when its text does
@@ -63,11 +78,6 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
         <div style={{ animation: "rise-in 700ms ease-out 260ms both" }}>
           <p className="label mt-3 w-fit text-bone/45" style={recede}>
             {dict.hint}
-          </p>
-          {/* The instruction proper. The line above says the disc responds;
-              this one says what choosing actually means. */}
-          <p className="label mt-1.5 w-fit text-bone/35" style={recede}>
-            {dict.hintTwo}
           </p>
         </div>
       </header>

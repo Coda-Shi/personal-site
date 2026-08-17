@@ -55,10 +55,17 @@ export type Track = {
 export const NAME = 'Yixuan "Coda" Shi';
 
 export const PROFILE =
-  "Interdisciplinary researcher, creative director and young professional whose current works span across Psychology and Psychometrics, AI-native game production and organizational leadership.";
+  "Mental health and Psychology Research, Indie game, music and literature creation; organizational leadership.";
 
-export const HINT = "Hover and tap to explore more";
-export const HINT_TWO = "Select which part you came to know him by";
+/**
+ * Shown top-right on the home screen. The studio address rather than a
+ * personal one — this is a public page and the choice is not reversible once
+ * scrapers have it. A forwarding address on the domain itself (the Porkbun MX
+ * records were kept for exactly this) would be the better long-term answer.
+ */
+export const EMAIL = "elegistsstudio@gmail.com";
+
+export const HINT = "Hover and tap; Select which part you came to know him by.";
 
 // Tailwind cannot see class names assembled at runtime, so every track's classes
 // are written out in full here rather than interpolated from the track id.

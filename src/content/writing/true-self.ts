@@ -18,6 +18,7 @@ export const trueSelf: Piece = {
   text: {
     zh: {
       title: "真我",
+      date: "~2020",
       body: [
         "你的身上已藏着一万个黄昏",
         "可当晨曦照亮你泪痕闪烁的脸庞",

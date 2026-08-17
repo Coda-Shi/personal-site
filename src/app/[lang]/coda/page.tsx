@@ -1,21 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PieceBody } from "@/components/piece-body";
 import { SiteShell } from "@/components/site-shell";
 import { RecordList } from "@/components/track-page";
 import { ADVOCACY } from "@/lib/content";
 import { getDictionary, hasLocale, type Locale } from "@/lib/i18n";
 import { localeAlternates } from "@/lib/site";
-import { PIECES, otherLocaleOf } from "@/lib/writing";
+import { featuredPieces, otherLocaleOf, pieceLabel } from "@/lib/writing";
 
-/** The most recent piece, in the reader's language when it exists there. */
-function latestPiece(lang: Locale) {
-  const piece = PIECES[0];
-  if (!piece) return null;
-  const locale = otherLocaleOf(piece, lang) ?? lang;
-  const text = piece.text[locale];
-  return text ? { piece, text, locale } : null;
+/** The featured pieces, each resolved to the language it exists in. */
+function featuredFor(lang: Locale) {
+  return featuredPieces()
+    .map((piece) => {
+      const locale = otherLocaleOf(piece, lang) ?? lang;
+      const text = piece.text[locale];
+      return text ? { piece, text, locale } : null;
+    })
+    .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 }
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/coda">): Promise<Metadata> {
@@ -35,7 +36,7 @@ export default async function Page({ params }: PageProps<"/[lang]/coda">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
   const dict = getDictionary(lang);
-  const latest = latestPiece(lang);
+  const featured = featuredFor(lang);
 
   return (
     <SiteShell lang={lang}>
@@ -48,29 +49,44 @@ export default async function Page({ params }: PageProps<"/[lang]/coda">) {
         </p>
       </header>
 
-      {/* The writing has its own section now. What stays here is the most
-          recent piece in full and a door — this page is where the writing
-          belongs, so it should still open with one, but the whole body of it
-          no longer lives inline. */}
-      {latest ? (
-        <section className="mt-16 max-w-xl">
-          <h2 className="label text-bone/55">{dict.writing.more}</h2>
-          <Link href={`/${lang}/writing/${latest.piece.slug}`} className="group block">
-            <PieceBody
-              text={latest.text}
-              kind={latest.piece.kind}
-              locale={latest.locale}
-              className="mt-8 text-bone/85 transition-colors group-hover:text-bone"
-            />
-          </Link>
-          <Link
-            href={`/${lang}/writing`}
-            className="label mt-10 inline-block text-bone/50 transition-colors hover:text-bone"
-          >
-            {dict.writing.all} →
-          </Link>
-        </section>
-      ) : null}
+      {/* Coda's own account of himself. He writes it; until then the section
+          exists and says so, because a named empty shelf reads as a promise
+          and a missing one reads as nothing at all. */}
+      <section className="mt-16 max-w-xl">
+        <h2 className="label text-bone/55">{dict.headings.life}</h2>
+        <p className="mt-6 font-display text-lg italic text-bone/35">{dict.writing.soon}</p>
+      </section>
+
+      {/* A few pieces, not the whole shelf — the full list is at /writing. The
+          poem that used to sit here in full is gone: this page introduces the
+          writing, it is not where the writing lives. */}
+      <section className="mt-16 max-w-xl">
+        <h2 className="label text-bone/55">{dict.writing.more}</h2>
+        <ul className="mt-6">
+          {featured.map(({ piece, text }) => (
+            <li key={piece.slug} className="border-t border-bone/15">
+              <Link
+                href={`/${lang}/writing/${piece.slug}`}
+                className="group flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-4"
+              >
+                <span className="font-display text-lg leading-snug text-bone/85 transition-colors group-hover:text-bone">
+                  {pieceLabel(text)}
+                  {text.subtitle ? <span className="text-bone/45"> · {text.subtitle}</span> : null}
+                </span>
+                <span className="label whitespace-nowrap text-bone/40">{text.date}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        {/* Brighter and boxed rather than another quiet label: it is the way
+            into the section, and the owner asked for it to carry more weight. */}
+        <Link
+          href={`/${lang}/writing`}
+          className="label mt-8 inline-block border border-bone/40 px-5 py-2.5 text-bone/90 transition-colors hover:border-bone hover:bg-bone hover:text-void"
+        >
+          {dict.writing.all} →
+        </Link>
+      </section>
 
       <section className="mt-16">
         <h2 className="label text-bone/55">{dict.headings.advocacy}</h2>
