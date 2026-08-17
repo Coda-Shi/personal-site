@@ -80,8 +80,8 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: "measurement",
-    lead: "How precisely a psychological construct can be measured.",
-    note: "Measurement precision and cross-cultural invariance are the precondition for every other finding in the field standing up.",
+    lead: "Whether a clinical instrument measures the same thing across groups.",
+    note: "Invariance across sex, age and culture is the precondition for every comparison the field makes — and it is where most screening instruments have never been tested at the scale that would settle it.",
   },
 ];
 

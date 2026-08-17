@@ -56,6 +56,7 @@ export const ROUTES = [
   "/coda",
   "/cv",
   "/writing",
+  "/life",
 ] as const;
 
 /**
