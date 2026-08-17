@@ -76,6 +76,16 @@
     }
   }
 
+  /* The roles line alone carries the home screen on a phone. The sentence
+     under it is three lines of wrap at 375px, which crowds the disc and
+     buries the one line that actually says who he is. It returns at md,
+     where there is room for both. */
+  @media (max-width: 767px) {
+    .hide-when-narrow {
+      display: none;
+    }
+  }
+
   /* Set in the display face, not in mono. Mono was a third typographic voice
      used for every label on the site, and once the home screen went classical
      it survived only in scattered chrome — the back link, a few section

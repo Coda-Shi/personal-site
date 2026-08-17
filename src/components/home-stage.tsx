@@ -80,7 +80,7 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             {dict.roles}
           </p>
           <p
-            className="intro-copy hide-when-short mt-1.5 max-w-xs text-xs leading-relaxed text-bone/60 md:max-w-sm md:text-sm xl:max-w-md"
+            className="intro-copy hide-when-short hide-when-narrow mt-1.5 max-w-xs text-xs leading-relaxed text-bone/60 md:max-w-sm md:text-sm xl:max-w-md"
             style={recede}
           >
             {dict.profile}
