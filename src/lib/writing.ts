@@ -1,6 +1,7 @@
 import { trueSelf } from "@/content/writing/true-self";
 import { train } from "@/content/writing/train";
 import { belonging } from "@/content/writing/belonging";
+import { howToDecipher } from "@/content/writing/how-to-decipher";
 import { resistance } from "@/content/writing/resistance";
 import { wordlessRevelryI } from "@/content/writing/wordless-revelry-i";
 import { wordlessRevelryII } from "@/content/writing/wordless-revelry-ii";
@@ -84,6 +85,7 @@ export const PIECES: readonly Piece[] = [
   train,
   belonging,
   resistance,
+  howToDecipher,
   wordlessRevelryI,
   wordlessRevelryII,
   wordlessRevelryIII,

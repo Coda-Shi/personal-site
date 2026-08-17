@@ -2,6 +2,9 @@ import type { Piece } from "@/lib/writing";
 
 /**
  * Given by the owner 2026-08-17. Transcribed verbatim — see D22.
+ *
+ * Three lines, and only three. It was first entered joined to 如何解密 because
+ * the two arrived under one heading; the owner separated them.
  */
 export const resistance: Piece = {
   slug: "resistance",
@@ -13,12 +16,6 @@ export const resistance: Piece = {
         "像白雪对抗着消融，",
         "像白雪对抗着消融……",
         "像消融对抗白雪。",
-        "我该如何保守你的秘密？",
-        "只有为你指认你不曾注意的痕迹。",
-        "只有你带着敬意，",
-        "开解盘结的根系，",
-        "我才能将它们，",
-        "重新交还给你。",
       ],
     },
   },
