@@ -26,11 +26,15 @@ const R_INNER = 72;
 const R_LABEL_START = 112;
 
 /**
- * How long a tap holds the beam before the route changes. The beam's own
- * transition is 700ms, so this leaves the pigment flooded for a beat before
- * the destination — which uses that same pigment as its ground — arrives.
+ * How long a tap holds the beam before the route changes.
+ *
+ * The beam's own transition is 900ms, so the pigment reaches the edge of the
+ * screen and then sits flooded for another 600ms before the destination —
+ * which uses that same pigment as its ground — arrives. Lengthened from
+ * 700/1000 on the owner's request: the expansion is the transition, and it was
+ * over before it registered.
  */
-const BEAM_HOLD = 1000;
+const BEAM_HOLD = 1500;
 
 /** The hub is a fourth focus target, but it lights nothing and colours nothing. */
 export type Focus = TrackId | "hub" | null;
@@ -279,7 +283,7 @@ export function TrinityDisc({
           <span
             key={track.id}
             aria-hidden="true"
-            className="pointer-events-none fixed top-1/2 left-1/2 -z-10 block aspect-square w-[240vmax] rounded-full transition-transform duration-700 ease-out"
+            className="pointer-events-none fixed top-1/2 left-1/2 -z-10 block aspect-square w-[240vmax] rounded-full transition-transform duration-[900ms] ease-out"
             style={{
               background: `conic-gradient(from ${from - 0.5}deg at 50% 50%, transparent 0deg, ${pigment} 0.5deg, ${pigment} ${span + 0.5}deg, transparent ${span + 1}deg)`,
               transform: `translate(-50%, -50%) scale(${focus === track.id ? 1 : 0})`,

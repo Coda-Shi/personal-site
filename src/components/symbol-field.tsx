@@ -29,8 +29,53 @@ import {
  * grid snapping without reading it.
  */
 
-const BOARD = 2000;
-const C = BOARD / 2;
+/**
+ * The field is laid out on a fixed board, and there are two of them.
+ *
+ * A square board fitted with `meet` scales to the viewport's *short* side. On
+ * a landscape window that is the height and everything works. On a portrait
+ * phone it is the width, and the board lands as a square in the middle of a
+ * tall screen: at 375×812 it covered 46% of the height, and R_MIN — derived
+ * when the disc was capped by 56vh and took 56% of the board — fell inside the
+ * disc, which on a phone is capped by width and takes 87%. Symbols rendered
+ * underneath it.
+ *
+ * Neither `slice` nor a tweak fixes that. `slice` scales to the long side and
+ * clips the rest, which is forbidden for good reason (see the note above).
+ * Enlarging the type breaks the packing, which assumes its own gutters.
+ *
+ * So portrait gets a board of its own, shaped like a phone. Both layouts are
+ * solved at module load and both are rendered; CSS shows one. They cannot be
+ * chosen at runtime from the viewport — that would make the markup depend on
+ * something the server cannot know, which is the hydration failure D15 exists
+ * to prevent.
+ */
+type BoardKey = "wide" | "tall";
+
+type Board = {
+  key: BoardKey;
+  w: number;
+  h: number;
+  /** Radius the field must stay outside of, so it clears the disc. */
+  rMin: number;
+  /** Multiplier on the tier radii — a narrower board has less room to reach. */
+  reach: number;
+};
+
+const BOARDS: Record<BoardKey, Board> = {
+  // Unchanged, so every landscape placement stays exactly where D13 put it.
+  wide: { key: "wide", w: 2000, h: 2000, rMin: 580, reach: 1 },
+  /**
+   * 1:2, near enough a phone. At 375×812 this scales to 0.375 and renders
+   * 375×750 — 92% of the height against the square board's 46% — and the type
+   * comes out at 9–23px, which is a shade larger than the desktop 8.6–22px
+   * rather than the 4.5px the square board gave. rMin 300 lands 112px out,
+   * clearing the disc's 100px arc.
+   */
+  tall: { key: "tall", w: 1000, h: 2000, rMin: 300, reach: 0.62 },
+};
+
+const centre = (b: Board) => ({ x: b.w / 2, y: b.h / 2 });
 // Clear space demanded around every box, in board units. 12 is about 4px of
 // gutter at the scale this renders — generous next to 8px type, and the 4 units
 // reclaimed from 16 buy back most of an item's worth of area across the field.
@@ -58,7 +103,6 @@ const PAD = 12;
  * away the roomiest part of every wedge. Items are bounded by the board
  * rectangle instead.
  */
-const R_MIN = 580;
 const EDGE = 20;
 
 type Tier = "anchor" | "support" | "texture";
@@ -280,7 +324,7 @@ function overlaps(a: Box, b: Box) {
 }
 
 /** Every corner must sit inside the wedge, or the conic mask slices the text. */
-function insideWedge(box: Box, start: number, end: number) {
+function insideWedge(box: Box, start: number, end: number, board: Board) {
   return (
     [
       [box.x, box.y],
@@ -289,12 +333,13 @@ function insideWedge(box: Box, start: number, end: number) {
       [box.x + box.w, box.y + box.h],
     ] as const
   ).every(([x, y]) => {
-    if (x < EDGE || x > BOARD - EDGE || y < EDGE || y > BOARD - EDGE)
+    if (x < EDGE || x > board.w - EDGE || y < EDGE || y > board.h - EDGE)
       return false;
-    const dx = x - C;
-    const dy = y - C;
+    const c = centre(board);
+    const dx = x - c.x;
+    const dy = y - c.y;
     const r = Math.hypot(dx, dy);
-    if (r < R_MIN) return false;
+    if (r < board.rMin) return false;
     let a = (Math.atan2(dy, dx) * 180) / Math.PI;
     while (a < start) a += 360;
     while (a >= start + 360) a -= 360;
@@ -308,22 +353,34 @@ function insideWedge(box: Box, start: number, end: number) {
  * two carry the whole wedge, so where they sit is a composition decision.
  * Both derived by scripts/keyart-lineart.py.
  */
-const PLATES = [
-  {
-    key: "mark",
-    href: "/creative/elegists-mark.png",
-    box: { x: 133, y: 758, w: 190, h: 268 },
-    opacity: 0.3,
-    delay: 40,
-  },
-  {
-    key: "figure",
-    href: "/creative/dear-suspect-figure.png",
-    box: { x: 121, y: 1349, w: 380, h: 460 },
-    opacity: 0.22,
-    delay: 190,
-  },
-];
+const PLATE_ART = [
+  { key: "mark", href: "/creative/elegists-mark.png", opacity: 0.3, delay: 40 },
+  { key: "figure", href: "/creative/dear-suspect-figure.png", opacity: 0.22, delay: 190 },
+] as const;
+
+/**
+ * Where those two sit, per board. Hand-set, not solved — with the music
+ * notation removed they carry the whole Creative wedge, so their placement is
+ * a composition decision.
+ *
+ * The tall board's pair is not the wide one rescaled: the boards differ in
+ * aspect, so a uniform scale would squash them. Both sets were checked against
+ * the wedge and the board rectangle by the same rules the solver uses.
+ */
+const PLATE_BOXES: Record<BoardKey, Box[]> = {
+  wide: [
+    { x: 133, y: 758, w: 190, h: 268 },
+    { x: 121, y: 1349, w: 380, h: 460 },
+  ],
+  tall: [
+    { x: 100, y: 1250, w: 150, h: 212 },
+    { x: 60, y: 1520, w: 300, h: 363 },
+  ],
+};
+
+const plates = (board: Board) =>
+  PLATE_ART.map((art, i) => ({ ...art, box: PLATE_BOXES[board.key][i] }));
+
 
 /**
  * Lacan's knot in the Scholarly wedge. Reserved like the Creative plates, and
@@ -338,7 +395,13 @@ const PLATES = [
  * floor, and its top edge at y=32 is twelve clear of the margin. Going bigger
  * means either crossing the disc or falling off the board.
  */
-const KNOT_BOX: Box = { x: 800, y: 32, w: 400, h: 416 }; // 300×312 local, ×1.333
+const KNOT_BOXES: Record<BoardKey, Box> = {
+  wide: { x: 800, y: 32, w: 400, h: 416 }, // 300×312 local, ×1.333
+  // The tall board is half as wide, so the knot comes down to 300 and sits
+  // near the top of the upward wedge. Corners fall at 256.6–283.4°, inside
+  // Scholarly's 212–328°, and at radius 646–952, well clear of rMin.
+  tall: { x: 350, y: 60, w: 300, h: 312 },
+};
 const KNOT_DELAY = 90;
 
 /**
@@ -356,13 +419,13 @@ const KNOT_DELAY = 90;
  * Jitter keeps it from reading as a table. Small, and bounded by the row
  * height, so it disturbs the rhythm without breaking the packing.
  */
-function layout(track: TrackId): Placed[] {
+function layout(track: TrackId, board: Board): Placed[] {
   const arc = TRACK_ARCS[track];
   const taken: Box[] =
     track === "creative"
-      ? PLATES.map((p) => p.box)
+      ? plates(board).map((p) => p.box)
       : track === "scholarly"
-        ? [KNOT_BOX]
+        ? [KNOT_BOXES[board.key]]
         : [];
   const placed: Placed[] = [];
   let seed = track.length * 97 + 5;
@@ -407,8 +470,10 @@ function layout(track: TrackId): Placed[] {
       for (let attempt = 0; attempt < 140 && !settled; attempt += 1) {
         seed += 1;
         const angle = arc.start + 3 + rand(seed * 2) * (span - 6);
-        const radius = t.r0 + rand(seed * 2 + 1) * (t.r1 - t.r0);
-        const k = (radius - t.r0) / (t.r1 - t.r0);
+        const r0 = t.r0 * board.reach;
+        const r1 = t.r1 * board.reach;
+        const radius = r0 + rand(seed * 2 + 1) * (r1 - r0);
+        const k = (radius - r0) / (r1 - r0);
         const size = snap(base * step * (1 - FAR_SHRINK * k), 1e3);
         const lines = wrap(item.text, size, item.face, t.maxLine);
         const longest = Math.max(...lines.map((l) => l.length));
@@ -418,11 +483,12 @@ function layout(track: TrackId): Placed[] {
         // rendered attribute are the same number — otherwise two engines could
         // accept different candidates and produce genuinely different layouts,
         // not merely different digits.
-        const cx = snap(C + Math.cos((angle * Math.PI) / 180) * radius, 1e3);
-        const cy = snap(C + Math.sin((angle * Math.PI) / 180) * radius, 1e3);
+        const c = centre(board);
+        const cx = snap(c.x + Math.cos((angle * Math.PI) / 180) * radius, 1e3);
+        const cy = snap(c.y + Math.sin((angle * Math.PI) / 180) * radius, 1e3);
         const box: Box = { x: cx - w / 2, y: cy - h / 2, w, h };
 
-        if (!insideWedge(box, arc.start, arc.end)) continue;
+        if (!insideWedge(box, arc.start, arc.end, board)) continue;
         if (taken.some((b) => overlaps(b, box))) continue;
 
         taken.push(box);
@@ -454,10 +520,17 @@ function layout(track: TrackId): Placed[] {
   return placed;
 }
 
-const LAYOUTS: Record<TrackId, Placed[]> = {
-  scholarly: layout("scholarly"),
-  creative: layout("creative"),
-  professional: layout("professional"),
+const LAYOUTS: Record<BoardKey, Record<TrackId, Placed[]>> = {
+  wide: {
+    scholarly: layout("scholarly", BOARDS.wide),
+    creative: layout("creative", BOARDS.wide),
+    professional: layout("professional", BOARDS.wide),
+  },
+  tall: {
+    scholarly: layout("scholarly", BOARDS.tall),
+    creative: layout("creative", BOARDS.tall),
+    professional: layout("professional", BOARDS.tall),
+  },
 };
 
 export function SymbolField({
@@ -468,9 +541,11 @@ export function SymbolField({
   active: boolean;
 }) {
   const arc = TRACK_ARCS[track];
-  const items = LAYOUTS[track];
-  const plates = track === "creative" ? PLATES : [];
-  if (items.length === 0 && plates.length === 0) return null;
+  if (
+    LAYOUTS.wide[track].length === 0 &&
+    (track === "creative" ? PLATE_ART.length : 0) === 0
+  )
+    return null;
 
   const span = arc.end - arc.start;
   const from = arc.start + 90; // conic starts at 12 o'clock, arcs at 3 o'clock
@@ -485,24 +560,35 @@ export function SymbolField({
     transitionDelay: active ? `${delay}ms` : "0ms",
   });
 
+  // Both boards are rendered and CSS shows one. Choosing at runtime would make
+  // the markup depend on the viewport, which the server cannot know — the exact
+  // shape of hydration mismatch D15 exists to prevent.
   return (
-    <svg
-      viewBox={`0 0 ${BOARD} ${BOARD}`}
+    <>
+      {(Object.keys(BOARDS) as BoardKey[]).map((key) => {
+        const board = BOARDS[key];
+        const items = LAYOUTS[key][track];
+        const knot = KNOT_BOXES[key];
+        const plateList = track === "creative" ? plates(board) : [];
+        return (
+          <svg
+            key={key}
+            viewBox={`0 0 ${board.w} ${board.h}`}
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
-      className="symbol-field pointer-events-none fixed inset-0 -z-10 size-full text-bone"
+      className={`symbol-field field-${board.key} pointer-events-none fixed inset-0 -z-10 size-full text-bone`}
       style={{ maskImage: mask, WebkitMaskImage: mask }}
     >
       {track === "scholarly" ? (
         <g
-          transform={`translate(${KNOT_BOX.x} ${KNOT_BOX.y}) scale(${KNOT_BOX.w / KNOT_VIEWBOX.w})`}
+          transform={`translate(${knot.x} ${knot.y}) scale(${knot.w / KNOT_VIEWBOX.w})`}
           style={reveal(0.3, KNOT_DELAY)}
         >
           <BorromeanKnot />
         </g>
       ) : null}
 
-      {plates.map((plate) => (
+      {plateList.map((plate) => (
         <image
           key={plate.key}
           href={plate.href}
@@ -565,6 +651,9 @@ export function SymbolField({
           </g>
         );
       })}
-    </svg>
+          </svg>
+        );
+      })}
+    </>
   );
 }

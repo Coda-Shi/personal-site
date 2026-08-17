@@ -1,4 +1,11 @@
-import { HINT, PROFILE, TRACKS, type Entry, type TrackId } from "@/lib/content";
+import {
+  HINT,
+  PROFILE,
+  TRACKS,
+  type Entry,
+  type Performance,
+  type TrackId,
+} from "@/lib/content";
 
 /**
  * Two locales, English canonical.
@@ -123,6 +130,9 @@ export type Dictionary = {
   education: Record<string, RecordCopy>;
   advocacy: Record<string, RecordCopy>;
   skills: Record<string, SkillCopy>;
+  music: Record<string, Partial<Performance>>;
+  /** Label on the link out to his covers. */
+  covers: string;
 };
 
 const en: Dictionary = {
@@ -171,6 +181,8 @@ const en: Dictionary = {
   education: {},
   advocacy: {},
   skills: {},
+  music: {},
+  covers: "Covers on Bilibili",
 };
 
 /**
@@ -415,6 +427,29 @@ const zh: Partial<Dictionary> = {
 
   // Tool and library names stay Latin: they are how the field writes them, and
   // a Chinese rendering of "lavaan" would be less legible, not more.
+  covers: "在 bilibili 看我的翻唱",
+  music: {
+    "summer-2022": {
+      event: "Summer Music Festival",
+      hosts: "UCI 热音社 × 解忧杂货店",
+      role: "Oneirism 乐队领唱",
+    },
+    "rechao-2023": {
+      event: "热潮音乐节",
+      hosts: "UCI 热音社 × LSUCI",
+      role: "Oneirism 乐队领唱",
+    },
+    "valentine-2023": {
+      event: "情人节音乐季",
+      hosts: "UCI 热音社 × CSU",
+      role: "Oneirism 乐队领唱",
+    },
+    "spring-gala": {
+      event: "春节晚会",
+      hosts: "普林斯顿、罗格斯与史蒂文森 CSSA",
+      role: "Hyperkinetic 乐队嘉宾领唱",
+    },
+  },
   skills: {
     "skills-stats": { heading: "统计与编程" },
     "skills-methods": {
