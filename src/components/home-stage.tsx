@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { LanguageToggle } from "@/components/language-toggle";
 import { TrinityDisc, type Focus } from "@/components/trinity-disc";
-import { EMAIL, NAME } from "@/lib/content";
+import { EMAILS, NAME } from "@/lib/content";
 import type { Dictionary, Locale } from "@/lib/i18n";
 
 /**
@@ -39,18 +39,25 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
     <main className="home-stage relative grid h-dvh w-full place-items-center overflow-hidden">
       {/* Top-right, opposite the name, and outside the header so it does not
           recede with the intro copy when a beam fires — a way to reach him
-          should not disappear while he is being read about. */}
-      <a
-        href={`mailto:${EMAIL}`}
-        className="label absolute top-6 right-6 z-10 text-bone/55 transition-colors hover:text-bone md:top-9 md:right-10"
+          should not disappear while he is being read about.
+
+          Stacked and smaller under md: one address is 228px and the name
+          already holds the left of that line, so side by side they collide on
+          a phone. Right-aligned so the two read as one block. */}
+      <div
+        className="absolute top-6 right-6 z-10 flex flex-col items-end gap-0.5 md:top-9 md:right-10"
         style={{ animation: "rise-in 700ms ease-out 1850ms both" }}
       >
-        {/* The full address needs 228px and the name already occupies the left
-            of that line, so on a phone the two collide. Short label there, the
-            address from md up where both fit. */}
-        <span className="md:hidden">{dict.nav.email}</span>
-        <span className="hidden md:inline">{EMAIL}</span>
-      </a>
+        {EMAILS.map((address) => (
+          <a
+            key={address}
+            href={`mailto:${address}`}
+            className="label text-[9px] text-bone/55 transition-colors hover:text-bone md:text-[0.78rem]"
+          >
+            {address}
+          </a>
+        ))}
+      </div>
 
       <header className="absolute inset-x-6 top-6 z-10 md:inset-x-10 md:top-9">
         {/* Every line is w-fit or width-capped. A full-width block box at

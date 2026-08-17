@@ -58,12 +58,15 @@ export const PROFILE =
   "Mental health and Psychology Research, Indie game, music and literature creation; organizational leadership.";
 
 /**
- * Shown top-right on the home screen. The studio address rather than a
- * personal one — this is a public page and the choice is not reversible once
- * scrapers have it. A forwarding address on the domain itself (the Porkbun MX
- * records were kept for exactly this) would be the better long-term answer.
+ * Shown top-right on the home screen. Both are published at the owner's
+ * explicit instruction — the studio address and his personal one.
+ *
+ * A published address cannot be unpublished: scrapers keep it. This is his
+ * decision, not a default. A forwarding address on the domain itself (the
+ * Porkbun MX records were kept for exactly this, see D20) would still be the
+ * better long-term answer for the personal one.
  */
-export const EMAIL = "elegistsstudio@gmail.com";
+export const STUDIO_EMAIL = "elegistsstudio@gmail.com";
 
 export const HINT = "Hover and tap; Select which part you came to know him by.";
 
@@ -462,6 +465,9 @@ export const SKILLS = [
 // Phone numbers from the source CV are deliberately omitted — a personal site is
 // a scraping target, and email is sufficient for anyone with a real reason to write.
 export const CONTACT_EMAIL = "shiyixuan1116@gmail.com";
+
+/** Both addresses, in the order the home screen lists them. */
+export const EMAILS = [STUDIO_EMAIL, CONTACT_EMAIL] as const;
 
 // The centre of the site. Deliberately carries no track colour and no glyph —
 // the three public identities are encoded; this one is not.
