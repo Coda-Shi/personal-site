@@ -121,6 +121,12 @@ export const MUSIC: Performance[] = [
 /** Covers live here. */
 export const BILIBILI = "https://space.bilibili.com/614759";
 
+/** One cover, embedded on the Creative page. Just the id — see VideoEmbed. */
+export const COVER = { bvid: "BV1by4y1N7uW", title: "Lost in a Wave" };
+
+/** The studio's own site, linked as a card from Selected work. */
+export const STUDIO_URL = "https://elegists.studio";
+
 export const STUDIO_EMAIL = "elegistsstudio@gmail.com";
 
 export const HINT = "Hover and tap; Select which part you came to know him by.";

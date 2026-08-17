@@ -121,6 +121,8 @@ export type Dictionary = {
     life: string;
     /** The music résumé, inside Creative. */
     music: string;
+    /** The one piece of work Creative leads with. */
+    selected: string;
     poems: string;
     advocacy: string;
     contact: string;
@@ -135,6 +137,12 @@ export type Dictionary = {
   music: Record<string, Partial<Performance>>;
   /** Label on the link out to his covers. */
   covers: string;
+  creative: {
+    workNote: string;
+    studioCard: string;
+    coverCaption: string;
+    play: string;
+  };
 };
 
 const en: Dictionary = {
@@ -173,6 +181,7 @@ const en: Dictionary = {
     education: "Education",
     life: "A life, in his own words",
     music: "Music",
+    selected: "Selected work",
     poems: "Poems",
     advocacy: "Advocacy",
     contact: "Contact",
@@ -186,6 +195,12 @@ const en: Dictionary = {
   skills: {},
   music: {},
   covers: "Covers on Bilibili",
+  creative: {
+    workNote: "My most ambitious writing so far.",
+    studioCard: "The studio’s own site",
+    coverCaption: "A cover, on Bilibili",
+    play: "Play the video",
+  },
 };
 
 /**
@@ -240,6 +255,7 @@ const zh: Partial<Dictionary> = {
     education: "教育",
     life: "生活自述",
     music: "音乐履历",
+    selected: "精选作品",
     poems: "诗",
     advocacy: "行路",
     contact: "联系",
@@ -432,6 +448,12 @@ const zh: Partial<Dictionary> = {
   // Tool and library names stay Latin: they are how the field writes them, and
   // a Chinese rendering of "lavaan" would be less legible, not more.
   covers: "在 bilibili 看我的翻唱",
+  creative: {
+    workNote: "到目前为止我野心最大的写作。",
+    studioCard: "工作室自己的站点",
+    coverCaption: "翻唱，在 bilibili",
+    play: "播放视频",
+  },
   music: {
     "summer-2022": {
       event: "Summer Music Festival",
