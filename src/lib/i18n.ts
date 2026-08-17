@@ -142,7 +142,9 @@ export type Dictionary = {
   /** Label on the link out to his covers. */
   covers: string;
   creative: {
+    workTitle: string;
     workNote: string;
+    workSub: string;
     studioCard: string;
     coverCaption: string;
     play: string;
@@ -223,7 +225,9 @@ const en: Dictionary = {
   },
   covers: "Covers on Bilibili",
   creative: {
-    workNote: "My most ambitious writing so far.",
+    workTitle: "DEAR SUSPECT",
+    workNote: "An AI-native mystery game — my most ambitious writing so far.",
+    workSub: "About love and guilt, and how to trust your own voice.",
     studioCard: "The studio’s own site",
     coverCaption: "A cover, on Bilibili",
     play: "Play the video",
@@ -477,7 +481,9 @@ const zh: Partial<Dictionary> = {
   // a Chinese rendering of "lavaan" would be less legible, not more.
   covers: "在 bilibili 看我的翻唱",
   creative: {
-    workNote: "到目前为止我野心最大的写作。",
+    workTitle: "《亲爱的嫌疑人》",
+    workNote: "一款 AI 原生的推理游戏——迄今为止我野心最大的写作。",
+    workSub: "有关爱与罪恶，和如何相信自己的声音。",
     studioCard: "工作室自己的站点",
     coverCaption: "翻唱，在 bilibili",
     play: "播放视频",

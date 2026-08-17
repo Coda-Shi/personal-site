@@ -134,10 +134,16 @@ export function TrackPage({
   lang,
   track,
   children,
+  /**
+   * Creative places its two entries by hand — one under the studio card, one
+   * inside the music section — so it opts out and renders them itself.
+   */
+  ownEntries = false,
 }: {
   lang: Locale;
   track: Track;
   children?: React.ReactNode;
+  ownEntries?: boolean;
 }) {
   const copy = getDictionary(lang).tracks[track.id];
 
@@ -160,7 +166,7 @@ export function TrackPage({
         </p>
       </header>
 
-      <EntryList entries={track.entries} lang={lang} collapsible />
+      {ownEntries ? null : <EntryList entries={track.entries} lang={lang} collapsible />}
       {children}
     </SiteShell>
   );

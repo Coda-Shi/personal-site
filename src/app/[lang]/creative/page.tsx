@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { TrackPage } from "@/components/track-page";
 import Image from "next/image";
 import { VideoEmbed } from "@/components/video-embed";
 import { BILIBILI, COVER, MUSIC, STUDIO_URL, TRACKS } from "@/lib/content";
+import { EntryList, TrackPage } from "@/components/track-page";
 import { getDictionary, hasLocale, localise } from "@/lib/i18n";
 import { localeAlternates } from "@/lib/site";
 
@@ -27,26 +27,38 @@ export default async function Page({ params }: PageProps<"/[lang]/creative">) {
   if (!hasLocale(lang)) notFound();
   const dict = getDictionary(lang);
 
+  const entry = (id: string) => track.entries.filter((e) => e.id === id);
+
   return (
-    <TrackPage lang={lang} track={track}>
-      {/* Leads the page. One piece, named, with the line art already in the
-          repo — a track page that opens with a list of employers buries the
-          work under the jobs. */}
+    <TrackPage lang={lang} track={track} ownEntries>
+      {/* The work leads, then the studio that makes it, then the post held
+          there — the reader meets the thing before the arrangements around it. */}
       <section className="mt-16">
         <h2 className="label text-bone/75">{dict.headings.selected}</h2>
         <p className="mt-6 font-display text-4xl leading-none font-light tracking-tight md:text-5xl">
-          DEAR SUSPECT
+          {dict.creative.workTitle}
         </p>
-        <p className="mt-4 max-w-lg font-display text-xl leading-relaxed italic text-bone/80">
+        <p className="mt-5 max-w-lg font-display text-xl leading-relaxed italic text-bone/85">
           {dict.creative.workNote}
         </p>
+        <p className="mt-2 max-w-lg text-sm leading-relaxed text-bone/55">
+          {dict.creative.workSub}
+        </p>
+
+        {/* Still the figure plate, not the full key art: the key art source is
+            not in the repo yet. Drop it in _incoming/ and run
+            scripts/keyart-lineart.py, then this becomes a one-line swap to
+            /creative/dear-suspect-key-art.png with width 1200 height 660.
+            Never reference a key art file raw — every plate on this site is
+            keyed to bone first (D14). */}
         <Image
           src="/creative/dear-suspect-figure.png"
           alt=""
           width={380}
           height={460}
-          className="mt-8 h-auto w-full max-w-[15rem] opacity-70"
+          className="mt-8 h-auto w-full max-w-[17rem] opacity-75"
         />
+
         <a
           href={STUDIO_URL}
           rel="noreferrer"
@@ -58,19 +70,52 @@ export default async function Page({ params }: PageProps<"/[lang]/creative">) {
             </span>
             <span className="label mt-1 block text-bone/45">{dict.creative.studioCard}</span>
           </span>
-          <span className="label whitespace-nowrap text-bone/55">elegists.studio →</span>
+          <span className="label whitespace-nowrap text-bone/55">elegists.studio &rarr;</span>
         </a>
+
+        <EntryList entries={entry("elegists")} lang={lang} collapsible />
       </section>
 
-      {/* A section of its own, because a music history is not the same shape
-          as a job: it is bands, instruments, arrangements and performances.
-          Empty until the owner fills it — the heading is the placeholder. */}
       <section className="mt-16">
         <h2 className="label text-bone/75">{dict.headings.music}</h2>
 
-        {/* The mark is drawn in the site's own line idiom rather than lifting
-            Bilibili's brand artwork — the same reasoning as the track marks in
-            D9, and it keeps someone else's trademark off the page. */}
+        {/* The club sits here rather than with the jobs: it is where the
+            performances below it came from. */}
+        <EntryList entries={entry("hot-sound")} lang={lang} collapsible />
+
+        <ul className="mt-2">
+          {MUSIC.map((original) => {
+            const show = localise(original, dict.music);
+            return (
+              <li
+                key={original.id}
+                className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-t border-bone/20 py-4"
+              >
+                <span>
+                  <span className="font-display text-xl leading-snug tracking-tight">
+                    {show.event}
+                  </span>
+                  <span className="mt-1 block text-sm text-bone/70">
+                    {show.hosts}
+                    <span className="text-bone/50"> &middot; {show.role}</span>
+                  </span>
+                </span>
+                {show.date ? (
+                  <span className="label whitespace-nowrap text-bone/55">{show.date}</span>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+
+        <VideoEmbed
+          bvid={COVER.bvid}
+          title={COVER.title}
+          caption={dict.creative.coverCaption}
+          playLabel={dict.creative.play}
+        />
+
+        {/* Under the video: the one cover is the sample, the channel is the rest. */}
         <a
           href={BILIBILI}
           rel="noreferrer"
@@ -95,41 +140,7 @@ export default async function Page({ params }: PageProps<"/[lang]/creative">) {
           </svg>
           {dict.covers}
         </a>
-
-        <VideoEmbed
-          bvid={COVER.bvid}
-          title={COVER.title}
-          caption={dict.creative.coverCaption}
-          playLabel={dict.creative.play}
-        />
-
-        <ul className="mt-10">
-          {MUSIC.map((original) => {
-            const show = localise(original, dict.music);
-            return (
-              <li
-                key={original.id}
-                className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-t border-bone/20 py-4"
-              >
-                <span>
-                  <span className="font-display text-xl leading-snug tracking-tight">
-                    {show.event}
-                  </span>
-                  <span className="mt-1 block text-sm text-bone/70">
-                    {show.hosts}
-                    <span className="text-bone/50"> · {show.role}</span>
-                  </span>
-                </span>
-                {show.date ? (
-                  <span className="label whitespace-nowrap text-bone/55">{show.date}</span>
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
-
       </section>
-
     </TrackPage>
   );
 }

@@ -147,6 +147,7 @@ export const MUSIC: Performance[] = [
   },
   {
     id: "spring-gala",
+    date: "2025.04",
     event: "Spring Festival Gala",
     hosts: "Princeton, Rutgers and Stevens CSSA",
     role: "Guest lead vocals, Hyperkinetic",
@@ -157,7 +158,10 @@ export const MUSIC: Performance[] = [
 export const BILIBILI = "https://space.bilibili.com/614759";
 
 /** One cover, embedded on the Creative page. Just the id — see VideoEmbed. */
-export const COVER = { bvid: "BV1by4y1N7uW", title: "Lost in a Wave" };
+export const COVER = {
+  bvid: "BV1by4y1N7uW",
+  title: "LANDMVRKS — Lost in a Wave (short cover)",
+};
 
 /** The studio's own site, linked as a card from Selected work. */
 export const STUDIO_URL = "https://elegists.studio";
