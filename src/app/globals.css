@@ -136,6 +136,18 @@
   --disc-label-size: 12px;
 }
 
+/* Below sm the disc is capped at 62vw and comes out around 233px against the
+   desktop's 480, so type held at the desktop size lands nearly twice as large
+   relative to the ring. Proportionally the caption would want 5.8px, which is
+   not a readable size; 9.5px is the floor for uppercase Cormorant and is what
+   this settles on. The marks scale properly, in the component. Desktop is not
+   touched — this only narrows, never widens. */
+@media (max-width: 639px) {
+  .home-stage {
+    --disc-label-size: 9px;
+  }
+}
+
 /* ── Chinese sets one face, not two ───────────────────────────────────────
    The Chinese side was drawing headings and labels from Source Han Serif but
    body copy from Source Han Sans, so a single page mixed Song and Hei with
