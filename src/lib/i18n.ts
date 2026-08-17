@@ -122,8 +122,15 @@ export type Dictionary = {
     life: string;
     /** The music résumé, inside Creative. */
     music: string;
+    /** The posts held, inside Scholarly. */
+    record: string;
+    /** The posts held, inside Creative's game half. */
+    game: string;
     /** The one piece of work Creative leads with. */
     selected: string;
+    /** Its counterpart over the music half — two identical headings on one
+     *  page would be indistinguishable to a screen reader. */
+    selectedCover: string;
     /** The questions Scholarly is organised around. */
     questions: string;
     poems: string;
@@ -142,9 +149,12 @@ export type Dictionary = {
   /** Label on the link out to his covers. */
   covers: string;
   creative: {
+    workTitle: string;
     workNote: string;
+    workSub: string;
     studioCard: string;
     coverCaption: string;
+    coverNote: string;
     play: string;
   };
 };
@@ -185,7 +195,10 @@ const en: Dictionary = {
     education: "Education",
     life: "A life, in his own words",
     music: "Music",
+    record: "Academic record",
+    game: "Game record",
     selected: "Selected work",
+    selectedCover: "Selected cover",
     questions: "Questions I am working on",
     poems: "Poems",
     advocacy: "Advocacy",
@@ -200,32 +213,31 @@ const en: Dictionary = {
   skills: {},
   music: {},
   questionCopy: {
-    death: {
-      lead: "死亡。",
-      note: "它的现象学结构，它在不同文化里被安置的方式，以及它对尚在生者意味着什么。这个题目容不下单一学科——现象学、人类学、形而上学与心理测量各自看见它的一面。",
+    "death-suffering": {
+      lead: "死亡与心智痛苦。",
+      note: "死亡与痛苦的现象学结构与价值，它们在不同文化里如何被赋予不同意义而安置，以及它们对生者意味着什么。",
+    },
+    intervention: {
+      lead: "以正念为本、精神动力取向与存在主义取向的干预，究竟如何起效。",
+      note: "如何验证正念疗法、存在主义疗法与传统文化疗法的有效性，各自又在什么条件下成立；以及，如何通过亲身的实践去缓解他人的痛苦与对死亡的焦虑。",
     },
     selfhood: {
       lead: "自我同一性，是否本身就是一种文化特定的需求。",
-      note: "若是，那么以它为前提的人格与发展理论都有一道它们未曾声明的边界。而意义感可能正是维持自我连续性的机制之一——这一步把一个立场变成了可检验的假设。",
-    },
-    trauma: {
-      lead: "创伤与人格如何互相塑造。",
-      note: "不只是创伤如何改变人格，也包括人格如何决定了什么会成为创伤。",
+      note: "若是，那么以它为前提的人格与发展理论都有一道它们未曾声明的边界。而意义感可能正是维持自我连续性的机制之一。",
     },
     measurement: {
-      lead: "心理构念能被测得多准，又能走多远。",
+      lead: "心理构念能够被测量得多么准确。",
       note: "测量精度与跨文化等值性，是这个领域里其余一切结论能否成立的前提。",
-    },
-    intervention: {
-      lead: "以正念为本、精神动力取向与存在主义取向的干预，各自在什么条件下有效。",
-      note: "比较有效性是这个问题容易的一半；值得要的是机制那一半。",
     },
   },
   covers: "Covers on Bilibili",
   creative: {
-    workNote: "My most ambitious writing so far.",
+    workTitle: "DEAR SUSPECT",
+    workNote: "An AI-native mystery game — my most ambitious writing so far.",
+    workSub: "About love and guilt, and how to trust your own voice.",
     studioCard: "The studio’s own site",
     coverCaption: "A cover, on Bilibili",
+    coverNote: "The heavy music I love, and the intensity only it can carry.",
     play: "Play the video",
   },
 };
@@ -282,7 +294,10 @@ const zh: Partial<Dictionary> = {
     education: "教育",
     life: "生活自述",
     music: "音乐履历",
+    record: "学术履历",
+    game: "游戏履历",
     selected: "精选作品",
+    selectedCover: "精选翻唱",
     questions: "我关心的问题",
     poems: "诗",
     advocacy: "行路",
@@ -477,9 +492,12 @@ const zh: Partial<Dictionary> = {
   // a Chinese rendering of "lavaan" would be less legible, not more.
   covers: "在 bilibili 看我的翻唱",
   creative: {
-    workNote: "到目前为止我野心最大的写作。",
+    workTitle: "《亲爱的嫌疑人》",
+    workNote: "一款 AI 原生的推理游戏——迄今为止我野心最大的写作。",
+    workSub: "有关爱与罪恶，和如何相信自己的声音。",
     studioCard: "工作室自己的站点",
     coverCaption: "翻唱，在 bilibili",
+    coverNote: "我钟爱的重型音乐，和只有它才能表达的激烈情绪。",
     play: "播放视频",
   },
   music: {
