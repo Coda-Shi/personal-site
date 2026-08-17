@@ -1,6 +1,7 @@
 import {
   HINT,
   PROFILE,
+  ROLES,
   TRACKS,
   type Entry,
   type Performance,
@@ -83,6 +84,7 @@ export function localise<T extends { id: string }>(
 }
 
 export type Dictionary = {
+  roles: string;
   profile: string;
   hint: string;
   tracks: Record<TrackId, TrackCopy>;
@@ -136,6 +138,7 @@ export type Dictionary = {
 };
 
 const en: Dictionary = {
+  roles: ROLES,
   profile: PROFILE,
   hint: HINT,
   // Derived rather than restated, so the English disc labels cannot drift from
@@ -198,8 +201,9 @@ const en: Dictionary = {
  * languages.
  */
 const zh: Partial<Dictionary> = {
+  roles: "心理学学者 · 游戏制作人 · 组织领导",
   profile:
-    "精神健康与心理学研究，独立音乐、文学与游戏创作；组织领导。",
+    "工作横跨精神健康实践与心理学研究、独立音乐、文学与游戏创作，以及组织的搭建与领导。",
   hint: "悬停或轻触；选择你从哪一面了解到他。",
   tracks: {
     scholarly: {

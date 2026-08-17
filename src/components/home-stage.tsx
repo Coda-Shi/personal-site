@@ -73,8 +73,14 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             fill-mode `both` pins opacity to its end value and the transition
             never gets a say. */}
         <div style={{ animation: "rise-in 700ms ease-out 130ms both" }}>
+          {/* Two lines: the three faces, then what they span. The roles line
+              is brighter and stays on one line where it can — it is the
+              caption to the disc below it. */}
+          <p className="intro-copy mt-3 max-w-xs text-bone/85 md:max-w-sm xl:max-w-md" style={recede}>
+            {dict.roles}
+          </p>
           <p
-            className="intro-copy hide-when-short mt-3 max-w-xs text-xs leading-relaxed text-bone/70 md:max-w-sm md:text-sm xl:max-w-md"
+            className="intro-copy hide-when-short mt-1.5 max-w-xs text-xs leading-relaxed text-bone/60 md:max-w-sm md:text-sm xl:max-w-md"
             style={recede}
           >
             {dict.profile}

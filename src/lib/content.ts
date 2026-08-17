@@ -54,8 +54,11 @@ export type Track = {
 
 export const NAME = 'Yixuan "Coda" Shi';
 
+/** The three faces, named. Sits between the name and the sentence below it. */
+export const ROLES = "Psychology scholar · Game producer · Organizational leader";
+
 export const PROFILE =
-  "Mental health and Psychology Research, Indie game, music and literature creation; organizational leadership.";
+  "Work spanning mental health practice and psychological research; independent music, literature and game creation; and building and leading organizations.";
 
 /**
  * Shown top-right on the home screen. Both are published at the owner's
