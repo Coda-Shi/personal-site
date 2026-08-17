@@ -54,8 +54,11 @@ export type Track = {
 
 export const NAME = 'Yixuan "Coda" Shi';
 
+/** The three faces, named. Sits between the name and the sentence below it. */
+export const ROLES = "Psychology scholar · Game producer · Organizational leader";
+
 export const PROFILE =
-  "Mental health and Psychology Research, Indie game, music and literature creation; organizational leadership.";
+  "Work spanning mental health practice and psychological research; independent music, literature and game creation; and building and leading organizations.";
 
 /**
  * Shown top-right on the home screen. Both are published at the owner's
@@ -117,6 +120,12 @@ export const MUSIC: Performance[] = [
 
 /** Covers live here. */
 export const BILIBILI = "https://space.bilibili.com/614759";
+
+/** One cover, embedded on the Creative page. Just the id — see VideoEmbed. */
+export const COVER = { bvid: "BV1by4y1N7uW", title: "Lost in a Wave" };
+
+/** The studio's own site, linked as a card from Selected work. */
+export const STUDIO_URL = "https://elegists.studio";
 
 export const STUDIO_EMAIL = "elegistsstudio@gmail.com";
 
