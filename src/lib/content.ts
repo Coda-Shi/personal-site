@@ -66,6 +66,58 @@ export const PROFILE =
  * Porkbun MX records were kept for exactly this, see D20) would still be the
  * better long-term answer for the personal one.
  */
+/**
+ * Performances. Four, all as lead vocals — a music history is not shaped like
+ * a job, so it does not go through Entry: no location, no bullet list, and the
+ * band matters more than the venue.
+ *
+ * 解忧杂货店 keeps its Chinese name in the English copy. It has no English one,
+ * and CLAUDE.md §8 is explicit that translating a CV is not licence to invent
+ * institution names — the same rule that keeps Everglory and Crisis Text Line
+ * in Latin on the Chinese side.
+ */
+export type Performance = {
+  id: string;
+  /** Absent where the owner did not give one. */
+  date?: string;
+  event: string;
+  hosts: string;
+  role: string;
+};
+
+export const MUSIC: Performance[] = [
+  {
+    id: "summer-2022",
+    date: "2022.07",
+    event: "Summer Music Festival",
+    hosts: "UCI Hot Sound Club × 解忧杂货店",
+    role: "Lead vocals, Oneirism",
+  },
+  {
+    id: "rechao-2023",
+    date: "2023.01",
+    event: "Rechao Music Festival",
+    hosts: "UCI Hot Sound Club × LSUCI",
+    role: "Lead vocals, Oneirism",
+  },
+  {
+    id: "valentine-2023",
+    date: "2023.02",
+    event: "Valentine's Music Season",
+    hosts: "UCI Hot Sound Club × CSU",
+    role: "Lead vocals, Oneirism",
+  },
+  {
+    id: "spring-gala",
+    event: "Spring Festival Gala",
+    hosts: "Princeton, Rutgers and Stevens CSSA",
+    role: "Guest lead vocals, Hyperkinetic",
+  },
+];
+
+/** Covers live here. */
+export const BILIBILI = "https://space.bilibili.com/614759";
+
 export const STUDIO_EMAIL = "elegistsstudio@gmail.com";
 
 export const HINT = "Hover and tap; Select which part you came to know him by.";
