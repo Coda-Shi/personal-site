@@ -302,3 +302,25 @@
 .entry[open] > summary::after {
   transform: translateY(-25%) rotate(225deg);
 }
+
+/* ── Which symbol board is shown ──────────────────────────────────────────
+   Both are in the DOM; this picks one. The choice cannot be made in React
+   from the viewport — that would make the markup depend on something the
+   server cannot know, which is D15's hydration failure exactly.
+
+   Portrait phones get the 1000×2000 board, everything else the square one.
+   Landscape phones keep the square board: it already fits there (measured at
+   812×375, R_MIN 109px against a 90px arc). */
+.field-tall {
+  display: none;
+}
+
+@media (max-width: 767px) and (orientation: portrait) {
+  .field-wide {
+    display: none;
+  }
+
+  .field-tall {
+    display: block;
+  }
+}
