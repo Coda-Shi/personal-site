@@ -9,6 +9,7 @@ export const train: Piece = {
   text: {
     zh: {
       title: "列车",
+      date: "~2023",
       body: [
         "我们被囿于这辆疾驰的列车",
         "其下的轨道是同袍的尸骨",

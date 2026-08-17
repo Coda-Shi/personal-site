@@ -11,6 +11,7 @@ export const howToDecipher: Piece = {
   text: {
     zh: {
       title: "如何解密",
+      date: "~2025",
       body: [
         "我该如何保守你的秘密？",
         "只有为你指认你不曾注意的痕迹。",

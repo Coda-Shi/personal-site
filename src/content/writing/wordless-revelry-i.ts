@@ -12,6 +12,7 @@ export const wordlessRevelryI: Piece = {
     zh: {
       title: "无言的狂欢",
       subtitle: "组诗之一",
+      date: "~2025",
       body: [
         "穿过雨伞拼贴的街道凋零一片，",
         "你我不过是群像剧铺开布景，",

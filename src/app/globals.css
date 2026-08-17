@@ -261,3 +261,44 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── Folded entries ───────────────────────────────────────────────────────
+   The track pages fold each entry's detail behind <details>; /cv does not.
+   See EntryList for why.
+
+   `list-none` on the summary kills the default triangle, which cannot be
+   positioned and would otherwise sit on the first line of a three-line
+   masthead. This draws one at the right margin instead, on the baseline of
+   the organisation name. */
+.entry > summary::-webkit-details-marker {
+  display: none;
+}
+
+.entry > summary {
+  position: relative;
+}
+
+.entry > summary::after {
+  content: "";
+  position: absolute;
+  top: 2rem;
+  right: 0;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  color: var(--color-bone);
+  opacity: 0.4;
+  transform: translateY(-50%) rotate(45deg);
+  transition:
+    transform 220ms ease-out,
+    opacity 220ms ease-out;
+}
+
+.entry > summary:hover::after {
+  opacity: 0.85;
+}
+
+.entry[open] > summary::after {
+  transform: translateY(-25%) rotate(225deg);
+}

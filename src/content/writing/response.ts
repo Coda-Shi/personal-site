@@ -9,6 +9,7 @@ export const response: Piece = {
   text: {
     zh: {
       title: "回应",
+      date: "~2025",
       body: [
         "模糊的语言为沉思留出花圃。",
         "云海如流 所载四季",

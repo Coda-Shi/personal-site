@@ -9,6 +9,7 @@ export const letterI: Piece = {
   kind: "letter",
   text: {
     zh: {
+      date: "~2025",
       body: [
         "亲爱的，我构想，如果世界上真的有某种绝对公平的比赛，那么我会觉得，那比赛是比我们谁先找到真正的自我。",
         "",

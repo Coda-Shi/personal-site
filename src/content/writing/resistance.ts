@@ -12,6 +12,7 @@ export const resistance: Piece = {
   text: {
     zh: {
       title: "对抗",
+      date: "~2025",
       body: [
         "像白雪对抗着消融，",
         "像白雪对抗着消融……",

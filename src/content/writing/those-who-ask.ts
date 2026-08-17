@@ -9,6 +9,7 @@ export const thoseWhoAsk: Piece = {
   text: {
     zh: {
       title: "追问的人",
+      date: "~2026",
       body: [
         "我们总是这样吧。",
         "仓促为沉默的赋形成话。",
