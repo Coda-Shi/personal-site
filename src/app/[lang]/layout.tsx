@@ -93,6 +93,23 @@ const zhuqueFangsong = localFont({
   // told to expect it. The :lang(zh) stack puts Cormorant first and only what
   // Cormorant lacks reaches this face.
   adjustFontFallback: false,
+  /**
+   * Without this the 410 KB subset downloads on every page, English included,
+   * where not one of its glyphs is ever drawn — measured at 725 KB of fonts on
+   * /en, of which this was the majority.
+   *
+   * A unicode-range makes the fetch conditional on the page actually
+   * containing one of these characters, which is how the Google CJK faces
+   * already behave. The range is CJK punctuation, kana, the two ideograph
+   * blocks and fullwidth forms — everything this subset can draw.
+   */
+  declarations: [
+    {
+      prop: "unicode-range",
+      value:
+        "U+2E80-2EFF, U+3000-303F, U+3040-30FF, U+3200-32FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FE30-FE4F, U+FF00-FFEF",
+    },
+  ],
 });
 
 const FONT_VARS = [
