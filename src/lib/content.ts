@@ -69,6 +69,11 @@ export const QUESTIONS: Question[] = [
     note: "Its phenomenological structure, the ways different cultures find to house it, and what it means to those still living. No single discipline holds the whole of it — phenomenology, anthropology, metaphysics and psychometrics each see one face.",
   },
   {
+    id: "selfhood",
+    lead: "Whether the need for a coherent self is itself culturally specific.",
+    note: "If it is, every theory of personality and development that presupposes it has a boundary it does not declare. Meaning may be one of the mechanisms that holds self-continuity together — which is what turns the question from a position into something testable.",
+  },
+  {
     id: "trauma",
     lead: "How trauma and personality shape one another.",
     note: "Not only how trauma alters personality, but how personality decides what becomes trauma in the first place.",
