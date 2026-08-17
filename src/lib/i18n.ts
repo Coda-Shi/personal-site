@@ -144,7 +144,7 @@ const en: Dictionary = {
   },
   writing: {
     title: "Verse & Prose",
-    lede: "Written apart from any of the three — the part of him that answers to nobody.",
+    lede: "The part of him that is lost inside himself.",
     kinds: { verse: "Verse", prose: "Prose" },
     onlyIn: "In Chinese only",
     all: "All verse & prose",
@@ -206,7 +206,7 @@ const zh: Partial<Dictionary> = {
   nav: { cv: "简历", coda: "Coda 其人", writing: "诗文", studio: "唱诗人工作室" },
   writing: {
     title: "诗文",
-    lede: "写在三条线之外——他不对任何人交代的那一部分。",
+    lede: "他迷失在自己之内的那一部分。",
     kinds: { verse: "诗", prose: "文" },
     onlyIn: "此篇仅有英文",
     all: "全部诗文",

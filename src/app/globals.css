@@ -76,15 +76,25 @@
     }
   }
 
+  /* Set in the display face, not in mono. Mono was a third typographic voice
+     used for every label on the site, and once the home screen went classical
+     it survived only in scattered chrome — the back link, a few section
+     headings — where it read as a leftover from a different design rather than
+     as a deliberate collision. It is now reserved for actual notation, inside
+     the symbol field, which is what D8 meant by "anything that is data".
+
+     D12's figure collision survives, in a subtler form. It used to be mono
+     tabular figures against Cormorant's old-style ones — two families. It is
+     now lining figures against old-style figures within the *same* family:
+     the same year still reads two ways on the CV, but as two conventions of
+     one tradition rather than as two unrelated systems. */
   .label {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 500;
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
-    /* Instrument-panel figures: equal width, equal height, sitting on the
-       baseline. The opposite of .oldstyle below — that contrast is the point. */
-    font-variant-numeric: tabular-nums lining-nums;
+    font-variant-numeric: lining-nums;
   }
 
   /* Text figures: 1234567890 with ascenders and descenders, set to the rhythm
@@ -137,22 +147,28 @@
    Cormorant runs light at small sizes (D8), so sizes go up and weight goes to
    600. Uppercase Cormorant at 13px on wide tracking reads as inscriptional
    rather than as fine print. */
-/* The labels go classical in *both* languages, not just English.
-   The first pass scoped this to :lang(en) on the reasoning that Chinese
-   already read neutral — but that was reasoning about Chinese characters,
-   and the footer is mostly not Chinese characters. Set beside a serif 诗文,
-   ELEGISTS STUDIO and GITHUB in JetBrains Mono read as a different site.
-   The Chinese half follows the same stack into Source Han Serif, which is
-   the Song face and the classical register there. */
+/* Only the disc labels need their own size — .label itself is now classical
+   everywhere, so the home screen no longer overrides the family. */
 .home-stage {
   --disc-label-size: 12px;
 }
 
-.home-stage .label {
+/* ── Chinese sets one face, not two ───────────────────────────────────────
+   The Chinese side was drawing headings and labels from Source Han Serif but
+   body copy from Source Han Sans, so a single page mixed Song and Hei with
+   nothing deciding which went where. In English that split is legible as
+   classical-against-geometric, which is D8's whole point; in Chinese it just
+   read as inconsistency — the owner's words: 中文版本的字体选择不够统一.
+
+   Chinese now sets everything in Song, and keeps Fangsong for the literary
+   voice (D17). That is the traditional division — 正文用宋，另一种声音用仿宋 —
+   and it is two faces instead of three.
+
+   English is untouched: Cormorant for display and labels, Space Grotesk for
+   body. Cormorant is too light for body copy at 14px (D8), which is exactly
+   why this is scoped rather than applied to both. */
+:lang(zh) body {
   font-family: var(--font-display);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
 }
 
 :lang(en) .home-stage .intro-copy {
@@ -239,6 +255,33 @@
   .drift {
     animation: none !important;
     opacity: 1 !important;
+  }
+}
+
+/* ── The symbol field needs a big canvas, and a phone is not one ───────────
+   The 2000-unit board is fitted with `meet`, so it scales to the *short* side
+   of the viewport. On a portrait phone that is the width, and two things go
+   wrong at once.
+
+   It stops fitting: the board renders 375×375 inside a 375×812 screen, so the
+   field covers the full width but only 46% of the height, and D13's R_MIN of
+   580 board units lands 109px from centre while the disc's outer arc reaches
+   141px — the symbols render *underneath the disc*. R_MIN was derived when the
+   disc was capped by 56vh and took 56% of the board; on a phone it is capped
+   by the width instead and takes 87%, so the ratio inverts.
+
+   And it stops being readable anyway: at board scale 0.1875 against the
+   desktop's 0.36, the smallest tier is about 3px tall. D13 spent a lot of
+   effort getting that tier legible at desktop scale; half of it is not
+   legible at any effort.
+
+   So it is not rendered where it cannot work. Both conditions are needed —
+   width for portrait phones, height for landscape ones, which is the same
+   600px threshold .hide-when-short already uses. Verified: 768×1024 still
+   clears the disc (R_MIN 223px against a 206px arc) and still shows. */
+@media (max-width: 767px), (max-height: 600px) {
+  .symbol-field {
+    display: none;
   }
 }
 
