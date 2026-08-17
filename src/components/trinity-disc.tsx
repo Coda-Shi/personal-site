@@ -25,6 +25,13 @@ const R_INNER = 72;
  */
 const R_LABEL_START = 112;
 
+/**
+ * How long a tap holds the beam before the route changes. The beam's own
+ * transition is 700ms, so this leaves the pigment flooded for a beat before
+ * the destination — which uses that same pigment as its ground — arrives.
+ */
+const BEAM_HOLD = 1000;
+
 /** The hub is a fourth focus target, but it lights nothing and colours nothing. */
 export type Focus = TrackId | "hub" | null;
 
@@ -196,6 +203,52 @@ export function TrinityDisc({
   setFocus: (next: Focus) => void;
 }) {
   const router = useRouter();
+  const leaving = useRef(false);
+
+  /**
+   * On touch, light the sector first and follow the beam a moment later.
+   *
+   * A phone has no hover, so the first tap is the tap that navigates and the
+   * beam — which is the transition, not decoration: the destination page uses
+   * that same pigment as its ground (D10) — is never seen. Holding for the
+   * length of the beam means the colour reaches the edge of the screen and the
+   * next page simply continues it.
+   *
+   * Pointer devices are unaffected: hover has already run the beam by the time
+   * the click happens, so delaying it there would just make the site feel slow.
+   */
+  const go = (id: TrackId) => {
+    if (leaving.current) return; // a second tap must not queue a second push
+    leaving.current = true;
+    setFocus(id);
+    window.setTimeout(() => router.push(`/${lang}/${id}`), BEAM_HOLD);
+  };
+
+  /**
+   * Touch opens on pointerdown, not on click, and that is the whole fix for
+   * the two-tap bug.
+   *
+   * Both the sector and its label carry hover reactions. On iOS an element
+   * with hover behaviour swallows the first tap: that tap only applies the
+   * hover state — which is why the beam fired — and `click` is not delivered
+   * until a *second* tap. Anything hung off click therefore needs two taps by
+   * construction, no matter what it does.
+   *
+   * pointerdown arrives on the first touch regardless, so the sequence starts
+   * there and the click that may follow is swallowed below.
+   */
+  const openOnTouch = (id: TrackId) => (event: React.PointerEvent) => {
+    if (event.pointerType === "mouse") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    go(id);
+  };
+
+  /** Once a touch has started the transition, the trailing click must not
+   *  navigate a second time or cut the beam short. */
+  const swallowClick = (event: React.MouseEvent) => {
+    if (leaving.current) event.preventDefault();
+  };
+
   const stage = useRef<HTMLDivElement>(null);
   const labelBlocks = useRef(new Map<TrackId, HTMLElement>());
   const labelRadius = useBalancedLabelRadius(stage, labelBlocks);
@@ -241,7 +294,13 @@ export function TrinityDisc({
 
       <div
         ref={stage}
-        className="relative mx-auto aspect-square w-full max-w-[min(56vh,30rem)]"
+        // The 62vw cap only ever binds on a portrait phone, and it is what keeps
+        // the symbol field off the disc. The field's board is fitted with
+        // `meet`, so on portrait it scales to the width and D13's R_MIN of 580
+        // units lands at 0.29·vw from centre; the disc's outer arc sits at
+        // 0.43·width, so the disc has to stay under 0.674·vw or the symbols
+        // render underneath it. 62vw leaves about 9px of margin at 375.
+        className="relative mx-auto aspect-square w-full max-w-[min(56vh,30rem,62vw)]"
         onMouseLeave={() => setFocus(null)}
       >
         <svg viewBox="0 0 400 400" className="size-full" aria-hidden="true">
@@ -287,7 +346,10 @@ export function TrinityDisc({
                   animation: `plot-stroke 700ms cubic-bezier(0.65, 0, 0.35, 1) ${drawDelay}ms both, ink-in 500ms ease-out ${drawDelay + 700}ms both`,
                 }}
                 onMouseEnter={() => setFocus(track.id)}
-                onClick={() => router.push(`/${lang}/${track.id}`)}
+                onPointerDown={openOnTouch(track.id)}
+                onClick={() => {
+                  if (!leaving.current) router.push(`/${lang}/${track.id}`);
+                }}
               />
             );
           })}
@@ -310,6 +372,8 @@ export function TrinityDisc({
               animation: `fade-in 500ms ease-out ${1250 + i * 150}ms both`,
             }}
             className="absolute -translate-x-1/2 -translate-y-1/2"
+            onPointerDown={openOnTouch(track.id)}
+            onClick={swallowClick}
             onMouseEnter={() => setFocus(track.id)}
             onFocus={() => setFocus(track.id)}
             onBlur={() => setFocus(null)}
@@ -321,10 +385,16 @@ export function TrinityDisc({
                 if (node) labelBlocks.current.set(track.id, node);
                 else labelBlocks.current.delete(track.id);
               }}
-              className="flex flex-col items-center gap-1 text-center transition-opacity duration-500 ease-out"
+              className="flex flex-col items-center gap-0.5 text-center transition-opacity duration-500 ease-out sm:gap-1"
               style={{ opacity: dimmed(track.id) ? 0.3 : 1 }}
             >
-              <TrackMark track={track} className="font-display text-3xl leading-none md:text-4xl" />
+              <TrackMark
+                track={track}
+                /* 18px under sm against the desktop 36px, which is the same
+                   share of the ring once the disc is capped at 62vw: 18/233
+                   is 7.7%, 36/480 is 7.5%. */
+                className="font-display text-base leading-none sm:text-3xl md:text-4xl"
+              />
               {/* Inline rather than a utility: this has to beat `.label`'s own
                   font-size, and two utilities of equal specificity would be
                   decided by whichever Tailwind happened to emit last. */}

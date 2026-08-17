@@ -490,7 +490,7 @@ export function SymbolField({
       viewBox={`0 0 ${BOARD} ${BOARD}`}
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 -z-10 size-full text-bone"
+      className="symbol-field pointer-events-none fixed inset-0 -z-10 size-full text-bone"
       style={{ maskImage: mask, WebkitMaskImage: mask }}
     >
       {track === "scholarly" ? (

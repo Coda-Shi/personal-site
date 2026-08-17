@@ -92,7 +92,7 @@ export type Dictionary = {
   writing: {
     title: string;
     lede: string;
-    kinds: { verse: string; prose: string };
+    kinds: { verse: string; prose: string; letter: string };
     /**
      * Shown on a piece written in the language not being read. Phrased as a
      * fact about the work rather than as a shortfall — "Chinese original",
@@ -144,8 +144,8 @@ const en: Dictionary = {
   },
   writing: {
     title: "Verse & Prose",
-    lede: "Written apart from any of the three — the part of him that answers to nobody.",
-    kinds: { verse: "Verse", prose: "Prose" },
+    lede: "The part of him that is lost within himself.",
+    kinds: { verse: "Verse", prose: "Prose", letter: "Letters" },
     onlyIn: "In Chinese only",
     all: "All verse & prose",
     more: "Verse & Prose",
@@ -206,8 +206,8 @@ const zh: Partial<Dictionary> = {
   nav: { cv: "简历", coda: "Coda 其人", writing: "诗文", studio: "唱诗人工作室" },
   writing: {
     title: "诗文",
-    lede: "写在三条线之外——他不对任何人交代的那一部分。",
-    kinds: { verse: "诗", prose: "文" },
+    lede: "他迷失在他自己之中的那一部分。",
+    kinds: { verse: "诗", prose: "文", letter: "信" },
     onlyIn: "此篇仅有英文",
     all: "全部诗文",
     more: "诗文",

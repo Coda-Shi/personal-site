@@ -40,6 +40,11 @@ function Row({ piece, lang }: { piece: Piece; lang: Locale }) {
       >
         <span className="font-display text-lg leading-snug tracking-tight text-bone/85 transition-colors group-hover:text-bone md:text-xl">
           {pieceLabel(shown)}
+          {/* The part number rides with the title rather than replacing it, so
+              the three parts of a sequence read as one work in three pieces. */}
+          {shown.subtitle ? (
+            <span className="text-bone/45"> · {shown.subtitle}</span>
+          ) : null}
         </span>
         <span className="label whitespace-nowrap text-bone/40">
           {elsewhere ? dict.writing.onlyIn : shown.date}

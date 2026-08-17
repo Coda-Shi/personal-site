@@ -67,6 +67,7 @@ export default async function Page({ params }: PageProps<"/[lang]/writing/[slug]
             {text.title}
           </h1>
         ) : null}
+        {text.subtitle ? <p className="label mt-2 text-bone/45">{text.subtitle}</p> : null}
 
         <PieceBody
           text={text}
@@ -75,8 +76,12 @@ export default async function Page({ params }: PageProps<"/[lang]/writing/[slug]
           className={`text-bone/85 ${text.title ? "mt-10" : "mt-12"}`}
         />
 
+        {text.note ? (
+          <p className="mt-12 font-display text-base italic text-bone/55">{text.note}</p>
+        ) : null}
+
         {(text.date || elsewhere) && (
-          <p className="label mt-12 text-bone/40">
+          <p className={`label text-bone/40 ${text.note ? "mt-3" : "mt-12"}`}>
             {[elsewhere ? dict.writing.onlyIn : null, text.date].filter(Boolean).join(" · ")}
           </p>
         )}
