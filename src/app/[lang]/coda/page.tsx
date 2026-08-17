@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteShell } from "@/components/site-shell";
 import { RecordList } from "@/components/track-page";
+import { LIFE } from "@/content/life";
 import { ADVOCACY } from "@/lib/content";
 import { getDictionary, hasLocale, type Locale } from "@/lib/i18n";
 import { localeAlternates } from "@/lib/site";
@@ -49,12 +50,18 @@ export default async function Page({ params }: PageProps<"/[lang]/coda">) {
         </p>
       </header>
 
-      {/* Coda's own account of himself. He writes it; until then the section
-          exists and says so, because a named empty shelf reads as a promise
-          and a missing one reads as nothing at all. */}
+      {/* Coda's own account of himself, in his words. */}
       <section className="mt-16 max-w-xl">
         <h2 className="label text-bone/55">{dict.headings.life}</h2>
-        <p className="mt-6 font-display text-lg italic text-bone/35">{dict.writing.soon}</p>
+        {/* His own prose, set plainly. No italics, no display face at size:
+            this is the one page that is not making a case, and the writing
+            should read the way it was written. The one-line paragraphs carry
+            the pacing, so they keep the same spacing as the long ones. */}
+        <div className="mt-8 space-y-5 leading-[1.9] text-bone/80">
+          {LIFE[lang].map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+        </div>
       </section>
 
       {/* A few pieces, not the whole shelf — the full list is at /writing. The
