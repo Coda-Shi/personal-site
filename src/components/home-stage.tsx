@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { LanguageToggle } from "@/components/language-toggle";
 import { TrinityDisc, type Focus } from "@/components/trinity-disc";
-import { EMAILS, NAME } from "@/lib/content";
+import { EMAILS, GITHUB, INSTAGRAM, NAME } from "@/lib/content";
 import type { Dictionary, Locale } from "@/lib/i18n";
 
 /**
@@ -133,13 +133,57 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
         >
           {dict.nav.studio}
         </a>
-        <a
-          href="https://github.com/Coda-Shi"
-          className="label text-bone/55 transition-colors hover:text-bone"
-          rel="noreferrer"
-        >
-          GitHub
-        </a>
+        {/* Icons, not words: the footer had four text links competing for one
+            line on a phone, and these two are the only items on it that are
+            elsewhere rather than here. Both marks are drawn — see the note in
+            content.ts on why neither is the real logo. Each keeps an
+            accessible name, since an icon on its own has none. */}
+        <span className="flex items-center gap-4">
+          <a
+            href={GITHUB}
+            aria-label="GitHub"
+            rel="noreferrer"
+            className="text-bone/55 transition-colors hover:text-bone"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="size-[1.1rem]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.7}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="6.5" cy="4.8" r="2.3" />
+              <circle cx="6.5" cy="19.2" r="2.3" />
+              <circle cx="17.5" cy="4.8" r="2.3" />
+              <path d="M6.5 7.1v9.8" />
+              <path d="M17.5 7.1v2.4a4 4 0 0 1-4 4h-3.2" />
+            </svg>
+          </a>
+          <a
+            href={INSTAGRAM}
+            aria-label="Instagram"
+            rel="noreferrer"
+            className="text-bone/55 transition-colors hover:text-bone"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="size-[1.1rem]"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.7}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="17.3" cy="6.7" r="0.9" fill="currentColor" stroke="none" />
+            </svg>
+          </a>
+        </span>
           <LanguageToggle lang={lang} label={dict.switchTo} />
         </div>
       </footer>
