@@ -64,26 +64,22 @@ export type Question = { id: string; lead: string; note: string };
 
 export const QUESTIONS: Question[] = [
   {
-    id: "death-suffering",
-    lead: "Death, and mental suffering.",
-    note: "The phenomenological structure and the value of both, the different meanings cultures find to house them in, and what they mean to the living.",
+    id: "measurement",
+    lead: "The precision of psychological constructs, the reliability and validity of the instruments that measure them, and whether either holds across cultures.",
+    note: "Invariance across sex, age and culture is the precondition for comparing a construct at all — and most screening instruments have never been tested on a sample large enough to settle it.",
   },
   {
-    id: "intervention",
-    lead: "How mindfulness-based, psychodynamic and existential interventions actually work.",
-    note: "How the efficacy of mindfulness, existential and traditional-cultural therapies can be established, and the conditions under which each holds; and how, in practice, to relieve another person’s suffering and their fear of death.",
+    id: "death-suffering",
+    lead: "The nature of death and of psychic suffering, and what separates them.",
+    note: "Their phenomenological structure and their value are not the same, yet the two are routinely handled as one kind of bad. How different cultures give them meaning and find somewhere to put them; what they mean to the living; and, more concretely, how loss, mourning and trauma shape a personality and are shaped by it in turn.",
   },
   {
     id: "selfhood",
-    lead: "Whether the need for a coherent self is itself culturally specific.",
+    lead: "Self-identity, and whether the need for it is itself culturally specific.",
     note: "If it is, every theory of personality and development that presupposes it has a boundary it does not declare. Meaning may be one of the mechanisms that holds self-continuity together.",
   },
-  {
-    id: "measurement",
-    lead: "Whether a clinical instrument measures the same thing across groups.",
-    note: "Invariance across sex, age and culture is the precondition for every comparison the field makes — and it is where most screening instruments have never been tested at the scale that would settle it.",
-  },
 ];
+
 
 
 export const ROLES = "Psychology scholar · Game producer · Organizational leader";
