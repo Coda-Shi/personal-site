@@ -78,6 +78,11 @@ export const QUESTIONS: Question[] = [
     lead: "Self-identity, and whether the need for it is itself culturally specific.",
     note: "If it is, every theory of personality and development that presupposes it has a boundary it does not declare. Meaning may be one of the mechanisms that holds self-continuity together.",
   },
+  {
+    id: "intervention",
+    lead: "How mindfulness-based, psychodynamic and existential interventions actually work.",
+    note: "How the efficacy of mindfulness, existential and traditional-cultural therapies can be established, and the conditions under which each holds; and how, in practice, to relieve another person’s suffering and their fear of death.",
+  },
 ];
 
 
@@ -157,6 +162,21 @@ export const COVER = {
 
 /** The studio's own site, linked as a card from Selected work. */
 export const STUDIO_URL = "https://elegists.studio";
+
+/**
+ * The two profiles the footer links out to, as icons.
+ *
+ * Both marks are drawn in the site's own line idiom rather than lifting either
+ * company's brand artwork — the same reasoning as the track marks in D9 and the
+ * Bilibili mark on Creative, and it keeps somebody else's trademark off the
+ * page. GitHub gets a branch, which is the generic version-control glyph, not
+ * the Octocat; Instagram gets the generic camera pictogram.
+ *
+ * The Instagram share link arrives with igsh and utm_source tracking
+ * parameters. They are stripped: this is a link to a profile, not a campaign.
+ */
+export const GITHUB = "https://github.com/Coda-Shi";
+export const INSTAGRAM = "https://www.instagram.com/coda_shi_77721";
 
 export const STUDIO_EMAIL = "elegistsstudio@gmail.com";
 
