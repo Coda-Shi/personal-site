@@ -1,5 +1,13 @@
 import { BorromeanKnot, KNOT_VIEWBOX } from "@/components/borromean-knot";
 import {
+  DESIRE_VIEWBOX,
+  GraphOfDesire,
+  JUNG_VIEWBOX,
+  JungPsyche,
+  SQUARE_VIEWBOX,
+  SemioticSquare,
+} from "@/components/scholarly-figures";
+import {
   SYMBOL_LAYERS,
   type SymbolItem,
   type TrackId,
@@ -95,7 +103,15 @@ const BOARDS: Record<BoardKey, Board> = {
    * rather than the 4.5px the square board gave. rMin 300 lands 112px out,
    * clearing the disc's 100px arc.
    */
-  tall: { key: "tall", w: 1000, h: 2000, rMin: 300, reach: 0.62, reachOuter: 0.62 },
+  /**
+   * `reachOuter` is well above `reach` here for the same reason it is on the
+   * wide board: the band has to reach the ends of a 2000-unit board, and 0.62
+   * stopped it at 843. It was safe to leave low while every candidate past the
+   * board edge was simply thrown away; now that the band is clipped to the
+   * rectangle per bearing, a short outer radius just means the top and bottom
+   * of the phone go unused — which cost eleven of Scholarly's symbols.
+   */
+  tall: { key: "tall", w: 1000, h: 2000, rMin: 300, reach: 0.62, reachOuter: 0.92 },
 };
 
 const centre = (b: Board) => ({ x: b.w / 2, y: b.h / 2 });
@@ -365,6 +381,14 @@ function overlaps(a: Box, b: Box) {
  * one; the phone stacks everything full-width, so its guards are bands rather
  * than corners. Each was derived by mapping the real elements' viewport rects
  * back through the fit at the tightest viewport that board serves.
+ *
+ * 🔴 **Only the name is guarded, not the whole masthead.** The field is
+ * invisible until a track lights, and lighting a track fades the roles line,
+ * the profile paragraph and the hint out (D10) — so the field and that copy
+ * are never on screen together, and reserving space for copy that has left is
+ * reserving space for nothing. Guarding the whole block is what emptied the
+ * top-left corner; the owner spotted it before I did. What stays is what does
+ * not recede: his name, the two addresses, and the footer.
  */
 const RESERVED: Record<
   BoardKey,
@@ -372,16 +396,12 @@ const RESERVED: Record<
 > = {
   wide: [
     /**
-     * Name, roles, profile, hint.
-     *
-     * Sized for the *small* end of the range, which is what makes it look
-     * over-generous on a laptop. The block is a fixed number of pixels — the
-     * hint line alone is 515px of tracked-out capitals — while the board's
-     * scale falls with the window, so the same block covers 0.37 of the board
-     * at 1512×944 and 0.54 at 1024×768. A guard that fits the laptop puts
-     * glyphs through the hint on anything smaller.
+     * His name alone. Measured need: 0.23 wide at 1024×768 (where the board
+     * fits by width and the name is a large share of it) and 0.15 deep at
+     * 812×375. Off the board entirely at 2560×1080, where it sits left of
+     * where the fitted board starts.
      */
-    { x0: 0, y0: 0, x1: 0.56, y1: 0.42 },
+    { x0: 0, y0: 0, x1: 0.28, y1: 0.18 },
     // The two addresses, top right from md. Deepest at 812×375, where the
     // board fits by height and 78px of viewport is 0.21 of it.
     { x0: 0.7, y0: 0, x1: 1, y1: 0.22 },
@@ -399,18 +419,12 @@ const RESERVED: Record<
   ],
   tall: [
     /**
-     * The header takes two rectangles because the two portrait devices wear it
-     * differently. A phone's copy is capped at 20rem against a 375px screen,
-     * so it runs nearly edge to edge but only 0.15 deep. A tablet's is capped
-     * at 24rem against 768px and keeps the profile paragraph that `md` hides
-     * on a phone, so it is half as wide and twice as deep. One rectangle
-     * covering both would be the whole upper third of the board.
-     *
-     * The shallow full-width band also picks up the tablet's two addresses,
-     * which sit top right from md.
+     * One shallow band covers both things that stay: the name (0.48 wide and
+     * 0.03 deep on a phone, 0.14 and 0.06 on a tablet) and, on a tablet, the
+     * two addresses top right (0.73 to past the edge, 0.08 deep). A phone
+     * keeps its addresses in the footer instead.
      */
-    { x0: 0, y0: 0, x1: 1, y1: 0.2 },
-    { x0: 0, y0: 0, x1: 0.6, y1: 0.32 },
+    { x0: 0, y0: 0, x1: 1, y1: 0.12 },
     // The footer. Deepest on a phone (0.873), where the addresses join it and
     // the nav row wraps; a tablet keeps its addresses up top and needs 0.949.
     { x0: 0, y0: 0.85, x1: 1, y1: 1 },
@@ -458,18 +472,30 @@ const PLATE_ART = [
  * the wedge and the board rectangle by the same rules the solver uses.
  */
 const PLATE_BOXES: Record<BoardKey, Box[]> = {
-  // Kept left of centre, below the profile block and above the footer band.
-  // Corners land at radius 1116–1348 on the 8:5 board, well outside rMin.
+  /**
+   * One either side of the disc, and much larger than they were.
+   *
+   * Creative's field is these two plates and nothing else — its `SYMBOL_LAYERS`
+   * entry is deliberately empty (D13) — so stacking them both down the left
+   * left the whole right half of the screen bare. Flanking the disc is the only
+   * arrangement that uses the board, and at 620 and 440 units they are finally
+   * scaled like the anchors of a sector rather than like footnotes.
+   *
+   * Aspect ratios are preserved to three figures: 620×750 against the figure's
+   * 380×460, 440×620 against the mark's 190×268. Corners land at radius
+   * 863–1451, well outside rMin, and both clear the name and address guards.
+   */
   wide: [
-    { x: 300, y: 850, w: 190, h: 268 },
-    { x: 260, y: 1150, w: 380, h: 460 },
+    { x: 2480, y: 660, w: 440, h: 620 },
+    { x: 200, y: 620, w: 620, h: 750 },
   ],
-  // The phone stacks its guards as full-width bands, so these moved out of
-  // both: the mark up and right of the disc, the figure down and left of it.
-  // Nearest corners land at radius 367 and 331 against rMin 300.
+  // The phone cannot flank anything — the board is 1000 units across and the
+  // disc takes 600 of them — so these stay stacked, the mark above and right
+  // of the disc, the figure below and left. Enlarged as far as rMin allows:
+  // nearest corners at 326 and 309 against 300.
   tall: [
-    { x: 700, y: 480, w: 150, h: 212 },
-    { x: 60, y: 1300, w: 300, h: 363 },
+    { x: 660, y: 420, w: 210, h: 296 },
+    { x: 40, y: 1280, w: 330, h: 399 },
   ],
 };
 
@@ -490,29 +516,74 @@ const plates = (board: Board) =>
  * floor, and its top edge at y=32 is twelve clear of the margin. Going bigger
  * means either crossing the disc or falling off the board.
  */
-const KNOT_BOXES: Record<BoardKey, Box> = {
-  /**
-   * Left of the disc and below the profile block, not along the top edge.
-   *
-   * The 8:5 board's top edge is spoken for: the name and profile guard reaches
-   * x=1792 and the addresses' guard starts at x=2240, leaving a 448-unit slot
-   * for a 400-unit knot — it fits, with 24 units either side, which is not a
-   * placement so much as a wedge. Here it has room on every side, its corners
-   * land at radius 906–1338, and it counterweights the disc instead of
-   * crowding the masthead.
-   */
-  wide: { x: 300, y: 900, w: 400, h: 416 }, // 300×312 local, ×1.333
-  /**
-   * The tall board is half as wide, so the knot comes down to 300. It sits
-   * *below* the disc rather than above it, which is forced: the phone's header
-   * band reaches y=400 and a box above the disc has to end by y=700 to clear
-   * rMin, and 300 units of clearance will not hold a 312-unit knot. Below,
-   * the same arithmetic gives it everything from 1300 down. Corners land at
-   * radius 335–630.
-   */
-  tall: { x: 350, y: 1300, w: 300, h: 312 },
-};
-const KNOT_DELAY = 90;
+/**
+ * The Scholarly field's four drawn figures.
+ *
+ * Reserved before any glyph is placed, like the Creative plates, and for the
+ * same reason: they are compositions, not fill. Two flank the disc on the left
+ * and two on the right, which is the only arrangement the board allows — the
+ * middle is a 580-unit hole, the top strip between the name and the addresses
+ * is 420 units deep, and none of these figures is that short.
+ *
+ * Every box was checked against rMin at all four corners and against the
+ * reserved rectangles; the tightest is the square's inner corner at 326 on the
+ * phone board, against rMin 300. **These do not go through `insideField`**, so
+ * re-check them by hand whenever a guard or a board changes — that has caught
+ * me out twice already.
+ */
+const FIGURES: ReadonlyArray<{
+  key: string;
+  viewBox: { w: number; h: number };
+  Draw: () => React.JSX.Element;
+  opacity: number;
+  delay: number;
+  boxes: Record<BoardKey, Box>;
+}> = [
+  {
+    key: "knot",
+    viewBox: KNOT_VIEWBOX,
+    Draw: BorromeanKnot,
+    opacity: 0.32,
+    delay: 90,
+    boxes: {
+      wide: { x: 120, y: 420, w: 620, h: 566 },
+      tall: { x: 40, y: 1340, w: 340, h: 310 },
+    },
+  },
+  {
+    key: "jung",
+    viewBox: JUNG_VIEWBOX,
+    Draw: JungPsyche,
+    opacity: 0.26,
+    delay: 200,
+    boxes: {
+      wide: { x: 2440, y: 460, w: 500, h: 591 },
+      tall: { x: 680, y: 300, w: 270, h: 319 },
+    },
+  },
+  {
+    key: "desire",
+    viewBox: DESIRE_VIEWBOX,
+    Draw: GraphOfDesire,
+    opacity: 0.26,
+    delay: 310,
+    boxes: {
+      wide: { x: 180, y: 1080, w: 480, h: 589 },
+      tall: { x: 60, y: 300, w: 250, h: 307 },
+    },
+  },
+  {
+    key: "square",
+    viewBox: SQUARE_VIEWBOX,
+    Draw: SemioticSquare,
+    opacity: 0.26,
+    delay: 420,
+    boxes: {
+      wide: { x: 2400, y: 1120, w: 620, h: 566 },
+      tall: { x: 620, y: 1340, w: 330, h: 301 },
+    },
+  },
+];
 
 /**
  * Lays a tier out as concentric rings rather than scattering it.
@@ -534,7 +605,7 @@ function layout(track: TrackId, board: Board): Placed[] {
     track === "creative"
       ? plates(board).map((p) => p.box)
       : track === "scholarly"
-        ? [KNOT_BOXES[board.key]]
+        ? FIGURES.map((f) => f.boxes[board.key])
         : [];
   const placed: Placed[] = [];
   let seed = track.length * 97 + 5;
@@ -580,9 +651,54 @@ function layout(track: TrackId, board: Board): Placed[] {
         // Any bearing: the field is no longer masked to a wedge, so the
         // candidate can land anywhere the rejection test below allows.
         const angle = rand(seed * 2) * 360;
-        const r0 = t.r0 * board.reach;
-        const r1 = t.r1 * board.reachOuter;
-        const radius = r0 + rand(seed * 2 + 1) * (r1 - r0);
+        const r0raw = t.r0 * board.reach;
+        const r1raw = t.r1 * board.reachOuter;
+        /**
+         * How far the board extends on this bearing, so the band can be cut to
+         * fit it.
+         *
+         * Without this a great many candidates are drawn at radii the board
+         * simply does not have in that direction — the texture band runs to
+         * 1836 while the 8:5 board is only 1000 units tall — and each one costs
+         * an attempt and yields nothing. Twelve of Scholarly's forty-five
+         * items were being dropped for want of attempts rather than for want
+         * of room. Clipping the band to the rectangle spends every draw inside
+         * the board, and has the side effect of spreading items along the long
+         * axis, which is where the space actually is.
+         *
+         * Snapped for the usual reason: this is built from cos and sin, and it
+         * reaches the DOM through both position and opacity. See D15.
+         */
+        const cosA = Math.cos((angle * Math.PI) / 180);
+        const sinA = Math.sin((angle * Math.PI) / 180);
+        const rEdge = snap(
+          Math.min(
+            Math.abs((board.w / 2 - EDGE) / (Math.abs(cosA) < 1e-6 ? 1e-6 : cosA)),
+            Math.abs((board.h / 2 - EDGE) / (Math.abs(sinA) < 1e-6 ? 1e-6 : sinA)),
+          ),
+          1e3,
+        );
+        const r1 = Math.min(r1raw, rEdge);
+        const r0 = Math.min(r0raw, r1 * 0.9);
+        /**
+         * Sampled uniformly by *area*, not by radius.
+         *
+         * A ring at radius r holds area proportional to r, so drawing r
+         * uniformly puts the same number of items in the thin band next to the
+         * disc as in the vast one at the edge — the field crowds the middle
+         * and thins towards the corners, which is exactly what the owner saw
+         * ("左上角太空了"). Taking the root of a uniform draw between r0² and
+         * r1² spreads them evenly over the plane instead.
+         *
+         * Snapped like every other rendered figure: `Math.sqrt` is
+         * implementation-approximated in ECMA-262 the same way sin and cos
+         * are, and radius reaches the DOM through both the position and the
+         * opacity. See D15 before removing this.
+         */
+        const radius = snap(
+          Math.sqrt(r0 * r0 + rand(seed * 2 + 1) * (r1 * r1 - r0 * r0)),
+          1e3,
+        );
         const k = (radius - r0) / (r1 - r0);
         const size = snap(base * step * (1 - FAR_SHRINK * k), 1e3);
         const lines = wrap(item.text, size, item.face, t.maxLine);
@@ -594,8 +710,8 @@ function layout(track: TrackId, board: Board): Placed[] {
         // accept different candidates and produce genuinely different layouts,
         // not merely different digits.
         const c = centre(board);
-        const cx = snap(c.x + Math.cos((angle * Math.PI) / 180) * radius, 1e3);
-        const cy = snap(c.y + Math.sin((angle * Math.PI) / 180) * radius, 1e3);
+        const cx = snap(c.x + cosA * radius, 1e3);
+        const cy = snap(c.y + sinA * radius, 1e3);
         const box: Box = { x: cx - w / 2, y: cy - h / 2, w, h };
 
         if (!insideField(box, board)) continue;
@@ -674,7 +790,7 @@ export function SymbolField({
       {(Object.keys(BOARDS) as BoardKey[]).map((key) => {
         const board = BOARDS[key];
         const items = LAYOUTS[key][track];
-        const knot = KNOT_BOXES[key];
+        const figures = track === "scholarly" ? FIGURES : [];
         const plateList = track === "creative" ? plates(board) : [];
         return (
           <svg
@@ -684,14 +800,18 @@ export function SymbolField({
       aria-hidden="true"
       className={`symbol-field field-${board.key} pointer-events-none fixed inset-0 -z-10 size-full text-bone`}
     >
-      {track === "scholarly" ? (
-        <g
-          transform={`translate(${knot.x} ${knot.y}) scale(${knot.w / KNOT_VIEWBOX.w})`}
-          style={reveal(0.3, KNOT_DELAY)}
-        >
-          <BorromeanKnot />
-        </g>
-      ) : null}
+      {figures.map(({ key: figureKey, viewBox, Draw, opacity, delay, boxes }) => {
+        const box = boxes[key];
+        return (
+          <g
+            key={figureKey}
+            transform={`translate(${box.x} ${box.y}) scale(${box.w / viewBox.w})`}
+            style={reveal(opacity, delay)}
+          >
+            <Draw />
+          </g>
+        );
+      })}
 
       {plateList.map((plate) => (
         <image

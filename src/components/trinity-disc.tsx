@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 // Imported rather than referenced by public/ path: Next puts a content hash in
 // the emitted filename, so replacing the photograph can never leave the image
 // optimiser serving the previous one off a cached URL.
@@ -21,8 +21,7 @@ import type { Dictionary, Locale } from "@/lib/i18n";
  * person who runs the research — and a Venn says so. It has four regions the
  * ring could not express: three pairwise, and one in the middle. The middle one
  * is him, which is why the portrait sits there now instead of in a hub of its
- * own. D9 is still satisfied: the centre carries no pigment of its own, it is
- * only where the three happen to meet.
+ * own.
  *
  * Centres sit on a circle of radius CENTRE_D, 120° apart, each circle of radius
  * R. The triangle they form has side CENTRE_D·√3, so at these values the side
@@ -48,10 +47,6 @@ const VENN: Record<TrackId, number> = {
  * circle's exclusive lune and belongs to one track unambiguously. Checked: at
  * this distance a label centre is 53 units inside its own circle and 166 from
  * either of the others, which are 118 across — comfortably outside both.
- *
- * The ring needed a solver for this (D19) because a 100-unit band could not
- * hold "PROFESSIONAL" at any radius. A lune is not a band; there is room here,
- * and once the constraint is gone a constant is the honest answer.
  */
 const R_LABEL = CENTRE_D + R * 0.45;
 
@@ -67,13 +62,52 @@ const R_PORTRAIT = 46;
 /** How far a flood grows. Covers the furthest viewport corner with room over. */
 const FLOOD_SCALE = 20;
 
+/** How long the pigment takes to reach the edge of the screen. */
+const FLOOD_RISE = 700;
+
 /**
- * How long a tap holds the flood before the route changes. The flood's own
- * transition is 900ms, so the pigment reaches the edge of the screen and then
- * sits there for another 600ms before the destination — which uses that same
- * pigment as its ground — arrives.
+ * How long a tap holds the flood before the route changes. The rise is 700ms,
+ * so the pigment reaches the edge and then sits there for another 300ms before
+ * the destination — which uses that same pigment as its ground — arrives.
+ * The owner set this to a second; do not shorten it.
  */
-const BEAM_HOLD = 1500;
+const BEAM_HOLD = 1000;
+
+/** How long the pigment takes to bleed away once nothing is lit. */
+const FLOOD_BLEED = 1100;
+
+/**
+ * The ground of the composition, and of the triple intersection.
+ *
+ * Written out rather than read from the theme because it is painted *over*
+ * pigment as an opaque colour — `--color-void` is available here, but a literal
+ * makes it obvious at the call site that this region is being blacked out
+ * rather than left unpainted.
+ */
+const VOID = "#050505";
+
+/**
+ * Where exactly two circles meet, in the two pigments screened together.
+ *
+ * 🔴 These are deliberately brighter than either parent, and the whole point of
+ * painting the regions explicitly is that they *can* be. Three translucent
+ * circles stacked in the ordinary way compound their alpha, so every overlap
+ * comes out darker than its parents and the triple centre comes out darkest —
+ * on this near-black ground that turned the overlaps to mud, which is exactly
+ * backwards, because the overlaps are the only thing a Venn says that a ring
+ * could not. Each region is now drawn once, at a colour chosen for it, and
+ * nothing compounds.
+ *
+ * Screen blend of the two pigments, 1-(1-a)(1-b), which is what the two lights
+ * would do rather than what the two inks would do. Klein over oxblood gives a
+ * violet, oxblood over gilt a terracotta, gilt over Klein a periwinkle — each
+ * still legibly made of its two parents, which is the property that matters.
+ */
+const PAIRS: ReadonlyArray<{ a: TrackId; b: TrackId; fill: string }> = [
+  { a: "scholarly", b: "creative", fill: "#6E3FB3" },
+  { a: "creative", b: "professional", fill: "#AA6036" },
+  { a: "professional", b: "scholarly", fill: "#6A72AF" },
+];
 
 /** The centre is a fourth focus target, but it lights nothing and colours nothing. */
 export type Focus = TrackId | "hub" | null;
@@ -104,6 +138,36 @@ export function TrinityDisc({
   const router = useRouter();
   const leaving = useRef(false);
 
+  /**
+   * The track whose pigment is currently bleeding away.
+   *
+   * The flood cannot simply run its rise transition backwards. Expanding is a
+   * circle opening out — a hard edge, because it is announcing a destination.
+   * Closing is the pigment dispersing and letting the ground back through,
+   * which is a different gesture and has to be a different mechanism: a
+   * keyframed dissolve on an element that stays at full size. So the lit track
+   * is remembered for exactly as long as that dissolve runs.
+   */
+  const [bleeding, setBleeding] = useState<TrackId | null>(null);
+  const lastLit = useRef<TrackId | null>(null);
+
+  useEffect(() => {
+    const lit = focus === null || focus === "hub" ? null : focus;
+    const previous = lastLit.current;
+    if (previous === lit) return;
+    lastLit.current = lit;
+    // Whatever was lit now disperses — including when the pointer has moved
+    // straight to another circle. Cutting it instead left a hard seam every
+    // time someone swept across the three.
+    if (!previous) {
+      setBleeding(null);
+      return;
+    }
+    setBleeding(previous);
+    const timer = window.setTimeout(() => setBleeding(null), FLOOD_BLEED);
+    return () => window.clearTimeout(timer);
+  }, [focus]);
+
   const go = (id: TrackId) => {
     if (leaving.current) return; // a second tap must not queue a second push
     leaving.current = true;
@@ -131,6 +195,14 @@ export function TrinityDisc({
 
   /** True whenever something is lit and it is not this track. */
   const dimmed = (id: TrackId) => focus !== null && focus !== id;
+  /** A region belonging to two tracks is dim only when neither is lit. */
+  const dimmedPair = (a: TrackId, b: TrackId) =>
+    focus !== null && focus !== a && focus !== b;
+
+  const region = (isDim: boolean) => ({
+    opacity: isDim ? 0.16 : 1,
+    transition: "opacity 500ms ease-out",
+  });
 
   return (
     <>
@@ -142,25 +214,67 @@ export function TrinityDisc({
           behind the symbol field, and the field is a fixed layer. `--disc` is
           the rendered width of the disc, so the offsets are the circle's own
           centre expressed in viewport terms — and the two cannot drift, because
-          the disc's own max-width reads the same variable. */}
+          the disc's own max-width reads the same variable.
+
+          The wrapper is what carries the dissolve. It is viewport-sized and
+          never transformed, so the blur and the drifting mask inside
+          `flood-bleed` work in screen pixels; putting them on the scaled circle
+          instead would multiply every length by FLOOD_SCALE and the noise would
+          come out twenty times too coarse to read as anything. */}
       {TRACKS.map((track) => {
         const c = centreOf(track.id);
+        const lit = focus === track.id;
+        const bleedingNow = bleeding === track.id && !lit;
+        if (!lit && !bleedingNow) return null;
         return (
           <span
-            key={track.id}
+            // Keyed by phase so React swaps the element rather than mutating
+            // it: a CSS animation only restarts on a fresh element, and a
+            // dissolve that does not restart is a dissolve nobody sees.
+            key={`${track.id}-${bleedingNow ? "bleed" : "rise"}`}
             aria-hidden="true"
-            className="pointer-events-none fixed top-1/2 left-1/2 -z-20 block rounded-full transition-transform duration-[900ms] ease-out"
-            style={{
-              width: `calc(var(--disc) * ${(2 * R) / 400})`,
-              height: `calc(var(--disc) * ${(2 * R) / 400})`,
-              backgroundColor: TRACK_CLASSES[track.id].cssVar,
-              transform: [
-                "translate(-50%, -50%)",
-                `translate(calc(var(--disc) * ${(c.x - CX) / 400}), calc(var(--disc) * ${(c.y - CY) / 400}))`,
-                `scale(${focus === track.id ? FLOOD_SCALE : 0})`,
-              ].join(" "),
-            }}
-          />
+            className={`pointer-events-none fixed inset-0 -z-20 block overflow-hidden ${
+              bleedingNow ? "flood-bleed" : ""
+            }`}
+            style={
+              bleedingNow
+                ? { animation: `flood-bleed ${FLOOD_BLEED}ms ease-in both` }
+                : undefined
+            }
+          >
+            {/* Three levels, each owning one thing. The wrapper above is
+                viewport-sized and never transformed, so the dissolve's blur and
+                mask work in screen pixels. This one places the circle's centre.
+                The innermost one scales, so `flood-rise` animates nothing but
+                `scale` and needs to know none of the offsets. */}
+            <span
+              className="absolute top-1/2 left-1/2 block"
+              style={{
+                transform: `translate(calc(var(--disc) * ${(c.x - CX) / 400}), calc(var(--disc) * ${(c.y - CY) / 400}))`,
+              }}
+            >
+              <span
+                className="block rounded-full"
+                style={
+                  {
+                    width: `calc(var(--disc) * ${(2 * R) / 400})`,
+                    height: `calc(var(--disc) * ${(2 * R) / 400})`,
+                    backgroundColor: TRACK_CLASSES[track.id].cssVar,
+                    // CSS reads this inside the keyframe, so the number lives
+                    // in one place rather than being written out twice. The
+                    // centring translate lives in the keyframe too — an
+                    // animated `transform` replaces the declared one outright,
+                    // so a utility class for it would simply be discarded.
+                    "--flood-scale": FLOOD_SCALE,
+                    animation: bleedingNow
+                      ? // Already open. Hold it there and let the wrapper disperse it.
+                        "flood-hold 1ms linear both"
+                      : `flood-rise ${FLOOD_RISE}ms ease-out both`,
+                  } as React.CSSProperties
+                }
+              />
+            </span>
+          </span>
         );
       })}
 
@@ -173,61 +287,106 @@ export function TrinityDisc({
         onMouseLeave={() => setFocus(null)}
       >
         <svg viewBox="0 0 400 400" className="size-full" aria-hidden="true">
-          {/* Outlines, with only a breath of pigment in them. Filling the three
-              solid does not work on this ground: all three are dark by
-              construction — D7 balanced their luminance downward so none of
-              them dominates — so two of them over near-black go to mud and the
-              overlaps, which are the whole point of a Venn, stop reading. Line
-              work is also what the Borromean knot this borrows from is. */}
-          {TRACKS.map((track, i) => {
-            const c = centreOf(track.id);
-            const lit = focus === track.id;
-            const draw = 200 + i * 220;
-            return (
-              <g key={track.id}>
-                {/* Fill and stroke are two elements on purpose. The entrance
-                    animations carry `fill-mode: both`, which pins whatever
-                    property they touch at its end value — so an entrance that
-                    animated fill-opacity would nail the fill to solid and the
-                    resting 0.2 below would never apply. Each entrance lives on
-                    a wrapper and animates plain `opacity`; the state lives on
-                    the shape and animates fill-opacity and stroke-opacity.
-                    Two elements, two properties, multiplied. */}
-                <g style={{ animation: `fade-in 700ms ease-out ${draw + 700}ms both` }}>
-                  <circle
-                    cx={c.x}
-                    cy={c.y}
-                    r={R}
-                    fill={TRACK_CLASSES[track.id].cssVar}
-                    className="cursor-pointer"
-                    style={{
-                      fillOpacity: lit ? 0.55 : dimmed(track.id) ? 0.07 : 0.2,
-                      transition: "fill-opacity 500ms ease-out",
-                    }}
-                    onMouseEnter={() => setFocus(track.id)}
-                    onPointerDown={openOnTouch(track.id)}
-                    onClick={() => {
-                      if (!leaving.current) router.push(`/${lang}/${track.id}`);
-                    }}
-                  />
-                </g>
+          <defs>
+            {TRACKS.map((track) => {
+              const c = centreOf(track.id);
+              return (
+                <clipPath key={track.id} id={`venn-${track.id}`}>
+                  <circle cx={c.x} cy={c.y} r={R} />
+                </clipPath>
+              );
+            })}
+            {/* Two circles' intersection, so the third can be clipped by it and
+                give the triple region. Nested clip-path references are the only
+                way to express an intersection of three shapes in SVG without
+                solving for the arcs by hand. */}
+            <clipPath id="venn-two">
+              <circle
+                cx={centreOf("creative").x}
+                cy={centreOf("creative").y}
+                r={R}
+                clipPath="url(#venn-scholarly)"
+              />
+            </clipPath>
+          </defs>
+
+          {/* Every region is painted exactly once, back to front: the three
+              circles, then the three lenses over them, then the middle over
+              those. Nothing is layered translucently, so no region's colour is
+              an accident of what happens to be underneath it. */}
+          <g style={{ animation: "fade-in 700ms ease-out 860ms both" }}>
+            {TRACKS.map((track) => {
+              const c = centreOf(track.id);
+              return (
                 <circle
+                  key={track.id}
                   cx={c.x}
                   cy={c.y}
                   r={R}
-                  fill="none"
-                  stroke="rgb(242, 239, 233)"
-                  strokeWidth={1.1}
-                  pathLength={1}
-                  strokeDasharray={1}
-                  className="pointer-events-none"
-                  style={{
-                    strokeOpacity: lit ? 0 : dimmed(track.id) ? 0.3 : 0.6,
-                    transition: "stroke-opacity 260ms ease-out",
-                    animation: `plot-stroke 900ms cubic-bezier(0.65, 0, 0.35, 1) ${draw}ms both`,
+                  fill={TRACK_CLASSES[track.id].cssVar}
+                  className="cursor-pointer"
+                  style={region(dimmed(track.id))}
+                  onMouseEnter={() => setFocus(track.id)}
+                  onPointerDown={openOnTouch(track.id)}
+                  onClick={() => {
+                    if (!leaving.current) router.push(`/${lang}/${track.id}`);
                   }}
                 />
-              </g>
+              );
+            })}
+
+            {PAIRS.map(({ a, b, fill }) => {
+              const c = centreOf(b);
+              return (
+                <circle
+                  key={`${a}-${b}`}
+                  cx={c.x}
+                  cy={c.y}
+                  r={R}
+                  fill={fill}
+                  clipPath={`url(#venn-${a})`}
+                  className="pointer-events-none"
+                  style={region(dimmedPair(a, b))}
+                />
+              );
+            })}
+
+            {/* The middle is the ground, not a colour. D9 asks that the centre
+                carry no pigment of its own; here that is not a restraint but a
+                description — it is where all three are true at once, and the
+                one thing all three have in common is what they are drawn on. */}
+            <circle
+              cx={centreOf("professional").x}
+              cy={centreOf("professional").y}
+              r={R}
+              fill={VOID}
+              clipPath="url(#venn-two)"
+              className="pointer-events-none"
+            />
+          </g>
+
+          {/* Outlines last, so they read over every region boundary. Each is
+              drawn on rather than faded in, one after another. */}
+          {TRACKS.map((track, i) => {
+            const c = centreOf(track.id);
+            return (
+              <circle
+                key={track.id}
+                cx={c.x}
+                cy={c.y}
+                r={R}
+                fill="none"
+                stroke="rgb(242, 239, 233)"
+                strokeWidth={1.1}
+                pathLength={1}
+                strokeDasharray={1}
+                className="pointer-events-none"
+                style={{
+                  strokeOpacity: dimmed(track.id) ? 0.3 : 0.75,
+                  transition: "stroke-opacity 260ms ease-out",
+                  animation: `plot-stroke 900ms cubic-bezier(0.65, 0, 0.35, 1) ${200 + i * 220}ms both`,
+                }}
+              />
             );
           })}
         </svg>
@@ -266,8 +425,7 @@ export function TrinityDisc({
         ))}
 
         {/* Him, at the triple intersection — the one region belonging to all
-            three at once. It still carries no pigment of its own, which is what
-            D9 asks of the centre; it is only where the three meet.
+            three at once.
 
             In colour, and that is not an aesthetic call. A black-and-white
             portrait of a living person reads as a funeral portrait to Chinese

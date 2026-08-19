@@ -276,6 +276,99 @@
   }
 }
 
+/* ── The flood opens hard and closes soft ─────────────────────────────────
+   Opening is a circle growing to the edge of the screen: a hard edge, because
+   it is announcing where a click will land, and the destination page's ground
+   is this same pigment (D10). Closing is not that gesture run backwards. The
+   owner asked for 晕染 — the colour thinning and drifting apart like ink let
+   go in water, with the ground coming back through it.
+
+   So they are two mechanisms, not one transition in two directions. The rise
+   scales a circle. The dissolve holds that circle at full size and works on
+   the wrapper instead — which is viewport-sized and never transformed, so its
+   blur and mask are in screen pixels. Putting them on the scaled circle would
+   multiply every length by the scale factor and the noise would come out
+   twenty times too coarse to read as anything at all. */
+@keyframes flood-rise {
+  from {
+    transform: translate(-50%, -50%) scale(0);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(var(--flood-scale, 20));
+  }
+}
+
+@keyframes flood-hold {
+  from,
+  to {
+    transform: translate(-50%, -50%) scale(var(--flood-scale, 20));
+  }
+}
+
+/* Two mask layers, and the second one is why this reads as liquid rather than
+   as a fade. Multiple mask layers union by default, so:
+
+   - layer 1 is a plain disc, larger than the screen, that shrinks to nothing.
+     At the start it covers everything, which is what keeps the pigment solid
+     for the first instant instead of coming apart the moment it is let go.
+   - layer 2 is fractal noise, which grows and drifts. As layer 1 leaves, only
+     the noise is holding the pigment up, so it breaks into soft patches that
+     keep moving while they thin.
+
+   The noise is generated rather than shipped: an feTurbulence rendered into
+   the mask's own alpha, so there is no image to load and nothing to go stale.
+   `seed` is fixed so the dispersal is the same shape every time — an unstable
+   one would read as a glitch rather than as a material. */
+.flood-bleed {
+  -webkit-mask-image:
+    radial-gradient(circle, #000 60%, transparent 74%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006' numOctaves='4' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='gamma' amplitude='1.7' exponent='0.8' offset='-0.2'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23n)'/%3E%3C/svg%3E");
+  mask-image:
+    radial-gradient(circle, #000 60%, transparent 74%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006' numOctaves='4' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='gamma' amplitude='1.7' exponent='0.8' offset='-0.2'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23n)'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: no-repeat, no-repeat;
+  mask-repeat: no-repeat, no-repeat;
+}
+
+@keyframes flood-bleed {
+  0% {
+    opacity: 1;
+    filter: blur(0px);
+    -webkit-mask-size:
+      340% 340%,
+      170% 170%;
+    mask-size:
+      340% 340%,
+      170% 170%;
+    -webkit-mask-position:
+      50% 50%,
+      50% 50%;
+    mask-position:
+      50% 50%,
+      50% 50%;
+  }
+  40% {
+    opacity: 0.94;
+    filter: blur(7px);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(22px);
+    -webkit-mask-size:
+      0% 0%,
+      480% 480%;
+    mask-size:
+      0% 0%,
+      480% 480%;
+    -webkit-mask-position:
+      50% 50%,
+      74% 28%;
+    mask-position:
+      50% 50%,
+      74% 28%;
+  }
+}
+
 /* Slow breathing for the symbol field. Applied to a wrapper <g>, never to the
    text itself: the text owns an opacity transition for the reveal, and an
    animation on the same property would win outright and the reveal would stop
