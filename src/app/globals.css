@@ -140,10 +140,50 @@
   font-family: var(--font-cormorant), var(--font-fangsong), serif;
 }
 
-/* Only the disc labels need their own size — .label itself is now classical
-   everywhere, so the home screen no longer overrides the family. */
+/* The rendered width of the Venn. Declared once and read in two places — the
+   disc's own max-width, and the flood circles, which are fixed-position and so
+   have to express the circles' centres in viewport terms. Sharing the variable
+   is what stops the two drifting apart.
+
+   The 62vw arm is what keeps the symbol field off the disc on a portrait
+   phone; see the note in symbol-field.tsx before changing it. */
 .home-stage {
+  --disc: min(56vh, 30rem, 62vw);
   --disc-label-size: 12px;
+}
+
+/* ── Why the disc is capped against the viewport's *width* ────────────────
+   The symbol board is fitted with `meet`, so it scales by whichever axis is
+   tighter, while the disc scales by height. When those are different axes the
+   ratio between them drifts, and `rMin` — the radius the field keeps clear so
+   it never draws under the disc — has to be set for the worst case rather
+   than for the common one, which wastes a wide bare ring on every other
+   viewport.
+
+   Capping the disc against the same axis the board is fitted on removes the
+   drift: `0.465 · 0.34vw · (3200 / vw)` is a constant 506 board units, whatever
+   the window. The height arm still governs tall windows and yields 521. Both
+   sit under rMin 580 with margin, on every viewport, which is the property
+   these two numbers exist to hold.
+
+   🔴 Do not raise 34vw / 30vh without re-deriving rMin in symbol-field.tsx.
+   They are two halves of one constraint, and nothing in either file will fail
+   loudly if they drift apart — the symbols simply start rendering under the
+   disc.
+
+   Neither arm changes the disc on a normal laptop or phone: at 1512×944 the
+   30rem cap still binds, and at 375×812 the 62vw arm still does. They bite on
+   small landscape windows and on portrait tablets, which is where the drift is. */
+@media (orientation: landscape) {
+  .home-stage {
+    --disc: min(56vh, 30rem, 34vw);
+  }
+}
+
+@media (orientation: portrait) {
+  .home-stage {
+    --disc: min(30vh, 30rem, 62vw);
+  }
 }
 
 /* Below sm the disc is capped at 62vw and comes out around 233px against the
@@ -318,14 +358,17 @@
    from the viewport — that would make the markup depend on something the
    server cannot know, which is D15's hydration failure exactly.
 
-   Portrait phones get the 1000×2000 board, everything else the square one.
-   Landscape phones keep the square board: it already fits there (measured at
-   812×375, R_MIN 109px against a 90px arc). */
+   Split on orientation alone. It used to be `max-width: 767px and portrait`,
+   which left portrait tablets on the landscape board — survivable while that
+   board was square, impossible once it went 8:5, since a 3200×2000 board
+   fitted into 768×1024 renders as a 480px strip across the middle of the
+   screen. Orientation is also the honest test: what decides which board fits
+   is the window's shape, not its size. */
 .field-tall {
   display: none;
 }
 
-@media (max-width: 767px) and (orientation: portrait) {
+@media (orientation: portrait) {
   .field-wide {
     display: none;
   }

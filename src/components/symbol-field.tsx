@@ -1,7 +1,6 @@
 import { BorromeanKnot, KNOT_VIEWBOX } from "@/components/borromean-knot";
 import {
   SYMBOL_LAYERS,
-  TRACK_ARCS,
   type SymbolItem,
   type TrackId,
 } from "@/lib/content";
@@ -58,13 +57,37 @@ type Board = {
   h: number;
   /** Radius the field must stay outside of, so it clears the disc. */
   rMin: number;
-  /** Multiplier on the tier radii — a narrower board has less room to reach. */
+  /** Multiplier on the tier's inner radius — where the field starts. */
   reach: number;
+  /**
+   * Multiplier on the tier's outer radius — how far it runs.
+   *
+   * Separate from `reach` because the wide board needs the two pulled apart:
+   * the field must still begin at the disc's edge, but it now has to reach a
+   * corner 1887 units out instead of 1414. Scaling both would open a bare ring
+   * around the disc.
+   */
+  reachOuter: number;
 };
 
 const BOARDS: Record<BoardKey, Board> = {
-  // Unchanged, so every landscape placement stays exactly where D13 put it.
-  wide: { key: "wide", w: 2000, h: 2000, rMin: 580, reach: 1 },
+  /**
+   * 8:5, because the board is what the texture covers and a square cannot
+   * cover a landscape screen.
+   *
+   * `meet` fits the board inside the viewport, so a square board is inscribed:
+   * at 1512×944 it rendered 944 wide and left 284px bare down each side —
+   * 40% of the screen with no texture on it. Matching the board's aspect to a
+   * common desktop's fixes that geometrically rather than by cropping.
+   *
+   * 3200 rather than 2000 across so the *scale* is unchanged: at 1512×944 this
+   * fits at 0.472, exactly what the square board fitted at, so every tier size
+   * D13 tuned renders at the same pixel size it always did. Only the area grew.
+   *
+   * Measured fit: 1512×944 → 1510×944 (a 2px sliver bare); 1280×800 → exact;
+   * 1920×1080 → 1728×1080; 1024×768 → 1024×640.
+   */
+  wide: { key: "wide", w: 3200, h: 2000, rMin: 580, reach: 1, reachOuter: 1.35 },
   /**
    * 1:2, near enough a phone. At 375×812 this scales to 0.375 and renders
    * 375×750 — 92% of the height against the square board's 46% — and the type
@@ -72,7 +95,7 @@ const BOARDS: Record<BoardKey, Board> = {
    * rather than the 4.5px the square board gave. rMin 300 lands 112px out,
    * clearing the disc's 100px arc.
    */
-  tall: { key: "tall", w: 1000, h: 2000, rMin: 300, reach: 0.62 },
+  tall: { key: "tall", w: 1000, h: 2000, rMin: 300, reach: 0.62, reachOuter: 0.62 },
 };
 
 const centre = (b: Board) => ({ x: b.w / 2, y: b.h / 2 });
@@ -323,8 +346,79 @@ function overlaps(a: Box, b: Box) {
   );
 }
 
-/** Every corner must sit inside the wedge, or the conic mask slices the text. */
-function insideWedge(box: Box, start: number, end: number, board: Board) {
+/**
+ * Reserved rectangles, as fractions of the board, that no glyph may enter.
+ *
+ * The field used to be masked to its own 120° wedge, so the copy was safe by
+ * construction — a wedge never reached the corner the profile sits in. Now that
+ * a lit circle floods the whole screen the field does too, and the two blocks
+ * of type on the page have to be kept clear deliberately.
+ *
+ * Fractions of the board rather than of the viewport, and generous, because
+ * they cannot be exact: the board is fitted with `meet`, so it is centred and
+ * usually a little smaller than the window, and board coordinates simply do
+ * not know where the viewport's corners are. Reserving too much costs a little
+ * placement area; reserving too little puts glyphs under his name.
+ *
+ * Per board, because the two are different shapes carrying different layouts.
+ * The wide board's copy sits in one corner and the addresses in the opposite
+ * one; the phone stacks everything full-width, so its guards are bands rather
+ * than corners. Each was derived by mapping the real elements' viewport rects
+ * back through the fit at the tightest viewport that board serves.
+ */
+const RESERVED: Record<
+  BoardKey,
+  ReadonlyArray<{ x0: number; y0: number; x1: number; y1: number }>
+> = {
+  wide: [
+    /**
+     * Name, roles, profile, hint.
+     *
+     * Sized for the *small* end of the range, which is what makes it look
+     * over-generous on a laptop. The block is a fixed number of pixels — the
+     * hint line alone is 515px of tracked-out capitals — while the board's
+     * scale falls with the window, so the same block covers 0.37 of the board
+     * at 1512×944 and 0.54 at 1024×768. A guard that fits the laptop puts
+     * glyphs through the hint on anything smaller.
+     */
+    { x0: 0, y0: 0, x1: 0.56, y1: 0.42 },
+    // The two addresses, top right from md. Deepest at 812×375, where the
+    // board fits by height and 78px of viewport is 0.21 of it.
+    { x0: 0.7, y0: 0, x1: 1, y1: 0.22 },
+    /**
+     * The footer. Measured need: 0.936 at 1512×944, 0.944 at 1920×1080, 0.925
+     * at 1280×800, and nothing at all at 1024×768, where the footer falls
+     * below the fitted board entirely.
+     *
+     * A landscape phone wants 0.85: its footer is a single nav row, but the
+     * board fits by height there and 24px of inset is a much larger share of
+     * 375px than of 944px. That is the binding case, and it costs the laptop
+     * only 29px of extra clearance, so it is simply taken.
+     */
+    { x0: 0, y0: 0.85, x1: 1, y1: 1 },
+  ],
+  tall: [
+    /**
+     * The header takes two rectangles because the two portrait devices wear it
+     * differently. A phone's copy is capped at 20rem against a 375px screen,
+     * so it runs nearly edge to edge but only 0.15 deep. A tablet's is capped
+     * at 24rem against 768px and keeps the profile paragraph that `md` hides
+     * on a phone, so it is half as wide and twice as deep. One rectangle
+     * covering both would be the whole upper third of the board.
+     *
+     * The shallow full-width band also picks up the tablet's two addresses,
+     * which sit top right from md.
+     */
+    { x0: 0, y0: 0, x1: 1, y1: 0.2 },
+    { x0: 0, y0: 0, x1: 0.6, y1: 0.32 },
+    // The footer. Deepest on a phone (0.873), where the addresses join it and
+    // the nav row wraps; a tablet keeps its addresses up top and needs 0.949.
+    { x0: 0, y0: 0.85, x1: 1, y1: 1 },
+  ],
+};
+
+/** Every corner must clear the disc, the board edge and the reserved blocks. */
+function insideField(box: Box, board: Board) {
   return (
     [
       [box.x, box.y],
@@ -333,17 +427,13 @@ function insideWedge(box: Box, start: number, end: number, board: Board) {
       [box.x + box.w, box.y + box.h],
     ] as const
   ).every(([x, y]) => {
-    if (x < EDGE || x > board.w - EDGE || y < EDGE || y > board.h - EDGE)
-      return false;
+    if (x < EDGE || x > board.w - EDGE || y < EDGE || y > board.h - EDGE) return false;
     const c = centre(board);
-    const dx = x - c.x;
-    const dy = y - c.y;
-    const r = Math.hypot(dx, dy);
-    if (r < board.rMin) return false;
-    let a = (Math.atan2(dy, dx) * 180) / Math.PI;
-    while (a < start) a += 360;
-    while (a >= start + 360) a -= 360;
-    return a <= end;
+    if (Math.hypot(x - c.x, y - c.y) < board.rMin) return false;
+    return !RESERVED[board.key].some(
+      (r) =>
+        x > r.x0 * board.w && x < r.x1 * board.w && y > r.y0 * board.h && y < r.y1 * board.h,
+    );
   });
 }
 
@@ -368,13 +458,18 @@ const PLATE_ART = [
  * the wedge and the board rectangle by the same rules the solver uses.
  */
 const PLATE_BOXES: Record<BoardKey, Box[]> = {
+  // Kept left of centre, below the profile block and above the footer band.
+  // Corners land at radius 1116–1348 on the 8:5 board, well outside rMin.
   wide: [
-    { x: 133, y: 758, w: 190, h: 268 },
-    { x: 121, y: 1349, w: 380, h: 460 },
+    { x: 300, y: 850, w: 190, h: 268 },
+    { x: 260, y: 1150, w: 380, h: 460 },
   ],
+  // The phone stacks its guards as full-width bands, so these moved out of
+  // both: the mark up and right of the disc, the figure down and left of it.
+  // Nearest corners land at radius 367 and 331 against rMin 300.
   tall: [
-    { x: 100, y: 1250, w: 150, h: 212 },
-    { x: 60, y: 1520, w: 300, h: 363 },
+    { x: 700, y: 480, w: 150, h: 212 },
+    { x: 60, y: 1300, w: 300, h: 363 },
   ],
 };
 
@@ -396,11 +491,26 @@ const plates = (board: Board) =>
  * means either crossing the disc or falling off the board.
  */
 const KNOT_BOXES: Record<BoardKey, Box> = {
-  wide: { x: 800, y: 32, w: 400, h: 416 }, // 300×312 local, ×1.333
-  // The tall board is half as wide, so the knot comes down to 300 and sits
-  // near the top of the upward wedge. Corners fall at 256.6–283.4°, inside
-  // Scholarly's 212–328°, and at radius 646–952, well clear of rMin.
-  tall: { x: 350, y: 60, w: 300, h: 312 },
+  /**
+   * Left of the disc and below the profile block, not along the top edge.
+   *
+   * The 8:5 board's top edge is spoken for: the name and profile guard reaches
+   * x=1792 and the addresses' guard starts at x=2240, leaving a 448-unit slot
+   * for a 400-unit knot — it fits, with 24 units either side, which is not a
+   * placement so much as a wedge. Here it has room on every side, its corners
+   * land at radius 906–1338, and it counterweights the disc instead of
+   * crowding the masthead.
+   */
+  wide: { x: 300, y: 900, w: 400, h: 416 }, // 300×312 local, ×1.333
+  /**
+   * The tall board is half as wide, so the knot comes down to 300. It sits
+   * *below* the disc rather than above it, which is forced: the phone's header
+   * band reaches y=400 and a box above the disc has to end by y=700 to clear
+   * rMin, and 300 units of clearance will not hold a 312-unit knot. Below,
+   * the same arithmetic gives it everything from 1300 down. Corners land at
+   * radius 335–630.
+   */
+  tall: { x: 350, y: 1300, w: 300, h: 312 },
 };
 const KNOT_DELAY = 90;
 
@@ -420,7 +530,6 @@ const KNOT_DELAY = 90;
  * height, so it disturbs the rhythm without breaking the packing.
  */
 function layout(track: TrackId, board: Board): Placed[] {
-  const arc = TRACK_ARCS[track];
   const taken: Box[] =
     track === "creative"
       ? plates(board).map((p) => p.box)
@@ -442,7 +551,6 @@ function layout(track: TrackId, board: Board): Placed[] {
     ),
   ];
 
-  const span = arc.end - arc.start;
 
   // Anchors go down first and nearest the arc, so the largest things claim the
   // calmest space and everything else arranges itself around them.
@@ -469,9 +577,11 @@ function layout(track: TrackId, board: Board): Placed[] {
       // solved per candidate rather than once up front.
       for (let attempt = 0; attempt < 140 && !settled; attempt += 1) {
         seed += 1;
-        const angle = arc.start + 3 + rand(seed * 2) * (span - 6);
+        // Any bearing: the field is no longer masked to a wedge, so the
+        // candidate can land anywhere the rejection test below allows.
+        const angle = rand(seed * 2) * 360;
         const r0 = t.r0 * board.reach;
-        const r1 = t.r1 * board.reach;
+        const r1 = t.r1 * board.reachOuter;
         const radius = r0 + rand(seed * 2 + 1) * (r1 - r0);
         const k = (radius - r0) / (r1 - r0);
         const size = snap(base * step * (1 - FAR_SHRINK * k), 1e3);
@@ -488,7 +598,7 @@ function layout(track: TrackId, board: Board): Placed[] {
         const cy = snap(c.y + Math.sin((angle * Math.PI) / 180) * radius, 1e3);
         const box: Box = { x: cx - w / 2, y: cy - h / 2, w, h };
 
-        if (!insideWedge(box, arc.start, arc.end, board)) continue;
+        if (!insideField(box, board)) continue;
         if (taken.some((b) => overlaps(b, box))) continue;
 
         taken.push(box);
@@ -540,16 +650,12 @@ export function SymbolField({
   track: TrackId;
   active: boolean;
 }) {
-  const arc = TRACK_ARCS[track];
   if (
     LAYOUTS.wide[track].length === 0 &&
     (track === "creative" ? PLATE_ART.length : 0) === 0
   )
     return null;
 
-  const span = arc.end - arc.start;
-  const from = arc.start + 90; // conic starts at 12 o'clock, arcs at 3 o'clock
-  const mask = `conic-gradient(from ${from}deg at 50% 50%, #000 0deg, #000 ${span}deg, transparent ${span}deg)`;
 
   // Each element carries its own delay so the field assembles unevenly rather
   // than switching on as a block. On the way out the delay drops to zero, so
@@ -574,10 +680,9 @@ export function SymbolField({
           <svg
             key={key}
             viewBox={`0 0 ${board.w} ${board.h}`}
-      preserveAspectRatio="xMidYMid meet"
+            preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
       className={`symbol-field field-${board.key} pointer-events-none fixed inset-0 -z-10 size-full text-bone`}
-      style={{ maskImage: mask, WebkitMaskImage: mask }}
     >
       {track === "scholarly" ? (
         <g
