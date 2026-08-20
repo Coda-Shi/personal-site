@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LanguageToggle } from "@/components/language-toggle";
 import { TrinityDisc, type Focus } from "@/components/trinity-disc";
 import { EMAILS, GITHUB, INSTAGRAM, NAME } from "@/lib/content";
@@ -20,8 +20,43 @@ import type { Dictionary, Locale } from "@/lib/i18n";
  * The name stays. It is one short line, it sits clear of every wedge, and
  * without it a lit page has nobody's name on it.
  */
+/**
+ * When the entrance has finished and the page becomes touchable.
+ *
+ * The footer is the last thing in: it rises at 1850ms over 700ms. Everything
+ * else — the line work, the pigment, the labels, the portrait — has landed by
+ * then.
+ */
+const ENTRANCE = 2550;
+
 export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
   const [focus, setFocus] = useState<Focus>(null);
+
+  /**
+   * 🔴 Nothing is clickable or hoverable until the entrance has played out.
+   *
+   * Every circle answers a hover by flooding the screen with its pigment, and
+   * a pointer that happens to be resting over the disc — or that arrives two
+   * hundred milliseconds in — fired that flood on top of a composition still
+   * drawing itself. Two animations with contradictory ideas about what the
+   * page looks like, and the entrance loses.
+   *
+   * `false` on the server and on the first client render, so this cannot
+   * mismatch during hydration; it is only ever turned on afterwards. Under
+   * `prefers-reduced-motion` the entrance collapses to nothing, so the gate
+   * has to collapse with it — otherwise the page would sit inert for two and a
+   * half seconds with nothing visibly happening, which is worse than the
+   * problem being solved.
+   */
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    // One timer either way, rather than an early `setReady(true)` — setting
+    // state synchronously inside an effect is a lint error and, more to the
+    // point, a re-render the browser has not asked for yet.
+    const instant = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timer = window.setTimeout(() => setReady(true), instant ? 0 : ENTRANCE);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   // The hub lights no beam, so it should not clear the copy either.
   const lit = focus !== null && focus !== "hub";
@@ -46,7 +81,11 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
     // `home-stage` carries no layout. It is the scope for the classical
     // English treatment in globals.css, which must not reach the CV pages —
     // see D12.
-    <main className="home-stage relative grid h-dvh w-full place-items-center overflow-hidden">
+    <main
+      className={`home-stage relative grid h-dvh w-full place-items-center overflow-hidden ${
+        ready ? "" : "pointer-events-none"
+      }`}
+    >
       {/* From md up: top-right, opposite the name, outside the header so it
           does not recede with the intro copy when a beam fires.
 

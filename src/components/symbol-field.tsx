@@ -403,12 +403,22 @@ const RESERVED: Record<
 > = {
   wide: [
     /**
-     * His name alone. Measured need: 0.23 wide at 1024×768 (where the board
-     * fits by width and the name is a large share of it) and 0.15 deep at
-     * 812×375. Off the board entirely at 2560×1080, where it sits left of
-     * where the fitted board starts.
+     * His name, in two rectangles rather than one — for the same reason the
+     * phone board's header is two, and it matters more here than it looks.
+     *
+     * The name is never both wide and deep at once. At 1024×768 the board's
+     * top edge sits below it, so it needs 0.23 of width and almost no depth;
+     * at 812×375 the board fits by height instead and it needs 0.14 of width
+     * and 0.15 of depth. A single rectangle covering both reserved a corner
+     * that is 0.28 by 0.18 and is *never* occupied by anything at either
+     * extreme — and that empty corner was what pinned the R.S.I. plate to the
+     * far left, because the only room up and to the right was inside it.
+     *
+     * Measured against the real name rect at 812×375, 900×700, 1024×768,
+     * 1366×620, 1512×944 and 1920×1080; every one falls inside one of the two.
      */
-    { x0: 0, y0: 0, x1: 0.28, y1: 0.18 },
+    { x0: 0, y0: 0, x1: 0.26, y1: 0.06 },
+    { x0: 0, y0: 0, x1: 0.17, y1: 0.19 },
     // The two addresses, top right from md. Deepest at 812×375, where the
     // board fits by height and 78px of viewport is 0.21 of it.
     { x0: 0.7, y0: 0, x1: 1, y1: 0.22 },
@@ -581,7 +591,7 @@ const FIGURES: ReadonlyArray<{
     opacity: 0.34,
     delay: 90,
     boxes: {
-      wide: { x: 60, y: 380, w: 700, h: 600 },
+      wide: { x: 560, y: 130, w: 560, h: 480 },
       tall: { x: 30, y: 1330, w: 380, h: 326 },
     },
   },

@@ -71,12 +71,12 @@ export const QUESTIONS: Question[] = [
   {
     id: "death-suffering",
     lead: "The nature of death and of psychic suffering, and what separates them.",
-    note: "Their phenomenological structure and their value are not the same, yet the two are routinely handled as one kind of bad. How different cultures give them meaning and find somewhere to put them; what they mean to the living; and, more concretely, how loss, mourning and trauma shape a personality and are shaped by it in turn.",
+    note: "Their phenomenological structure and their value are not the same, yet both may be filed under the same heading of bad experience. How different cultures give them meaning and find somewhere to put them; what they mean to the living; and, more concretely, how loss, mourning and trauma change a personality — and how personality in turn shapes what a person feels of those experiences, what they make of them, and what they can integrate.",
   },
   {
     id: "selfhood",
-    lead: "Self-identity, and whether the need for it is itself culturally specific.",
-    note: "If it is, every theory of personality and development that presupposes it has a boundary it does not declare. Meaning may be one of the mechanisms that holds self-continuity together.",
+    lead: "Whether the need for a self-identity is itself a culturally specific one",
+    note: "If the answer is yes, then the many theories of personality and development that set a stable, integrated self-identity as the goal of development all carry a cultural boundary they never declare. What I most want to examine is the part meaning plays in it: whether it can work as a mechanism for maintaining self-continuity, so that a person still experiences themselves as coherent across time even when identity, role or values have changed.",
   },
   {
     id: "intervention",
