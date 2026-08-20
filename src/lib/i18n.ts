@@ -44,7 +44,18 @@ export const HTML_LANG: Record<Locale, string> = {
   zh: "zh-Hans",
 };
 
-type TrackCopy = { title: string; lede: string };
+/**
+ * `mark` is the name as it appears on the disc, and only exists where that has
+ * to be shorter than the real one.
+ *
+ * The disc sets its labels in tracked-out capitals inside a circle, so length
+ * there is a hard constraint rather than a matter of taste: "PROFESSIONAL" is
+ * twelve characters and its near corner reached the neighbouring circle's arc.
+ * Everywhere with room — the track page, the CV, the navigation — keeps
+ * `title`. Falls back to `title`, so a track only needs this if it has the
+ * problem.
+ */
+type TrackCopy = { title: string; mark?: string; lede: string };
 
 /**
  * CV overrides, keyed by the `id` on each record in content.ts.
@@ -168,7 +179,13 @@ const en: Dictionary = {
   // Derived rather than restated, so the English disc labels cannot drift from
   // the track pages they lead to.
   tracks: Object.fromEntries(
-    TRACKS.map((t) => [t.id, { title: t.title, lede: t.lede }]),
+    TRACKS.map((t) => [
+      t.id,
+      // Only Professional needs a shorter name on the disc; see TrackCopy.
+      // The page it opens is still Professional, which is the word that
+      // belongs on a CV.
+      { title: t.title, lede: t.lede, ...(t.id === "professional" && { mark: "Practical" }) },
+    ]),
   ) as Record<TrackId, TrackCopy>,
   hub: {
     name: "Coda",
