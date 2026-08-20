@@ -278,13 +278,40 @@ function centreOf(track: TrackId) {
  */
 function outline(track: TrackId) {
   const c = centreOf(track);
-  const at = (deg: number) => {
+  const round = (n: number) => Math.round(n * 1e3) / 1e3;
+  const point = (cx: number, cy: number, r: number, deg: number) => {
     const rad = (deg * Math.PI) / 180;
-    const round = (n: number) => Math.round(n * 1e3) / 1e3;
-    return `${round(c.x + R * Math.cos(rad))} ${round(c.y + R * Math.sin(rad))}`;
+    return `${round(cx + r * Math.cos(rad))} ${round(cy + r * Math.sin(rad))}`;
   };
+  const onCircle = (deg: number) => point(c.x, c.y, R, deg);
+  const onRim = (deg: number) => point(CX, CY, R_PORTRAIT, deg);
+
   const start = VENN[track] - 90;
-  return `M ${at(start)} A ${R} ${R} 0 1 1 ${at(start + 270)}`;
+  /**
+   * ...and then it becomes the ring.
+   *
+   * The three tangent points sit at bearings 270°, 30° and 150° — 120° apart,
+   * because each is opposite its own circle's centre. So each line, having
+   * arrived at its own tangent point, can simply carry on round the portrait
+   * to the next one, and the three of them lay down the whole rim between
+   * them, 120° each.
+   *
+   * It joins smoothly rather than turning a corner: a circle's tangent
+   * direction where it touches another circle *is* that circle's tangent
+   * direction, so the arrival and the departure point the same way. And it
+   * needs no separate element — a ring drawn on its own was one more thing
+   * appearing, where this is the same three strokes finishing what they were
+   * already doing.
+   *
+   * The rim is 15% of the path's length, so it draws in the last 15% of the
+   * stroke: three lines sweep in and close the ring together.
+   */
+  const meets = VENN[track] + 180;
+  return [
+    `M ${onCircle(start)}`,
+    `A ${R} ${R} 0 1 1 ${onCircle(start + 270)}`,
+    `A ${R_PORTRAIT} ${R_PORTRAIT} 0 0 1 ${onRim(meets + 120)}`,
+  ].join(" ");
 }
 
 function labelOf(track: TrackId) {
@@ -591,6 +618,12 @@ export function TrinityDisc({
                     clipPath={`url(#venn-half-${track.id})`}
                     fill="#fff"
                   />
+                  {/* And the rim is never cut. Each outline now carries on
+                      round the portrait after it arrives (see `outline`), and
+                      that stretch runs through the disc that is over it, so
+                      without this exemption two thirds of the ring would be
+                      masked away. Nothing else lives inside this radius. */}
+                  <circle cx={CX} cy={CY} r={R_PORTRAIT + 2} fill="#fff" />
                 </mask>
               );
             })}
@@ -711,45 +744,17 @@ export function TrinityDisc({
                 // only thing keeping the composition legible, and fading two
                 // of them would leave a plain coloured screen with one circle
                 // drawn on it.
-                strokeOpacity={0.75}
-                style={{ animation: PLOT }}
+                style={{
+                  // The ring is part of these strokes now, so focusing the
+                  // centre lifts the whole figure rather than one circle.
+                  strokeOpacity: focus === "hub" ? 0.95 : 0.75,
+                  transition: "stroke-opacity 300ms ease-out",
+                  animation: PLOT,
+                }}
               />
             );
           })}
 
-          {/* 🔴 The ring round the portrait, and it is drawn *here* rather than
-              as a CSS border on the photograph, because it has to be plotted
-              with the other three.
-
-              Everything in the middle now converges on this ring: the three
-              surviving half-arcs each run inward until they go tangent to it
-              and stop. The photograph used to arrive at 1700ms, long after
-              those arcs had been drawn — so for the whole entrance they
-              spiralled into nothing and the middle had no boundary at all.
-              Drawing the ring on the same beat as the first circle gives them
-              something to land on from the start, and the photograph then
-              simply fills a ring that is already there.
-
-              It is also the only ring now. The Link no longer carries a border
-              (two coincident rings read as one fat one) and no longer scales on
-              focus (that slid the photograph out from under a fixed ring);
-              focus brightens this instead. */}
-          <circle
-            cx={CX}
-            cy={CY}
-            r={R_PORTRAIT}
-            fill="none"
-            stroke="rgb(242, 239, 233)"
-            strokeWidth={1.1}
-            pathLength={1}
-            strokeDasharray={1}
-            className="pointer-events-none"
-            style={{
-              strokeOpacity: focus === "hub" ? 1 : 0.75,
-              transition: "stroke-opacity 300ms ease-out",
-              animation: PLOT,
-            }}
-          />
         </svg>
 
         {/* The labels are the real links: they carry the accessible name, they
