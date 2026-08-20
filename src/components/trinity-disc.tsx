@@ -158,6 +158,12 @@ const OVER = Object.fromEntries(CYCLE.map(({ from, to }) => [to, from])) as Reco
   TrackId
 >;
 
+/** And which one each passes over — the cycle read forwards. */
+const UNDER = Object.fromEntries(CYCLE.map(({ from, to }) => [from, to])) as Record<
+  TrackId,
+  TrackId
+>;
+
 /**
  * How far past the over-circle's edge the under-circle's line stays broken.
  *
@@ -402,13 +408,35 @@ export function TrinityDisc({
                 clipPath="url(#venn-scholarly)"
               />
             </clipPath>
-            {/* One mask per circle, hiding its line wherever it runs beneath
-                the circle that is over it. White keeps, black cuts. The disc
-                that cuts is BREAK wider than the real circle, so the break
-                opens on both sides of each crossing rather than closing exactly
-                on the other line. */}
+            {/* One mask per circle. White keeps, black cuts, and they are
+                painted in that order, so each successive disc overrides the
+                last.
+
+                Black: everywhere this circle runs beneath the one that is over
+                it. The cutting disc is BREAK wider than the real circle, so the
+                break opens on both sides of a crossing rather than closing
+                exactly on the other line.
+
+                White again: the middle. That black cut takes the whole arc,
+                and part of that arc is the middle region's own boundary — so
+                cutting it left the middle with no outline at all, a black
+                shape reading as a hole punched round the portrait. The arc
+                bounding the middle is exactly the part that also lies inside
+                the third circle, which is the one this circle passes over, so
+                restoring that disc gives it back and nothing else.
+
+                What this trades: the two inner crossings sit almost exactly on
+                the third circle's centre (the centres are 117.8 apart and the
+                radius is 118, so they very nearly coincide), and both fall in
+                the restored area — so the middle closes into a whole curved
+                triangle instead of carrying a break at its corners. The
+                over-and-under still reads, at the outer crossings where the
+                rings visibly interlock, and the pigment says it a second time:
+                a lens wears the colour of whichever circle is over it. A black
+                region with no edge at all said nothing at all. */}
             {TRACKS.map((track) => {
               const over = centreOf(OVER[track.id]);
+              const under = centreOf(UNDER[track.id]);
               return (
                 <mask
                   key={track.id}
@@ -421,6 +449,7 @@ export function TrinityDisc({
                 >
                   <rect x="0" y="0" width="400" height="400" fill="#fff" />
                   <circle cx={over.x} cy={over.y} r={R + BREAK} fill="#000" />
+                  <circle cx={under.x} cy={under.y} r={R} fill="#fff" />
                 </mask>
               );
             })}
