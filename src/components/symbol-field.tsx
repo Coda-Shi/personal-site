@@ -94,8 +94,13 @@ const BOARDS: Record<BoardKey, Board> = {
    * 1:2, near enough a phone. At 375×812 this scales to 0.375 and renders
    * 375×750 — 92% of the height against the square board's 46% — and the type
    * comes out at 9–23px, which is a shade larger than the desktop 8.6–22px
-   * rather than the 4.5px the square board gave. rMin 300 lands 112px out,
-   * clearing the disc's 100px arc.
+   * rather than the 4.5px the square board gave.
+   *
+   * rMin 315 lands 118px out against the disc's 111px arc. It was 300, which
+   * had 12 units of margin until the Venn's circles were drawn in to sit
+   * tangent to the portrait — that pushed the composition's outer extent from
+   * 186 board units to 190 and left under 2. Re-derived: the phone arm needs
+   * 294.5 and the shorter-portrait arm 285, so 315 restores 20.
    */
   /**
    * `reachOuter` is well above `reach` here for the same reason it is on the
@@ -105,7 +110,7 @@ const BOARDS: Record<BoardKey, Board> = {
    * rectangle per bearing, a short outer radius just means the top and bottom
    * of the phone go unused — which cost eleven of Scholarly's symbols.
    */
-  tall: { key: "tall", w: 1000, h: 2000, rMin: 300, reach: 0.62, reachOuter: 0.92 },
+  tall: { key: "tall", w: 1000, h: 2000, rMin: 315, reach: 0.62, reachOuter: 0.92 },
 };
 
 const centre = (b: Board) => ({ x: b.w / 2, y: b.h / 2 });
@@ -125,11 +130,19 @@ const PAD = 12;
  * promise rather than a hope. The beam is a separate element and still runs to
  * the corners.
  *
- * R_MIN has to clear the disc, and the two scale differently: the board tracks
- * min(vw, vh) while the disc is min(56vh, 30rem). Worked through the viewport
- * range that puts the disc's outer tick at up to 549 board units — worst on
- * short screens, where the disc eats more than half the board radius — so the
- * floor sits at 580 with margin.
+ * R_MIN has to clear the disc, and the two are fitted on different axes, so
+ * the ratio between them drifts with the window. That is why the disc is
+ * capped against the *same* axis the board is fitted on (see the note on
+ * `--disc` in globals.css): with that in place, the disc's outer extent is a
+ * constant number of board units whatever the viewport.
+ *
+ * Worked out from the composition's outer extent, 190 of its own 400 units:
+ * the wide board needs at most 532 (the 0.56vh arm) against R_MIN 580, and the
+ * phone board at most 294.5 (the 0.62vw arm) against its 315.
+ *
+ * 🔴 Re-derive both whenever CENTRE_D, R or a `--disc` cap changes. Nothing
+ * fails loudly if these drift — the symbols simply start drawing under the
+ * disc.
  *
  * There is deliberately no outer *radius* cap. The board is a fully visible
  * square, so the corners sit at radius 1414 and a circular ceiling would throw

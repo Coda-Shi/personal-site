@@ -24,14 +24,23 @@ import type { Dictionary, Locale } from "@/lib/i18n";
  * own.
  *
  * Centres sit on a circle of radius CENTRE_D, 120° apart, each circle of radius
- * R. The triangle they form has side CENTRE_D·√3, so at these values the side
- * is about equal to the radius — the proportion a Venn is normally drawn at,
- * and the one that leaves a triple intersection big enough to hold a face.
+ * R. The triangle they form has side CENTRE_D·√3 — 124.7 against a radius of
+ * 118, near enough the proportion a Venn is normally drawn at.
+ *
+ * 🔴 **CENTRE_D is solved, not chosen: R − CENTRE_D = R_PORTRAIT.** A circle
+ * whose centre is CENTRE_D from the middle comes within R − CENTRE_D of it, and
+ * that innermost point is where the middle region's boundary runs. Setting it
+ * equal to the portrait's radius makes all three arcs *tangent* to the portrait
+ * — they gather along it instead of stopping short. At the previous 68 they
+ * stopped 4 units out and the middle wore a slack black collar.
+ *
+ * So the three are locked together. Move the portrait and this has to move; if
+ * a gap is ever wanted back, that is CENTRE_D < R − R_PORTRAIT, not a nudge.
  */
 const CX = 200;
 const CY = 200;
 const R = 118;
-const CENTRE_D = 68;
+const CENTRE_D = 72;
 
 /** Where each circle sits, in degrees. SVG convention: 90° is the bottom. */
 const VENN: Record<TrackId, number> = {
@@ -44,18 +53,27 @@ const VENN: Record<TrackId, number> = {
  * How far out a label sits from the composition centre.
  *
  * Far enough to clear the other two circles, so each label lies in its own
- * circle's exclusive lune and belongs to one track unambiguously. Checked: at
- * this distance a label centre is 53 units inside its own circle and 166 from
- * either of the others, which are 118 across — comfortably outside both.
+ * circle's exclusive lune and belongs to one track unambiguously. Checked: a
+ * label centre sits 53 units inside its own circle and 172.7 from either of the
+ * others, which are 118 across.
+ *
+ * ⚠️ That 172.7 is to the label's *centre*, and a long word eats into it fast.
+ * "PROFESSIONAL" set at 12px on a 480px disc is 114px wide, which is 47.5 units
+ * of half-width, leaving 125 against a radius of 118 — seven units, and at
+ * CENTRE_D 68 it was under two and the word was touching the neighbouring arc.
+ * This is why the disc has its own shorter name for that track (see `mark` in
+ * i18n.ts). Check the arithmetic before lengthening any label here.
  */
 const R_LABEL = CENTRE_D + R * 0.45;
 
 /**
  * The portrait's circle, at the triple intersection.
  *
- * That region is a curved triangle, not a circle: from the centre it reaches 50
- * units towards each gap and 68 towards each circle centre. 46 is the largest
- * circle that stays inside it on every bearing.
+ * That region is a curved triangle, not a circle: from the middle it reaches 46
+ * units towards each of its three edges and 64.2 towards each corner. So 46 is
+ * not merely the largest circle that fits — it is the *inscribed* one, touching
+ * all three edges at their midpoints. See the note on CENTRE_D, which is solved
+ * from this number.
  */
 const R_PORTRAIT = 46;
 
@@ -425,10 +443,10 @@ export function TrinityDisc({
                 the third circle, which is the one this circle passes over, so
                 restoring that disc gives it back and nothing else.
 
-                What this trades: the two inner crossings sit almost exactly on
-                the third circle's centre (the centres are 117.8 apart and the
-                radius is 118, so they very nearly coincide), and both fall in
-                the restored area — so the middle closes into a whole curved
+                What this trades: the two inner crossings sit deep inside the
+                third circle — 7.8 units from its centre, against a radius of
+                118 — and so both fall in the restored area, and the middle
+                closes into a whole curved
                 triangle instead of carrying a break at its corners. The
                 over-and-under still reads, at the outer crossings where the
                 rings visibly interlock, and the pigment says it a second time:
@@ -596,7 +614,7 @@ export function TrinityDisc({
                 className="font-display text-base leading-none sm:text-3xl md:text-4xl"
               />
               <span className="label" style={{ fontSize: "var(--disc-label-size, 10.5px)" }}>
-                {dict.tracks[track.id].title}
+                {dict.tracks[track.id].mark ?? dict.tracks[track.id].title}
               </span>
             </span>
           </Link>
