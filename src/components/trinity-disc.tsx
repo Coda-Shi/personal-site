@@ -87,26 +87,28 @@ const FLOOD_BLEED = 1100;
 const VOID = "#050505";
 
 /**
- * Where exactly two circles meet, in the two pigments screened together.
+ * The three lenses where two circles meet. Painted out to the ground.
  *
- * 🔴 These are deliberately brighter than either parent, and the whole point of
- * painting the regions explicitly is that they *can* be. Three translucent
- * circles stacked in the ordinary way compound their alpha, so every overlap
- * comes out darker than its parents and the triple centre comes out darkest —
- * on this near-black ground that turned the overlaps to mud, which is exactly
- * backwards, because the overlaps are the only thing a Venn says that a ring
- * could not. Each region is now drawn once, at a colour chosen for it, and
- * nothing compounds.
+ * 🔴 **Every overlap is black — no pigment, no blend, no third colour.** The
+ * owner's call, and it is the whole reason the regions are painted explicitly
+ * rather than stacked translucently: three overlapping circles with alpha
+ * compound, so an overlap is *necessarily* some muddled mixture of its
+ * parents and there is no way to ask for nothing there. Painting each region
+ * once means an overlap can be the ground, and the ground is what it is.
  *
- * Screen blend of the two pigments, 1-(1-a)(1-b), which is what the two lights
- * would do rather than what the two inks would do. Klein over oxblood gives a
- * violet, oxblood over gilt a terracotta, gilt over Klein a periwinkle — each
- * still legibly made of its two parents, which is the property that matters.
+ * The triple centre needs no element of its own: it lies inside all three of
+ * these lenses, so blacking the lenses blacks it too. That also settles D9
+ * without arguing for it — the centre carries no pigment because no region
+ * where the tracks meet carries any.
+ *
+ * What is left is three fields of flat colour with black gaps between them,
+ * and the bone outlines still running whole across the gaps, which is what
+ * keeps it reading as three circles rather than as three cut shapes.
  */
-const PAIRS: ReadonlyArray<{ a: TrackId; b: TrackId; fill: string }> = [
-  { a: "scholarly", b: "creative", fill: "#6E3FB3" },
-  { a: "creative", b: "professional", fill: "#AA6036" },
-  { a: "professional", b: "scholarly", fill: "#6A72AF" },
+const PAIRS: ReadonlyArray<{ clip: TrackId; at: TrackId }> = [
+  { clip: "scholarly", at: "creative" },
+  { clip: "creative", at: "professional" },
+  { clip: "professional", at: "scholarly" },
 ];
 
 /** The centre is a fourth focus target, but it lights nothing and colours nothing. */
@@ -195,9 +197,6 @@ export function TrinityDisc({
 
   /** True whenever something is lit and it is not this track. */
   const dimmed = (id: TrackId) => focus !== null && focus !== id;
-  /** A region belonging to two tracks is dim only when neither is lit. */
-  const dimmedPair = (a: TrackId, b: TrackId) =>
-    focus !== null && focus !== a && focus !== b;
 
   const region = (isDim: boolean) => ({
     opacity: isDim ? 0.16 : 1,
@@ -296,18 +295,6 @@ export function TrinityDisc({
                 </clipPath>
               );
             })}
-            {/* Two circles' intersection, so the third can be clipped by it and
-                give the triple region. Nested clip-path references are the only
-                way to express an intersection of three shapes in SVG without
-                solving for the arcs by hand. */}
-            <clipPath id="venn-two">
-              <circle
-                cx={centreOf("creative").x}
-                cy={centreOf("creative").y}
-                r={R}
-                clipPath="url(#venn-scholarly)"
-              />
-            </clipPath>
           </defs>
 
           {/* Every region is painted exactly once, back to front: the three
@@ -335,34 +322,20 @@ export function TrinityDisc({
               );
             })}
 
-            {PAIRS.map(({ a, b, fill }) => {
-              const c = centreOf(b);
+            {PAIRS.map(({ clip, at }) => {
+              const c = centreOf(at);
               return (
                 <circle
-                  key={`${a}-${b}`}
+                  key={`${clip}-${at}`}
                   cx={c.x}
                   cy={c.y}
                   r={R}
-                  fill={fill}
-                  clipPath={`url(#venn-${a})`}
+                  fill={VOID}
+                  clipPath={`url(#venn-${clip})`}
                   className="pointer-events-none"
-                  style={region(dimmedPair(a, b))}
                 />
               );
             })}
-
-            {/* The middle is the ground, not a colour. D9 asks that the centre
-                carry no pigment of its own; here that is not a restraint but a
-                description — it is where all three are true at once, and the
-                one thing all three have in common is what they are drawn on. */}
-            <circle
-              cx={centreOf("professional").x}
-              cy={centreOf("professional").y}
-              r={R}
-              fill={VOID}
-              clipPath="url(#venn-two)"
-              className="pointer-events-none"
-            />
           </g>
 
           {/* Outlines last, so they read over every region boundary. Each is

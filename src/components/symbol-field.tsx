@@ -1,12 +1,3 @@
-import { BorromeanKnot, KNOT_VIEWBOX } from "@/components/borromean-knot";
-import {
-  DESIRE_VIEWBOX,
-  GraphOfDesire,
-  JUNG_VIEWBOX,
-  JungPsyche,
-  SQUARE_VIEWBOX,
-  SemioticSquare,
-} from "@/components/scholarly-figures";
 import {
   SYMBOL_LAYERS,
   type SymbolItem,
@@ -531,56 +522,81 @@ const plates = (board: Board) =>
  * re-check them by hand whenever a guard or a board changes — that has caught
  * me out twice already.
  */
+/**
+ * The Scholarly field's four figures: Lacan's R.S.I. knot and his completed
+ * graph of desire, Jung's map of the psyche, and the Greimas square.
+ *
+ * 🔴 **Treated scans, not drawings — and do not redraw them.** All four were
+ * hand-built in SVG first, which is the right call for a figure with ten
+ * labels and the wrong one for these. The R.S.I. diagram alone carries four
+ * rings, nine named regions and nine annotations on leader lines, and
+ * approximating that many tangencies by eye put the fourth ring straight
+ * through Imaginaire and Réel instead of grazing them: the figure stopped
+ * reading as three interlocked rings at all. The owner's word for the result
+ * was 奇怪的圆圈 and it was exactly right.
+ *
+ * These have settled geometry that is not ours to interpret. Reproducing them
+ * is transcription, and a scan transcribes perfectly. `scripts/figure-lineart.py`
+ * keys the paper out and lands the strokes in bone — the same treatment the
+ * Creative plates get, which is what the owner asked for.
+ *
+ * Reserved before any glyph is placed, like the Creative plates. Two flank the
+ * disc on the left and two on the right, which is the only arrangement the
+ * board allows — the middle is a 580-unit hole and the strip between the name
+ * and the addresses is 420 units deep, shorter than any of them.
+ *
+ * Every box was checked against rMin at all four corners and against the
+ * reserved rectangles; the tightest is the square's inner corner at 361 on the
+ * phone board, against rMin 300. **These do not go through `insideField`**, so
+ * re-check them by hand whenever a guard or a board changes — that has caught
+ * me out twice already. Heights come from the emitted plates' aspect ratios;
+ * re-run the script and they may shift a unit or two.
+ */
 const FIGURES: ReadonlyArray<{
   key: string;
-  viewBox: { w: number; h: number };
-  Draw: () => React.JSX.Element;
+  href: string;
   opacity: number;
   delay: number;
   boxes: Record<BoardKey, Box>;
 }> = [
   {
-    key: "knot",
-    viewBox: KNOT_VIEWBOX,
-    Draw: BorromeanKnot,
-    opacity: 0.32,
+    key: "rsi",
+    href: "/scholarly/rsi.png",
+    opacity: 0.34,
     delay: 90,
     boxes: {
-      wide: { x: 120, y: 420, w: 620, h: 566 },
-      tall: { x: 40, y: 1340, w: 340, h: 310 },
+      wide: { x: 120, y: 420, w: 620, h: 532 },
+      tall: { x: 40, y: 1340, w: 340, h: 292 },
     },
   },
   {
     key: "jung",
-    viewBox: JUNG_VIEWBOX,
-    Draw: JungPsyche,
-    opacity: 0.26,
+    href: "/scholarly/jung.png",
+    opacity: 0.28,
     delay: 200,
     boxes: {
-      wide: { x: 2440, y: 460, w: 500, h: 591 },
-      tall: { x: 680, y: 300, w: 270, h: 319 },
+      wide: { x: 2440, y: 460, w: 500, h: 588 },
+      tall: { x: 680, y: 300, w: 270, h: 317 },
     },
   },
   {
     key: "desire",
-    viewBox: DESIRE_VIEWBOX,
-    Draw: GraphOfDesire,
-    opacity: 0.26,
+    href: "/scholarly/graph-of-desire.png",
+    opacity: 0.28,
     delay: 310,
     boxes: {
-      wide: { x: 180, y: 1080, w: 480, h: 589 },
-      tall: { x: 60, y: 300, w: 250, h: 307 },
+      wide: { x: 180, y: 1080, w: 480, h: 613 },
+      tall: { x: 60, y: 300, w: 250, h: 319 },
     },
   },
   {
     key: "square",
-    viewBox: SQUARE_VIEWBOX,
-    Draw: SemioticSquare,
-    opacity: 0.26,
+    href: "/scholarly/semiotic-square.png",
+    opacity: 0.28,
     delay: 420,
     boxes: {
-      wide: { x: 2400, y: 1120, w: 620, h: 566 },
-      tall: { x: 620, y: 1340, w: 330, h: 301 },
+      wide: { x: 2400, y: 1120, w: 620, h: 527 },
+      tall: { x: 620, y: 1340, w: 330, h: 280 },
     },
   },
 ];
@@ -800,16 +816,19 @@ export function SymbolField({
       aria-hidden="true"
       className={`symbol-field field-${board.key} pointer-events-none fixed inset-0 -z-10 size-full text-bone`}
     >
-      {figures.map(({ key: figureKey, viewBox, Draw, opacity, delay, boxes }) => {
-        const box = boxes[key];
+      {figures.map((figure) => {
+        const box = figure.boxes[key];
         return (
-          <g
-            key={figureKey}
-            transform={`translate(${box.x} ${box.y}) scale(${box.w / viewBox.w})`}
-            style={reveal(opacity, delay)}
-          >
-            <Draw />
-          </g>
+          <image
+            key={figure.key}
+            href={figure.href}
+            x={box.x}
+            y={box.y}
+            width={box.w}
+            height={box.h}
+            preserveAspectRatio="xMidYMid meet"
+            style={reveal(figure.opacity, figure.delay)}
+          />
         );
       })}
 
