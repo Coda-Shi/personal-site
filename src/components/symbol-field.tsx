@@ -807,17 +807,46 @@ export function SymbolField({
    * to land. In practice idle wins by a second or more and the plates are
    * decoded and waiting before anyone reaches the disc.
    */
-  const [idleWarm, setIdleWarm] = useState(false);
+  /**
+   * ...and only for the board that is actually on screen.
+   *
+   * Both boards are in the DOM and CSS shows one, so warming them both fetched
+   * and decoded six plates — around 220KB, several megabytes once decoded —
+   * for a board nobody will ever see. Which board that is, is a question about
+   * the viewport, and D15 forbids the *markup* depending on that. This does
+   * not: it stays null through render and hydration, so server and client emit
+   * the same plateless markup, and it is only answered afterwards, off the
+   * hydration path entirely.
+   *
+   * The media query is the exact complement of the CSS rule that picks the
+   * board — portrait gets `tall`, everything else `wide`. Keep the two in step;
+   * if they drift, the visible board is the one that never loads its plates.
+   */
+  const [liveBoard, setLiveBoard] = useState<BoardKey | null>(null);
   useEffect(() => {
-    if (idleWarm) return;
+    const mq = window.matchMedia("(orientation: portrait)");
+    const pick = () => setLiveBoard(mq.matches ? "tall" : "wide");
+    // Rotating a phone changes which board CSS shows, so the other one has to
+    // be able to warm up late.
+    mq.addEventListener("change", pick);
+    // `requestIdleCallback` is typed as always present but Safari shipped it
+    // late, so the guard is a runtime one. Written as an `if` rather than a
+    // ternary because TypeScript reads `idle ? …` on a function type as a
+    // missing call and errors (TS2774).
     const idle = window.requestIdleCallback;
     if (!idle) {
-      const timer = window.setTimeout(() => setIdleWarm(true), 1800);
-      return () => window.clearTimeout(timer);
+      const timer = window.setTimeout(pick, 1800);
+      return () => {
+        mq.removeEventListener("change", pick);
+        window.clearTimeout(timer);
+      };
     }
-    const handle = idle(() => setIdleWarm(true), { timeout: 3000 });
-    return () => window.cancelIdleCallback(handle);
-  }, [idleWarm]);
+    const handle = idle(pick, { timeout: 3000 });
+    return () => {
+      mq.removeEventListener("change", pick);
+      window.cancelIdleCallback(handle);
+    };
+  }, []);
 
   if (
     LAYOUTS.wide[track].length === 0 &&
@@ -825,7 +854,13 @@ export function SymbolField({
   )
     return null;
 
-  const warm = idleWarm || active;
+  /**
+   * Before the board is known, a hover still has to show plates at once, so it
+   * falls back to warming both — that is the old behaviour and it is only ever
+   * in play for the first second or two. Once the board *is* known it decides
+   * alone, so the off-screen board never loads a thing.
+   */
+  const warmFor = (key: BoardKey) => (liveBoard === null ? active : liveBoard === key);
 
   // Each element carries its own delay so the field assembles unevenly rather
   // than switching on as a block. On the way out the delay drops to zero, so
@@ -844,7 +879,9 @@ export function SymbolField({
       {(Object.keys(BOARDS) as BoardKey[]).map((key) => {
         const board = BOARDS[key];
         const items = LAYOUTS[key][track];
-        // Both lists are empty until the plates are warm; see `warm` above.
+        // Both lists stay empty until this board's plates are warm, which for
+        // the board CSS is hiding means forever. See `warmFor` above.
+        const warm = warmFor(key);
         const figures = warm && track === "scholarly" ? FIGURES : [];
         const plateList = warm && track === "creative" ? plates(board) : [];
         return (
