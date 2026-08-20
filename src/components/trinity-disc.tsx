@@ -146,6 +146,28 @@ const CYCLE: ReadonlyArray<{ from: TrackId; to: TrackId }> = [
   { from: "scholarly", to: "creative" },
 ];
 
+/**
+ * Which circle passes *over* each one — the same cycle read backwards.
+ *
+ * Every circle is over exactly one and under exactly one, which is what makes
+ * this a Borromean link and not three circles piled up. Cut any one and the
+ * other two come apart, because they were never linked to each other.
+ */
+const OVER = Object.fromEntries(CYCLE.map(({ from, to }) => [to, from])) as Record<
+  TrackId,
+  TrackId
+>;
+
+/**
+ * How far past the over-circle's edge the under-circle's line stays broken.
+ *
+ * A knot diagram needs air around the crossing: ending the under-strand exactly
+ * on the over-strand reads as two lines meeting, not as one passing beneath.
+ * 3.5 units against a 1.1 stroke is about three line-widths of clearance, and
+ * lands near 4px on a 480px disc.
+ */
+const BREAK = 3.5;
+
 /** The centre is a fourth focus target, but it lights nothing and colours nothing. */
 export type Focus = TrackId | "hub" | null;
 
@@ -380,6 +402,28 @@ export function TrinityDisc({
                 clipPath="url(#venn-scholarly)"
               />
             </clipPath>
+            {/* One mask per circle, hiding its line wherever it runs beneath
+                the circle that is over it. White keeps, black cuts. The disc
+                that cuts is BREAK wider than the real circle, so the break
+                opens on both sides of each crossing rather than closing exactly
+                on the other line. */}
+            {TRACKS.map((track) => {
+              const over = centreOf(OVER[track.id]);
+              return (
+                <mask
+                  key={track.id}
+                  id={`venn-under-${track.id}`}
+                  maskUnits="userSpaceOnUse"
+                  x="0"
+                  y="0"
+                  width="400"
+                  height="400"
+                >
+                  <rect x="0" y="0" width="400" height="400" fill="#fff" />
+                  <circle cx={over.x} cy={over.y} r={R + BREAK} fill="#000" />
+                </mask>
+              );
+            })}
           </defs>
 
           {/* Every region is painted exactly once, back to front: the three
@@ -458,7 +502,15 @@ export function TrinityDisc({
           </g>
 
           {/* Outlines last, so they read over every region boundary. Each is
-              drawn on rather than faded in, one after another. */}
+              drawn on rather than faded in, one after another — and each is
+              broken where it passes under its neighbour, which is what turns
+              three overlapping circles into a knot.
+
+              The break is also what lets the colour carry: a lens is painted
+              in the over-circle's pigment, and its boundary with that circle's
+              own region is precisely the arc being cut here. Without the cut
+              there is a bone line running through one continuous field of
+              colour; with it, the two are simply the same shape. */}
           {TRACKS.map((track, i) => {
             const c = centreOf(track.id);
             return (
@@ -472,6 +524,7 @@ export function TrinityDisc({
                 strokeWidth={1.1}
                 pathLength={1}
                 strokeDasharray={1}
+                mask={`url(#venn-under-${track.id})`}
                 className="pointer-events-none"
                 // Held at full weight even when another track is lit. Once one
                 // pigment has taken every region these three lines are the
