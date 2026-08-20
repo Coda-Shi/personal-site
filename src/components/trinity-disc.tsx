@@ -111,16 +111,6 @@ const BEAM_HOLD = 1700;
  */
 const FLOOD_FALL = 540;
 
-/**
- * The ground of the composition — its overlaps at rest, and its middle.
- *
- * Written out rather than read from the theme because it is painted *over*
- * pigment as an opaque colour — `--color-void` is available here, but a literal
- * makes it obvious at the call site that this region is being blacked out
- * rather than left unpainted.
- */
-const VOID = "#050505";
-
 /** How the seven regions cross between their own colours and the lit one. */
 const FILL_SHIFT = "fill 380ms ease-out";
 
@@ -150,9 +140,8 @@ const FILL_SHIFT = "fill 380ms ease-out";
  *
  * It is the same over-and-under rule that makes the Borromean knot in the
  * Scholarly field Borromean: in every pair one is over, and the cycle has no
- * winner. That last part is why the middle can only be black — no circle is
- * over all the others, so the region belonging to all three belongs to none,
- * which is D9 arrived at rather than imposed.
+ * winner. The middle is where that shows: with no circle over all the others,
+ * it cannot belong to one, so it turns instead — see MIDDLE.
  *
  * **The pointer follows the paint.** A lens carries its owner's hover and its
  * owner's link, so the region that looks like creative *is* creative. Anything
@@ -191,6 +180,56 @@ const UNDER = Object.fromEntries(CYCLE.map(({ from, to }) => [from, to])) as Rec
  * lands near 4px on a 480px disc.
  */
 const BREAK = 3.5;
+
+/**
+ * The middle turns. It is a pinwheel, not a hole and not a colour.
+ *
+ * 🔴 **Nothing here is a matter of taste — the colouring is forced.** The middle
+ * region is a curved triangle pinched to a point at three bearings (30°, 150°,
+ * 270°), because those are exactly where each circle touches the portrait. So
+ * it is already three separate slivers, one around each corner, and each sliver
+ * has two edges. Cross one edge and you are in one overlap; cross the other and
+ * you are in a different one. Give the sliver the colour of one of them and
+ * that edge disappears — same colour on both sides — while the other edge
+ * stays, as a real boundary between two colours.
+ *
+ * Do that for all three and the surviving edges are three half-arcs, each
+ * running from a corner inward until it goes tangent to the portrait and stops
+ * on its rim. Three of them, 120° apart, all turning the same way. That is the
+ * vortex, and it is also, at last, the thing the owner kept describing: lines
+ * that gradually become tangent and converge with the circle's edge.
+ *
+ * The assignment below is the one that produces it, and it is a rotation — each
+ * sliver takes the pigment of the circle 120° behind it:
+ *
+ *     sliver around the corner towards scholarly   → professional's gilt
+ *     sliver around the corner towards creative    → scholarly's klein
+ *     sliver around the corner towards professional → creative's oxblood
+ *
+ * Swap any one of them and two edges vanish where one should have stayed: the
+ * middle goes flat and the turn is gone.
+ */
+const MIDDLE: ReadonlyArray<{ from: number; to: number; track: TrackId }> = [
+  { from: 30, to: 150, track: "professional" },
+  { from: 150, to: 270, track: "scholarly" },
+  { from: 270, to: 390, track: "creative" },
+];
+
+/**
+ * A wedge from the centre, far larger than the middle region, for clipping.
+ *
+ * Snapped like every other computed coordinate — this ends up in path data, and
+ * `cos`/`sin` are implementation-approximated. See D15.
+ */
+function wedge(from: number, to: number, r = 300) {
+  const at = (deg: number) => {
+    const rad = (deg * Math.PI) / 180;
+    return `${Math.round((CX + r * Math.cos(rad)) * 1e3) / 1e3} ${
+      Math.round((CY + r * Math.sin(rad)) * 1e3) / 1e3
+    }`;
+  };
+  return `M ${CX} ${CY} L ${at(from)} A ${r} ${r} 0 0 1 ${at(to)} Z`;
+}
 
 /** The centre is a fourth focus target, but it lights nothing and colours nothing. */
 export type Focus = TrackId | "hub" | null;
@@ -426,6 +465,30 @@ export function TrinityDisc({
                 clipPath="url(#venn-scholarly)"
               />
             </clipPath>
+            {/* The middle region itself, for the pinwheel to be cut out of. */}
+            <clipPath id="venn-mid">
+              <circle
+                cx={centreOf("professional").x}
+                cy={centreOf("professional").y}
+                r={R}
+                clipPath="url(#venn-two)"
+              />
+            </clipPath>
+            {/* Half-plane per circle, splitting its middle arc at the bearing
+                where it goes tangent to the portrait. Only the half on the
+                far side survives — see the note on MIDDLE for why exactly
+                half of each arc is a boundary and the other half is not. */}
+            {TRACKS.map((track) => (
+              <clipPath key={track.id} id={`venn-half-${track.id}`}>
+                <rect
+                  x={CX - 600}
+                  y={CY - 600}
+                  width={600}
+                  height={1200}
+                  transform={`rotate(${VENN[track.id] - 90} ${CX} ${CY})`}
+                />
+              </clipPath>
+            ))}
             {/* One mask per circle. White keeps, black cuts, and they are
                 painted in that order, so each successive disc overrides the
                 last.
@@ -467,7 +530,19 @@ export function TrinityDisc({
                 >
                   <rect x="0" y="0" width="400" height="400" fill="#fff" />
                   <circle cx={over.x} cy={over.y} r={R + BREAK} fill="#000" />
-                  <circle cx={under.x} cy={under.y} r={R} fill="#fff" />
+                  {/* Restores only *half* the middle arc — the half that is a
+                      real boundary between two colours. The other half has the
+                      same pigment on both sides now, so a line there would be
+                      drawing a border that is not there. What survives runs
+                      from a corner inward and stops where it touches the
+                      portrait, which is what makes the middle turn. */}
+                  <circle
+                    cx={under.x}
+                    cy={under.y}
+                    r={R}
+                    clipPath={`url(#venn-half-${track.id})`}
+                    fill="#fff"
+                  />
                 </mask>
               );
             })}
@@ -527,25 +602,32 @@ export function TrinityDisc({
               );
             })}
 
-            {/* The middle, painted last so it wins over all three lenses.
-                Black at rest and belonging to nobody, for the reason in the
-                note on CYCLE: the cycle has no winner. It still takes the lit
-                pigment, because a circle opening out to become the page cannot
-                keep a bite out of its centre.
+            {/* The middle, painted last so it wins over all three lenses — in
+                three pieces that turn. Not black: black read as a hole punched
+                round the portrait, which is the complaint that started all of
+                this. See the note on MIDDLE for why each piece takes the
+                pigment it does; the choice is forced, not styled.
 
-                Its pointer goes to the hub, not to a track. The portrait
-                covers most of this region already, and the few pixels of it
-                that show are the one part of the disc that is *his* rather
-                than any track's. */}
-            <circle
-              cx={centreOf("professional").x}
-              cy={centreOf("professional").y}
-              r={R}
-              clipPath="url(#venn-two)"
-              className="cursor-pointer"
-              style={{ fill: litFill ?? VOID, transition: FILL_SHIFT }}
-              onMouseEnter={() => setFocus("hub")}
-            />
+                Each piece carries the hover of the track whose colour it
+                wears, on the same principle as the lenses: the pointer follows
+                the paint, so a region can never lie about where a click goes. */}
+            {MIDDLE.map(({ from, to, track }) => (
+              <path
+                key={track}
+                d={wedge(from, to)}
+                clipPath="url(#venn-mid)"
+                className="cursor-pointer"
+                style={{
+                  fill: litFill ?? TRACK_CLASSES[track].cssVar,
+                  transition: FILL_SHIFT,
+                }}
+                onMouseEnter={() => setFocus(track)}
+                onPointerDown={openOnTouch(track)}
+                onClick={() => {
+                  if (!leaving.current) router.push(`/${lang}/${track}`);
+                }}
+              />
+            ))}
           </g>
 
           {/* Outlines last, so they read over every region boundary. Each is
