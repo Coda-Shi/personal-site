@@ -73,11 +73,17 @@ const FLOOD_RISE = 700;
  */
 const BEAM_HOLD = 1000;
 
-/** How long the pigment takes to bleed away once nothing is lit. */
-const FLOOD_BLEED = 1100;
+/**
+ * How long the pigment takes to draw back into its circle once nothing is lit.
+ *
+ * Quicker than the rise on purpose. Opening is the interesting direction and
+ * wants to be watched; closing is the visitor having moved on, and a slow
+ * close reads as the page being slow to let go.
+ */
+const FLOOD_FALL = 540;
 
 /**
- * The ground of the composition, and of the triple intersection.
+ * The ground of the composition — its overlaps at rest, and its middle.
  *
  * Written out rather than read from the theme because it is painted *over*
  * pigment as an opaque colour — `--color-void` is available here, but a literal
@@ -86,24 +92,25 @@ const FLOOD_BLEED = 1100;
  */
 const VOID = "#050505";
 
+/** How the seven regions cross between their own colours and the lit one. */
+const FILL_SHIFT = "fill 380ms ease-out";
+
 /**
- * The three lenses where two circles meet. Painted out to the ground.
+ * The three lenses where two circles meet.
  *
- * 🔴 **Every overlap is black — no pigment, no blend, no third colour.** The
- * owner's call, and it is the whole reason the regions are painted explicitly
- * rather than stacked translucently: three overlapping circles with alpha
- * compound, so an overlap is *necessarily* some muddled mixture of its
- * parents and there is no way to ask for nothing there. Painting each region
- * once means an overlap can be the ground, and the ground is what it is.
+ * 🔴 **At rest every overlap is black — no pigment, no blend, no third
+ * colour.** The owner's call, and it is the whole reason the regions are
+ * painted explicitly rather than stacked translucently: three overlapping
+ * circles with alpha compound, so an overlap is *necessarily* some muddled
+ * mixture of its parents and there is no way to ask for nothing there.
+ * Painting each region once means an overlap can be the ground.
  *
- * The triple centre needs no element of its own: it lies inside all three of
- * these lenses, so blacking the lenses blacks it too. That also settles D9
- * without arguing for it — the centre carries no pigment because no region
- * where the tracks meet carries any.
+ * When a track lights, its two lenses take its pigment, so the circle you are
+ * pointing at is briefly whole. That is the honest reading of what the flood
+ * is doing — this circle is becoming the page — and a circle that opened out
+ * while keeping two bites taken out of it would contradict it.
  *
- * What is left is three fields of flat colour with black gaps between them,
- * and the bone outlines still running whole across the gaps, which is what
- * keeps it reading as three circles rather than as three cut shapes.
+ * The middle stays black throughout; see the note on the element itself.
  */
 const PAIRS: ReadonlyArray<{ clip: TrackId; at: TrackId }> = [
   { clip: "scholarly", at: "creative" },
@@ -141,16 +148,23 @@ export function TrinityDisc({
   const leaving = useRef(false);
 
   /**
-   * The track whose pigment is currently bleeding away.
+   * The track whose pigment is currently drawing back in.
    *
-   * The flood cannot simply run its rise transition backwards. Expanding is a
-   * circle opening out — a hard edge, because it is announcing a destination.
-   * Closing is the pigment dispersing and letting the ground back through,
-   * which is a different gesture and has to be a different mechanism: a
-   * keyframed dissolve on an element that stays at full size. So the lit track
-   * is remembered for exactly as long as that dissolve runs.
+   * 🔴 **The close is the open run backwards, and that is the point.** A
+   * dissolve was tried here — the pigment thinning and drifting apart under a
+   * noise mask — and it was rejected: a full-screen blur and a moving mask for
+   * something the visitor sees every time they move the mouse away, and it
+   * read as an effect rather than as the composition doing something.
+   *
+   * What it does instead is go home. The rise starts at scale 1, which is the
+   * circle already sitting there in the disc, so what grows is *that circle*
+   * rather than a dot appearing at its centre; the fall returns to scale 1 and
+   * lands exactly back on it, so there is nothing to see at the end — the page
+   * is simply the composition again. Two states, one property, no filters.
+   *
+   * So the lit track is remembered for exactly as long as that return runs.
    */
-  const [bleeding, setBleeding] = useState<TrackId | null>(null);
+  const [closing, setClosing] = useState<TrackId | null>(null);
   const lastLit = useRef<TrackId | null>(null);
 
   useEffect(() => {
@@ -158,15 +172,15 @@ export function TrinityDisc({
     const previous = lastLit.current;
     if (previous === lit) return;
     lastLit.current = lit;
-    // Whatever was lit now disperses — including when the pointer has moved
+    // Whatever was lit now draws back — including when the pointer has moved
     // straight to another circle. Cutting it instead left a hard seam every
     // time someone swept across the three.
     if (!previous) {
-      setBleeding(null);
+      setClosing(null);
       return;
     }
-    setBleeding(previous);
-    const timer = window.setTimeout(() => setBleeding(null), FLOOD_BLEED);
+    setClosing(previous);
+    const timer = window.setTimeout(() => setClosing(null), FLOOD_FALL);
     return () => window.clearTimeout(timer);
   }, [focus]);
 
@@ -198,10 +212,24 @@ export function TrinityDisc({
   /** True whenever something is lit and it is not this track. */
   const dimmed = (id: TrackId) => focus !== null && focus !== id;
 
-  const region = (isDim: boolean) => ({
-    opacity: isDim ? 0.16 : 1,
-    transition: "opacity 500ms ease-out",
-  });
+  /**
+   * The pigment that has taken the whole composition, if any.
+   *
+   * 🔴 **A lit track floods every region, not just its own.** All three
+   * circles, all three lenses and the middle go to one colour, and the bone
+   * outlines are the only thing left standing on it. The owner asked for this
+   * over dimming the other two, and he is right about why: dimming says "the
+   * others matter less for a moment", which is a hedge, while one colour
+   * taking everything says the thing the transition is actually about — this
+   * page is becoming that page, and that page's ground is this colour (D10).
+   * It also makes the disc and the flood behind it a single sheet of pigment
+   * rather than a coloured screen with a patterned disc sitting on it.
+   *
+   * At rest the composition is intact: three pigments, black overlaps, black
+   * middle. That is the state D9 speaks about, and it is untouched.
+   */
+  const litFill =
+    focus !== null && focus !== "hub" ? TRACK_CLASSES[focus].cssVar : null;
 
   return (
     <>
@@ -215,37 +243,27 @@ export function TrinityDisc({
           centre expressed in viewport terms — and the two cannot drift, because
           the disc's own max-width reads the same variable.
 
-          The wrapper is what carries the dissolve. It is viewport-sized and
-          never transformed, so the blur and the drifting mask inside
-          `flood-bleed` work in screen pixels; putting them on the scaled circle
-          instead would multiply every length by FLOOD_SCALE and the noise would
-          come out twenty times too coarse to read as anything. */}
+          Nothing here is filtered or masked. The only property that animates
+          is `scale`, on one element, which is the cheapest thing a browser can
+          be asked to move — and this fires on every hover, so it has to be. */}
       {TRACKS.map((track) => {
         const c = centreOf(track.id);
         const lit = focus === track.id;
-        const bleedingNow = bleeding === track.id && !lit;
-        if (!lit && !bleedingNow) return null;
+        const closingNow = closing === track.id && !lit;
+        if (!lit && !closingNow) return null;
         return (
           <span
-            // Keyed by phase so React swaps the element rather than mutating
-            // it: a CSS animation only restarts on a fresh element, and a
-            // dissolve that does not restart is a dissolve nobody sees.
-            key={`${track.id}-${bleedingNow ? "bleed" : "rise"}`}
+            // Keyed by direction so React swaps the element rather than
+            // mutating it: a CSS animation only restarts on a fresh element,
+            // and a return that does not restart is a return nobody sees.
+            key={`${track.id}-${closingNow ? "fall" : "rise"}`}
             aria-hidden="true"
-            className={`pointer-events-none fixed inset-0 -z-20 block overflow-hidden ${
-              bleedingNow ? "flood-bleed" : ""
-            }`}
-            style={
-              bleedingNow
-                ? { animation: `flood-bleed ${FLOOD_BLEED}ms ease-in both` }
-                : undefined
-            }
+            className="pointer-events-none fixed inset-0 -z-20 block overflow-hidden"
           >
-            {/* Three levels, each owning one thing. The wrapper above is
-                viewport-sized and never transformed, so the dissolve's blur and
-                mask work in screen pixels. This one places the circle's centre.
-                The innermost one scales, so `flood-rise` animates nothing but
-                `scale` and needs to know none of the offsets. */}
+            {/* Two levels, each owning one thing. This one places the circle's
+                centre; the inner one scales. Keeping them apart is what lets
+                the keyframes animate `scale` alone and know none of the
+                offsets. */}
             <span
               className="absolute top-1/2 left-1/2 block"
               style={{
@@ -265,9 +283,8 @@ export function TrinityDisc({
                     // animated `transform` replaces the declared one outright,
                     // so a utility class for it would simply be discarded.
                     "--flood-scale": FLOOD_SCALE,
-                    animation: bleedingNow
-                      ? // Already open. Hold it there and let the wrapper disperse it.
-                        "flood-hold 1ms linear both"
+                    animation: closingNow
+                      ? `flood-fall ${FLOOD_FALL}ms cubic-bezier(0.4, 0, 0.2, 1) both`
                       : `flood-rise ${FLOOD_RISE}ms ease-out both`,
                   } as React.CSSProperties
                 }
@@ -310,9 +327,11 @@ export function TrinityDisc({
                   cx={c.x}
                   cy={c.y}
                   r={R}
-                  fill={TRACK_CLASSES[track.id].cssVar}
                   className="cursor-pointer"
-                  style={region(dimmed(track.id))}
+                  style={{
+                    fill: litFill ?? TRACK_CLASSES[track.id].cssVar,
+                    transition: FILL_SHIFT,
+                  }}
                   onMouseEnter={() => setFocus(track.id)}
                   onPointerDown={openOnTouch(track.id)}
                   onClick={() => {
@@ -322,6 +341,9 @@ export function TrinityDisc({
               );
             })}
 
+            {/* The middle needs no element of its own, in either state. It
+                lies inside all three of these lenses, so it is black when they
+                are black and takes the pigment when they take it. */}
             {PAIRS.map(({ clip, at }) => {
               const c = centreOf(at);
               return (
@@ -330,9 +352,9 @@ export function TrinityDisc({
                   cx={c.x}
                   cy={c.y}
                   r={R}
-                  fill={VOID}
                   clipPath={`url(#venn-${clip})`}
                   className="pointer-events-none"
+                  style={{ fill: litFill ?? VOID, transition: FILL_SHIFT }}
                 />
               );
             })}
@@ -354,9 +376,13 @@ export function TrinityDisc({
                 pathLength={1}
                 strokeDasharray={1}
                 className="pointer-events-none"
+                // Held at full weight even when another track is lit. Once one
+                // pigment has taken every region these three lines are the
+                // only thing keeping the composition legible, and fading two
+                // of them would leave a plain coloured screen with one circle
+                // drawn on it.
+                strokeOpacity={0.75}
                 style={{
-                  strokeOpacity: dimmed(track.id) ? 0.3 : 0.75,
-                  transition: "stroke-opacity 260ms ease-out",
                   animation: `plot-stroke 900ms cubic-bezier(0.65, 0, 0.35, 1) ${200 + i * 220}ms both`,
                 }}
               />

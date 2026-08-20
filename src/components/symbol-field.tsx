@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   SYMBOL_LAYERS,
   type SymbolItem,
@@ -736,9 +739,11 @@ function layout(track: TrackId, board: Board): Placed[] {
         taken.push(box);
         // Everything that signals depth keys off the same k: further out means
         // smaller, dimmer, softer, and later to arrive.
-        // 4.5–8.5s. The first pass ran 9–17s, which was slow enough that the
-        // breathing read as nothing happening at all.
-        const period = Math.round(4500 + rand(seed * 5 + 11) * 4000);
+        // 2.25–4.25s, halved from 4.5–8.5 at the owner's request, and the
+        // swing in `@keyframes drift` deepened from 0.68→1 to 0.46→1 to go
+        // with it. The first pass ran 9–17s and read as nothing happening at
+        // all; this is the third setting and the first one you can see.
+        const period = Math.round(2250 + rand(seed * 5 + 11) * 2000);
         placed.push({
           key: `${tier}-${item.text}`,
           lines,
@@ -748,7 +753,10 @@ function layout(track: TrackId, board: Board): Placed[] {
           size,
           opacity: t.o0 + (t.o1 - t.o0) * k,
           delay: Math.round(t.d0 + rand(seed * 3 + 7) * (t.d1 - t.d0)),
-          blur: snap(t.blur * k, 1e2),
+          // Under half a unit there is nothing to see, and every non-zero
+          // value here costs the compositor a filter region of its own. This
+          // drops the filter from roughly a third of the field for free.
+          blur: snap(t.blur * k, 1e2) < 0.45 ? 0 : snap(t.blur * k, 1e2),
           period,
           phase: Math.round(rand(seed * 7 + 13) * period),
         });
@@ -782,12 +790,42 @@ export function SymbolField({
   track: TrackId;
   active: boolean;
 }) {
+  /**
+   * The plates are held back until the browser has nothing better to do.
+   *
+   * There are six of them across the two fields that have any — 436KB of PNG,
+   * which is around 8MB of bitmap once decoded — and they sit inside SVGs that
+   * are in the render tree from the first paint, so the browser decodes every
+   * one of them while it is also laying out 145 text nodes and swapping in four
+   * webfonts. That is the hitch on opening the page.
+   *
+   * It cannot be decided during render: the server has to emit the same markup
+   * the client hydrates, so this starts false in both and is turned on
+   * afterwards, when the browser goes idle. Lighting the sector shows them
+   * immediately whether or not that has happened yet — that part is derived
+   * below rather than stored, so a hover never has to wait for a state update
+   * to land. In practice idle wins by a second or more and the plates are
+   * decoded and waiting before anyone reaches the disc.
+   */
+  const [idleWarm, setIdleWarm] = useState(false);
+  useEffect(() => {
+    if (idleWarm) return;
+    const idle = window.requestIdleCallback;
+    if (!idle) {
+      const timer = window.setTimeout(() => setIdleWarm(true), 1800);
+      return () => window.clearTimeout(timer);
+    }
+    const handle = idle(() => setIdleWarm(true), { timeout: 3000 });
+    return () => window.cancelIdleCallback(handle);
+  }, [idleWarm]);
+
   if (
     LAYOUTS.wide[track].length === 0 &&
     (track === "creative" ? PLATE_ART.length : 0) === 0
   )
     return null;
 
+  const warm = idleWarm || active;
 
   // Each element carries its own delay so the field assembles unevenly rather
   // than switching on as a block. On the way out the delay drops to zero, so
@@ -806,8 +844,9 @@ export function SymbolField({
       {(Object.keys(BOARDS) as BoardKey[]).map((key) => {
         const board = BOARDS[key];
         const items = LAYOUTS[key][track];
-        const figures = track === "scholarly" ? FIGURES : [];
-        const plateList = track === "creative" ? plates(board) : [];
+        // Both lists are empty until the plates are warm; see `warm` above.
+        const figures = warm && track === "scholarly" ? FIGURES : [];
+        const plateList = warm && track === "creative" ? plates(board) : [];
         return (
           <svg
             key={key}
@@ -857,6 +896,27 @@ export function SymbolField({
             className="drift"
             style={{
               animation: `drift ${item.period}ms ease-in-out ${-item.phase}ms infinite`,
+              /**
+               * Paused while the sector is dark, and it has to be set here
+               * rather than in a stylesheet.
+               *
+               * Three fields are in the DOM at all times and only one is ever
+               * visible, so otherwise around 145 infinite opacity animations
+               * run from first paint for the whole session behind elements at
+               * opacity 0 — most of the home screen's cost, spent on nothing.
+               *
+               * 🔴 A `.symbol-field:not(.is-live) .drift` rule does not work,
+               * and looks like it should. The `animation` shorthand above
+               * resets `animation-play-state` to `running` as one of its
+               * longhands, and an inline declaration beats a stylesheet rule —
+               * so the shorthand quietly overrides the rule every time. The
+               * longhand has to follow the shorthand in the same block.
+               *
+               * Paused rather than removed, so a field keeps its phase and
+               * picks up where it left off instead of every symbol snapping to
+               * the start of its cycle the moment the sector lights.
+               */
+              animationPlayState: active ? "running" : "paused",
             }}
           >
             <text
