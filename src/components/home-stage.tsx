@@ -87,7 +87,23 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
           </p>
         </div>
         <div style={{ animation: "rise-in 700ms ease-out 260ms both" }}>
-          <p className="label mt-3 w-fit text-bone/45" style={recede}>
+          {/* Capped to the same column as the two lines above it, not `w-fit`.
+              It is a full sentence, and tracked-out capitals set it 515px wide
+              — wider than the paragraph it sits under, so the block bulged at
+              the bottom, and on a landscape phone it ran most of the way
+              across the screen. It is also what the symbol field's reserved
+              corner has to be sized around, and a line that never wraps makes
+              that corner grow with every narrower window. */}
+          {/* Dropped on a short window, with the paragraph. At 812×375 the
+              header otherwise runs to half the screen's height, and the symbol
+              board fits by height there, so guarding it would cost every
+              desktop half its field to protect one line on an orientation
+              nobody holds a phone in. A landscape phone taps; it does not need
+              telling to. */}
+          <p
+            className="label hide-when-short mt-3 max-w-xs text-bone/45 md:max-w-sm xl:max-w-md"
+            style={recede}
+          >
             {dict.hint}
           </p>
         </div>

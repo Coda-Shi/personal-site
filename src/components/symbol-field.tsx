@@ -1,7 +1,8 @@
-import { BorromeanKnot, KNOT_VIEWBOX } from "@/components/borromean-knot";
+"use client";
+
+import { useEffect, useState } from "react";
 import {
   SYMBOL_LAYERS,
-  TRACK_ARCS,
   type SymbolItem,
   type TrackId,
 } from "@/lib/content";
@@ -58,13 +59,37 @@ type Board = {
   h: number;
   /** Radius the field must stay outside of, so it clears the disc. */
   rMin: number;
-  /** Multiplier on the tier radii — a narrower board has less room to reach. */
+  /** Multiplier on the tier's inner radius — where the field starts. */
   reach: number;
+  /**
+   * Multiplier on the tier's outer radius — how far it runs.
+   *
+   * Separate from `reach` because the wide board needs the two pulled apart:
+   * the field must still begin at the disc's edge, but it now has to reach a
+   * corner 1887 units out instead of 1414. Scaling both would open a bare ring
+   * around the disc.
+   */
+  reachOuter: number;
 };
 
 const BOARDS: Record<BoardKey, Board> = {
-  // Unchanged, so every landscape placement stays exactly where D13 put it.
-  wide: { key: "wide", w: 2000, h: 2000, rMin: 580, reach: 1 },
+  /**
+   * 8:5, because the board is what the texture covers and a square cannot
+   * cover a landscape screen.
+   *
+   * `meet` fits the board inside the viewport, so a square board is inscribed:
+   * at 1512×944 it rendered 944 wide and left 284px bare down each side —
+   * 40% of the screen with no texture on it. Matching the board's aspect to a
+   * common desktop's fixes that geometrically rather than by cropping.
+   *
+   * 3200 rather than 2000 across so the *scale* is unchanged: at 1512×944 this
+   * fits at 0.472, exactly what the square board fitted at, so every tier size
+   * D13 tuned renders at the same pixel size it always did. Only the area grew.
+   *
+   * Measured fit: 1512×944 → 1510×944 (a 2px sliver bare); 1280×800 → exact;
+   * 1920×1080 → 1728×1080; 1024×768 → 1024×640.
+   */
+  wide: { key: "wide", w: 3200, h: 2000, rMin: 580, reach: 1, reachOuter: 1.35 },
   /**
    * 1:2, near enough a phone. At 375×812 this scales to 0.375 and renders
    * 375×750 — 92% of the height against the square board's 46% — and the type
@@ -72,7 +97,15 @@ const BOARDS: Record<BoardKey, Board> = {
    * rather than the 4.5px the square board gave. rMin 300 lands 112px out,
    * clearing the disc's 100px arc.
    */
-  tall: { key: "tall", w: 1000, h: 2000, rMin: 300, reach: 0.62 },
+  /**
+   * `reachOuter` is well above `reach` here for the same reason it is on the
+   * wide board: the band has to reach the ends of a 2000-unit board, and 0.62
+   * stopped it at 843. It was safe to leave low while every candidate past the
+   * board edge was simply thrown away; now that the band is clipped to the
+   * rectangle per bearing, a short outer radius just means the top and bottom
+   * of the phone go unused — which cost eleven of Scholarly's symbols.
+   */
+  tall: { key: "tall", w: 1000, h: 2000, rMin: 300, reach: 0.62, reachOuter: 0.92 },
 };
 
 const centre = (b: Board) => ({ x: b.w / 2, y: b.h / 2 });
@@ -323,8 +356,77 @@ function overlaps(a: Box, b: Box) {
   );
 }
 
-/** Every corner must sit inside the wedge, or the conic mask slices the text. */
-function insideWedge(box: Box, start: number, end: number, board: Board) {
+/**
+ * Reserved rectangles, as fractions of the board, that no glyph may enter.
+ *
+ * The field used to be masked to its own 120° wedge, so the copy was safe by
+ * construction — a wedge never reached the corner the profile sits in. Now that
+ * a lit circle floods the whole screen the field does too, and the two blocks
+ * of type on the page have to be kept clear deliberately.
+ *
+ * Fractions of the board rather than of the viewport, and generous, because
+ * they cannot be exact: the board is fitted with `meet`, so it is centred and
+ * usually a little smaller than the window, and board coordinates simply do
+ * not know where the viewport's corners are. Reserving too much costs a little
+ * placement area; reserving too little puts glyphs under his name.
+ *
+ * Per board, because the two are different shapes carrying different layouts.
+ * The wide board's copy sits in one corner and the addresses in the opposite
+ * one; the phone stacks everything full-width, so its guards are bands rather
+ * than corners. Each was derived by mapping the real elements' viewport rects
+ * back through the fit at the tightest viewport that board serves.
+ *
+ * 🔴 **Only the name is guarded, not the whole masthead.** The field is
+ * invisible until a track lights, and lighting a track fades the roles line,
+ * the profile paragraph and the hint out (D10) — so the field and that copy
+ * are never on screen together, and reserving space for copy that has left is
+ * reserving space for nothing. Guarding the whole block is what emptied the
+ * top-left corner; the owner spotted it before I did. What stays is what does
+ * not recede: his name, the two addresses, and the footer.
+ */
+const RESERVED: Record<
+  BoardKey,
+  ReadonlyArray<{ x0: number; y0: number; x1: number; y1: number }>
+> = {
+  wide: [
+    /**
+     * His name alone. Measured need: 0.23 wide at 1024×768 (where the board
+     * fits by width and the name is a large share of it) and 0.15 deep at
+     * 812×375. Off the board entirely at 2560×1080, where it sits left of
+     * where the fitted board starts.
+     */
+    { x0: 0, y0: 0, x1: 0.28, y1: 0.18 },
+    // The two addresses, top right from md. Deepest at 812×375, where the
+    // board fits by height and 78px of viewport is 0.21 of it.
+    { x0: 0.7, y0: 0, x1: 1, y1: 0.22 },
+    /**
+     * The footer. Measured need: 0.936 at 1512×944, 0.944 at 1920×1080, 0.925
+     * at 1280×800, and nothing at all at 1024×768, where the footer falls
+     * below the fitted board entirely.
+     *
+     * A landscape phone wants 0.85: its footer is a single nav row, but the
+     * board fits by height there and 24px of inset is a much larger share of
+     * 375px than of 944px. That is the binding case, and it costs the laptop
+     * only 29px of extra clearance, so it is simply taken.
+     */
+    { x0: 0, y0: 0.85, x1: 1, y1: 1 },
+  ],
+  tall: [
+    /**
+     * One shallow band covers both things that stay: the name (0.48 wide and
+     * 0.03 deep on a phone, 0.14 and 0.06 on a tablet) and, on a tablet, the
+     * two addresses top right (0.73 to past the edge, 0.08 deep). A phone
+     * keeps its addresses in the footer instead.
+     */
+    { x0: 0, y0: 0, x1: 1, y1: 0.12 },
+    // The footer. Deepest on a phone (0.873), where the addresses join it and
+    // the nav row wraps; a tablet keeps its addresses up top and needs 0.949.
+    { x0: 0, y0: 0.85, x1: 1, y1: 1 },
+  ],
+};
+
+/** Every corner must clear the disc, the board edge and the reserved blocks. */
+function insideField(box: Box, board: Board) {
   return (
     [
       [box.x, box.y],
@@ -333,17 +435,13 @@ function insideWedge(box: Box, start: number, end: number, board: Board) {
       [box.x + box.w, box.y + box.h],
     ] as const
   ).every(([x, y]) => {
-    if (x < EDGE || x > board.w - EDGE || y < EDGE || y > board.h - EDGE)
-      return false;
+    if (x < EDGE || x > board.w - EDGE || y < EDGE || y > board.h - EDGE) return false;
     const c = centre(board);
-    const dx = x - c.x;
-    const dy = y - c.y;
-    const r = Math.hypot(dx, dy);
-    if (r < board.rMin) return false;
-    let a = (Math.atan2(dy, dx) * 180) / Math.PI;
-    while (a < start) a += 360;
-    while (a >= start + 360) a -= 360;
-    return a <= end;
+    if (Math.hypot(x - c.x, y - c.y) < board.rMin) return false;
+    return !RESERVED[board.key].some(
+      (r) =>
+        x > r.x0 * board.w && x < r.x1 * board.w && y > r.y0 * board.h && y < r.y1 * board.h,
+    );
   });
 }
 
@@ -368,13 +466,30 @@ const PLATE_ART = [
  * the wedge and the board rectangle by the same rules the solver uses.
  */
 const PLATE_BOXES: Record<BoardKey, Box[]> = {
+  /**
+   * One either side of the disc, and much larger than they were.
+   *
+   * Creative's field is these two plates and nothing else — its `SYMBOL_LAYERS`
+   * entry is deliberately empty (D13) — so stacking them both down the left
+   * left the whole right half of the screen bare. Flanking the disc is the only
+   * arrangement that uses the board, and at 620 and 440 units they are finally
+   * scaled like the anchors of a sector rather than like footnotes.
+   *
+   * Aspect ratios are preserved to three figures: 620×750 against the figure's
+   * 380×460, 440×620 against the mark's 190×268. Corners land at radius
+   * 863–1451, well outside rMin, and both clear the name and address guards.
+   */
   wide: [
-    { x: 133, y: 758, w: 190, h: 268 },
-    { x: 121, y: 1349, w: 380, h: 460 },
+    { x: 2480, y: 660, w: 440, h: 620 },
+    { x: 200, y: 620, w: 620, h: 750 },
   ],
+  // The phone cannot flank anything — the board is 1000 units across and the
+  // disc takes 600 of them — so these stay stacked, the mark above and right
+  // of the disc, the figure below and left. Enlarged as far as rMin allows:
+  // nearest corners at 326 and 309 against 300.
   tall: [
-    { x: 100, y: 1250, w: 150, h: 212 },
-    { x: 60, y: 1520, w: 300, h: 363 },
+    { x: 660, y: 420, w: 210, h: 296 },
+    { x: 40, y: 1280, w: 330, h: 399 },
   ],
 };
 
@@ -395,14 +510,99 @@ const plates = (board: Board) =>
  * floor, and its top edge at y=32 is twelve clear of the margin. Going bigger
  * means either crossing the disc or falling off the board.
  */
-const KNOT_BOXES: Record<BoardKey, Box> = {
-  wide: { x: 800, y: 32, w: 400, h: 416 }, // 300×312 local, ×1.333
-  // The tall board is half as wide, so the knot comes down to 300 and sits
-  // near the top of the upward wedge. Corners fall at 256.6–283.4°, inside
-  // Scholarly's 212–328°, and at radius 646–952, well clear of rMin.
-  tall: { x: 350, y: 60, w: 300, h: 312 },
-};
-const KNOT_DELAY = 90;
+/**
+ * The Scholarly field's four drawn figures.
+ *
+ * Reserved before any glyph is placed, like the Creative plates, and for the
+ * same reason: they are compositions, not fill. Two flank the disc on the left
+ * and two on the right, which is the only arrangement the board allows — the
+ * middle is a 580-unit hole, the top strip between the name and the addresses
+ * is 420 units deep, and none of these figures is that short.
+ *
+ * Every box was checked against rMin at all four corners and against the
+ * reserved rectangles; the tightest is the square's inner corner at 326 on the
+ * phone board, against rMin 300. **These do not go through `insideField`**, so
+ * re-check them by hand whenever a guard or a board changes — that has caught
+ * me out twice already.
+ */
+/**
+ * The Scholarly field's four figures: Lacan's R.S.I. knot and his completed
+ * graph of desire, Jung's map of the psyche, and the Greimas square.
+ *
+ * 🔴 **Treated scans, not drawings — and do not redraw them.** All four were
+ * hand-built in SVG first, which is the right call for a figure with ten
+ * labels and the wrong one for these. The R.S.I. diagram alone carries four
+ * rings, nine named regions and nine annotations on leader lines, and
+ * approximating that many tangencies by eye put the fourth ring straight
+ * through Imaginaire and Réel instead of grazing them: the figure stopped
+ * reading as three interlocked rings at all. The owner's word for the result
+ * was 奇怪的圆圈 and it was exactly right.
+ *
+ * These have settled geometry that is not ours to interpret. Reproducing them
+ * is transcription, and a scan transcribes perfectly. `scripts/figure-lineart.py`
+ * keys the paper out and lands the strokes in bone — the same treatment the
+ * Creative plates get, which is what the owner asked for.
+ *
+ * Reserved before any glyph is placed, like the Creative plates. Two flank the
+ * disc on the left and two on the right, which is the only arrangement the
+ * board allows — the middle is a 580-unit hole and the strip between the name
+ * and the addresses is 420 units deep, shorter than any of them.
+ *
+ * Every box was checked against rMin at all four corners and against the
+ * reserved rectangles; the tightest is the square's inner corner at 361 on the
+ * phone board, against rMin 300. **These do not go through `insideField`**, so
+ * re-check them by hand whenever a guard or a board changes — that has caught
+ * me out twice already. Heights come from the emitted plates' aspect ratios;
+ * re-run the script and they may shift a unit or two.
+ */
+const FIGURES: ReadonlyArray<{
+  key: string;
+  href: string;
+  opacity: number;
+  delay: number;
+  boxes: Record<BoardKey, Box>;
+}> = [
+  {
+    key: "rsi",
+    href: "/scholarly/rsi.png",
+    opacity: 0.34,
+    delay: 90,
+    boxes: {
+      wide: { x: 60, y: 380, w: 700, h: 600 },
+      tall: { x: 30, y: 1330, w: 380, h: 326 },
+    },
+  },
+  {
+    key: "jung",
+    href: "/scholarly/jung.png",
+    opacity: 0.28,
+    delay: 200,
+    boxes: {
+      wide: { x: 2320, y: 560, w: 520, h: 615 },
+      tall: { x: 700, y: 400, w: 275, h: 325 },
+    },
+  },
+  {
+    key: "desire",
+    href: "/scholarly/graph-of-desire.png",
+    opacity: 0.28,
+    delay: 310,
+    boxes: {
+      wide: { x: 250, y: 1040, w: 430, h: 551 },
+      tall: { x: 40, y: 270, w: 260, h: 333 },
+    },
+  },
+  {
+    key: "square",
+    href: "/scholarly/semiotic-square.png",
+    opacity: 0.28,
+    delay: 420,
+    boxes: {
+      wide: { x: 2540, y: 1230, w: 520, h: 464 },
+      tall: { x: 660, y: 1290, w: 310, h: 277 },
+    },
+  },
+];
 
 /**
  * Lays a tier out as concentric rings rather than scattering it.
@@ -420,12 +620,11 @@ const KNOT_DELAY = 90;
  * height, so it disturbs the rhythm without breaking the packing.
  */
 function layout(track: TrackId, board: Board): Placed[] {
-  const arc = TRACK_ARCS[track];
   const taken: Box[] =
     track === "creative"
       ? plates(board).map((p) => p.box)
       : track === "scholarly"
-        ? [KNOT_BOXES[board.key]]
+        ? FIGURES.map((f) => f.boxes[board.key])
         : [];
   const placed: Placed[] = [];
   let seed = track.length * 97 + 5;
@@ -442,7 +641,6 @@ function layout(track: TrackId, board: Board): Placed[] {
     ),
   ];
 
-  const span = arc.end - arc.start;
 
   // Anchors go down first and nearest the arc, so the largest things claim the
   // calmest space and everything else arranges itself around them.
@@ -469,10 +667,57 @@ function layout(track: TrackId, board: Board): Placed[] {
       // solved per candidate rather than once up front.
       for (let attempt = 0; attempt < 140 && !settled; attempt += 1) {
         seed += 1;
-        const angle = arc.start + 3 + rand(seed * 2) * (span - 6);
-        const r0 = t.r0 * board.reach;
-        const r1 = t.r1 * board.reach;
-        const radius = r0 + rand(seed * 2 + 1) * (r1 - r0);
+        // Any bearing: the field is no longer masked to a wedge, so the
+        // candidate can land anywhere the rejection test below allows.
+        const angle = rand(seed * 2) * 360;
+        const r0raw = t.r0 * board.reach;
+        const r1raw = t.r1 * board.reachOuter;
+        /**
+         * How far the board extends on this bearing, so the band can be cut to
+         * fit it.
+         *
+         * Without this a great many candidates are drawn at radii the board
+         * simply does not have in that direction — the texture band runs to
+         * 1836 while the 8:5 board is only 1000 units tall — and each one costs
+         * an attempt and yields nothing. Twelve of Scholarly's forty-five
+         * items were being dropped for want of attempts rather than for want
+         * of room. Clipping the band to the rectangle spends every draw inside
+         * the board, and has the side effect of spreading items along the long
+         * axis, which is where the space actually is.
+         *
+         * Snapped for the usual reason: this is built from cos and sin, and it
+         * reaches the DOM through both position and opacity. See D15.
+         */
+        const cosA = Math.cos((angle * Math.PI) / 180);
+        const sinA = Math.sin((angle * Math.PI) / 180);
+        const rEdge = snap(
+          Math.min(
+            Math.abs((board.w / 2 - EDGE) / (Math.abs(cosA) < 1e-6 ? 1e-6 : cosA)),
+            Math.abs((board.h / 2 - EDGE) / (Math.abs(sinA) < 1e-6 ? 1e-6 : sinA)),
+          ),
+          1e3,
+        );
+        const r1 = Math.min(r1raw, rEdge);
+        const r0 = Math.min(r0raw, r1 * 0.9);
+        /**
+         * Sampled uniformly by *area*, not by radius.
+         *
+         * A ring at radius r holds area proportional to r, so drawing r
+         * uniformly puts the same number of items in the thin band next to the
+         * disc as in the vast one at the edge — the field crowds the middle
+         * and thins towards the corners, which is exactly what the owner saw
+         * ("左上角太空了"). Taking the root of a uniform draw between r0² and
+         * r1² spreads them evenly over the plane instead.
+         *
+         * Snapped like every other rendered figure: `Math.sqrt` is
+         * implementation-approximated in ECMA-262 the same way sin and cos
+         * are, and radius reaches the DOM through both the position and the
+         * opacity. See D15 before removing this.
+         */
+        const radius = snap(
+          Math.sqrt(r0 * r0 + rand(seed * 2 + 1) * (r1 * r1 - r0 * r0)),
+          1e3,
+        );
         const k = (radius - r0) / (r1 - r0);
         const size = snap(base * step * (1 - FAR_SHRINK * k), 1e3);
         const lines = wrap(item.text, size, item.face, t.maxLine);
@@ -484,19 +729,21 @@ function layout(track: TrackId, board: Board): Placed[] {
         // accept different candidates and produce genuinely different layouts,
         // not merely different digits.
         const c = centre(board);
-        const cx = snap(c.x + Math.cos((angle * Math.PI) / 180) * radius, 1e3);
-        const cy = snap(c.y + Math.sin((angle * Math.PI) / 180) * radius, 1e3);
+        const cx = snap(c.x + cosA * radius, 1e3);
+        const cy = snap(c.y + sinA * radius, 1e3);
         const box: Box = { x: cx - w / 2, y: cy - h / 2, w, h };
 
-        if (!insideWedge(box, arc.start, arc.end, board)) continue;
+        if (!insideField(box, board)) continue;
         if (taken.some((b) => overlaps(b, box))) continue;
 
         taken.push(box);
         // Everything that signals depth keys off the same k: further out means
         // smaller, dimmer, softer, and later to arrive.
-        // 4.5–8.5s. The first pass ran 9–17s, which was slow enough that the
-        // breathing read as nothing happening at all.
-        const period = Math.round(4500 + rand(seed * 5 + 11) * 4000);
+        // 2.25–4.25s, halved from 4.5–8.5 at the owner's request, and the
+        // swing in `@keyframes drift` deepened from 0.68→1 to 0.46→1 to go
+        // with it. The first pass ran 9–17s and read as nothing happening at
+        // all; this is the third setting and the first one you can see.
+        const period = Math.round(2250 + rand(seed * 5 + 11) * 2000);
         placed.push({
           key: `${tier}-${item.text}`,
           lines,
@@ -506,7 +753,10 @@ function layout(track: TrackId, board: Board): Placed[] {
           size,
           opacity: t.o0 + (t.o1 - t.o0) * k,
           delay: Math.round(t.d0 + rand(seed * 3 + 7) * (t.d1 - t.d0)),
-          blur: snap(t.blur * k, 1e2),
+          // Under half a unit there is nothing to see, and every non-zero
+          // value here costs the compositor a filter region of its own. This
+          // drops the filter from roughly a third of the field for free.
+          blur: snap(t.blur * k, 1e2) < 0.45 ? 0 : snap(t.blur * k, 1e2),
           period,
           phase: Math.round(rand(seed * 7 + 13) * period),
         });
@@ -540,16 +790,42 @@ export function SymbolField({
   track: TrackId;
   active: boolean;
 }) {
-  const arc = TRACK_ARCS[track];
+  /**
+   * The plates are held back until the browser has nothing better to do.
+   *
+   * There are six of them across the two fields that have any — 436KB of PNG,
+   * which is around 8MB of bitmap once decoded — and they sit inside SVGs that
+   * are in the render tree from the first paint, so the browser decodes every
+   * one of them while it is also laying out 145 text nodes and swapping in four
+   * webfonts. That is the hitch on opening the page.
+   *
+   * It cannot be decided during render: the server has to emit the same markup
+   * the client hydrates, so this starts false in both and is turned on
+   * afterwards, when the browser goes idle. Lighting the sector shows them
+   * immediately whether or not that has happened yet — that part is derived
+   * below rather than stored, so a hover never has to wait for a state update
+   * to land. In practice idle wins by a second or more and the plates are
+   * decoded and waiting before anyone reaches the disc.
+   */
+  const [idleWarm, setIdleWarm] = useState(false);
+  useEffect(() => {
+    if (idleWarm) return;
+    const idle = window.requestIdleCallback;
+    if (!idle) {
+      const timer = window.setTimeout(() => setIdleWarm(true), 1800);
+      return () => window.clearTimeout(timer);
+    }
+    const handle = idle(() => setIdleWarm(true), { timeout: 3000 });
+    return () => window.cancelIdleCallback(handle);
+  }, [idleWarm]);
+
   if (
     LAYOUTS.wide[track].length === 0 &&
     (track === "creative" ? PLATE_ART.length : 0) === 0
   )
     return null;
 
-  const span = arc.end - arc.start;
-  const from = arc.start + 90; // conic starts at 12 o'clock, arcs at 3 o'clock
-  const mask = `conic-gradient(from ${from}deg at 50% 50%, #000 0deg, #000 ${span}deg, transparent ${span}deg)`;
+  const warm = idleWarm || active;
 
   // Each element carries its own delay so the field assembles unevenly rather
   // than switching on as a block. On the way out the delay drops to zero, so
@@ -568,25 +844,32 @@ export function SymbolField({
       {(Object.keys(BOARDS) as BoardKey[]).map((key) => {
         const board = BOARDS[key];
         const items = LAYOUTS[key][track];
-        const knot = KNOT_BOXES[key];
-        const plateList = track === "creative" ? plates(board) : [];
+        // Both lists are empty until the plates are warm; see `warm` above.
+        const figures = warm && track === "scholarly" ? FIGURES : [];
+        const plateList = warm && track === "creative" ? plates(board) : [];
         return (
           <svg
             key={key}
             viewBox={`0 0 ${board.w} ${board.h}`}
-      preserveAspectRatio="xMidYMid meet"
+            preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
       className={`symbol-field field-${board.key} pointer-events-none fixed inset-0 -z-10 size-full text-bone`}
-      style={{ maskImage: mask, WebkitMaskImage: mask }}
     >
-      {track === "scholarly" ? (
-        <g
-          transform={`translate(${knot.x} ${knot.y}) scale(${knot.w / KNOT_VIEWBOX.w})`}
-          style={reveal(0.3, KNOT_DELAY)}
-        >
-          <BorromeanKnot />
-        </g>
-      ) : null}
+      {figures.map((figure) => {
+        const box = figure.boxes[key];
+        return (
+          <image
+            key={figure.key}
+            href={figure.href}
+            x={box.x}
+            y={box.y}
+            width={box.w}
+            height={box.h}
+            preserveAspectRatio="xMidYMid meet"
+            style={reveal(figure.opacity, figure.delay)}
+          />
+        );
+      })}
 
       {plateList.map((plate) => (
         <image
@@ -613,6 +896,27 @@ export function SymbolField({
             className="drift"
             style={{
               animation: `drift ${item.period}ms ease-in-out ${-item.phase}ms infinite`,
+              /**
+               * Paused while the sector is dark, and it has to be set here
+               * rather than in a stylesheet.
+               *
+               * Three fields are in the DOM at all times and only one is ever
+               * visible, so otherwise around 145 infinite opacity animations
+               * run from first paint for the whole session behind elements at
+               * opacity 0 — most of the home screen's cost, spent on nothing.
+               *
+               * 🔴 A `.symbol-field:not(.is-live) .drift` rule does not work,
+               * and looks like it should. The `animation` shorthand above
+               * resets `animation-play-state` to `running` as one of its
+               * longhands, and an inline declaration beats a stylesheet rule —
+               * so the shorthand quietly overrides the rule every time. The
+               * longhand has to follow the shorthand in the same block.
+               *
+               * Paused rather than removed, so a field keeps its phase and
+               * picks up where it left off instead of every symbol snapping to
+               * the start of its cycle the moment the sector lights.
+               */
+              animationPlayState: active ? "running" : "paused",
             }}
           >
             <text
