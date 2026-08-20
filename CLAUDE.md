@@ -983,6 +983,7 @@ gh pr create --fill
 | **PowerShell 5.1 无 `&&`** | 用 `;` 或 `if ($?) { }`。 |
 | **原生命令 stderr 被当错误** | git/gh 写 stderr 时 PowerShell 报 `NativeCommandError` 且 `$?` 为 false，**即使退出码是 0**。别据此判断失败。 |
 | **`gh` token 缺 `workflow` scope** | 当前 scope 为 `gist, read:org, repo`。走 SSH 推送不受影响；若将来需通过 API 改工作流文件，需 `gh auth refresh -s workflow`。 |
+| **Vercel 偶尔漏掉 push-to-main** | 合并后生产站迟迟不更新、而 CI 是绿的。判据不是「等久一点」,而是查**有没有部署被创建**:`gh api "repos/Coda-Shi/personal-site/deployments?sha=<merge-sha>" --jq length` 返回 `0` 就说明 webhook 根本没送到(commit status 会一直显示 `pending`,因为压根没有 status,不是因为在排队)。再对照 `curl -sI <生产站>` 的 `Age:`。补救:在 Vercel 面板点 Redeploy,或往 `main` 再推一个提交。**2026-08-20 发生过一次**,PR #35 合并后 Production 没有被创建。 |
 | **超越函数会破坏 hydration** | `Math.sin` / `cos` / `atan2` / `hypot` 在 ECMA-262 里是实现自定义的，Node 与浏览器差最后一个 ulp。凡是会渲染成属性的计算结果都必须吸附到网格，见 D15。 |
 
 > 🔴 **「入场动画不播放、所有东西直接闪现」——先查操作系统，不要改代码。**
