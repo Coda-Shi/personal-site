@@ -568,8 +568,8 @@ const FIGURES: ReadonlyArray<{
     opacity: 0.34,
     delay: 90,
     boxes: {
-      wide: { x: 120, y: 420, w: 620, h: 532 },
-      tall: { x: 40, y: 1340, w: 340, h: 292 },
+      wide: { x: 60, y: 380, w: 700, h: 600 },
+      tall: { x: 30, y: 1330, w: 380, h: 326 },
     },
   },
   {
@@ -578,8 +578,8 @@ const FIGURES: ReadonlyArray<{
     opacity: 0.28,
     delay: 200,
     boxes: {
-      wide: { x: 2440, y: 460, w: 500, h: 588 },
-      tall: { x: 680, y: 300, w: 270, h: 317 },
+      wide: { x: 2320, y: 560, w: 520, h: 615 },
+      tall: { x: 700, y: 400, w: 275, h: 325 },
     },
   },
   {
@@ -588,8 +588,8 @@ const FIGURES: ReadonlyArray<{
     opacity: 0.28,
     delay: 310,
     boxes: {
-      wide: { x: 180, y: 1080, w: 480, h: 613 },
-      tall: { x: 60, y: 300, w: 250, h: 319 },
+      wide: { x: 250, y: 1040, w: 430, h: 551 },
+      tall: { x: 40, y: 270, w: 260, h: 333 },
     },
   },
   {
@@ -598,8 +598,8 @@ const FIGURES: ReadonlyArray<{
     opacity: 0.28,
     delay: 420,
     boxes: {
-      wide: { x: 2400, y: 1120, w: 620, h: 527 },
-      tall: { x: 620, y: 1340, w: 330, h: 280 },
+      wide: { x: 2540, y: 1230, w: 520, h: 464 },
+      tall: { x: 660, y: 1290, w: 310, h: 277 },
     },
   },
 ];

@@ -164,7 +164,9 @@ export function TrinityDisc({
    *
    * So the lit track is remembered for exactly as long as that return runs.
    */
-  const [closing, setClosing] = useState<TrackId | null>(null);
+  const [closing, setClosing] = useState<{ id: TrackId; mode: "hold" | "fall" } | null>(
+    null,
+  );
   const lastLit = useRef<TrackId | null>(null);
 
   useEffect(() => {
@@ -172,15 +174,30 @@ export function TrinityDisc({
     const previous = lastLit.current;
     if (previous === lit) return;
     lastLit.current = lit;
-    // Whatever was lit now draws back — including when the pointer has moved
-    // straight to another circle. Cutting it instead left a hard seam every
-    // time someone swept across the three.
     if (!previous) {
       setClosing(null);
       return;
     }
-    setClosing(previous);
-    const timer = window.setTimeout(() => setClosing(null), FLOOD_FALL);
+    /**
+     * 🔴 **Sweeping from one circle to another must never look like a close.**
+     *
+     * It did: the outgoing pigment drew back to its circle while the incoming
+     * one opened out, so two circles moved in opposite directions at once and
+     * the direction you saw depended on which one your eye happened to be on.
+     * The owner's words — sometimes a circle goes in, sometimes out.
+     *
+     * The rule now: pigment only ever draws back when you leave the
+     * composition. Move between circles and the outgoing one simply *holds*
+     * full-screen while the new one opens over the top of it, so every
+     * track-to-track move is one opening and nothing else. The old pigment is
+     * covered long before it is unmounted, so its removal is never visible.
+     */
+    const mode = lit ? "hold" : "fall";
+    setClosing({ id: previous, mode });
+    const timer = window.setTimeout(
+      () => setClosing(null),
+      mode === "fall" ? FLOOD_FALL : FLOOD_RISE,
+    );
     return () => window.clearTimeout(timer);
   }, [focus]);
 
@@ -249,16 +266,22 @@ export function TrinityDisc({
       {TRACKS.map((track) => {
         const c = centreOf(track.id);
         const lit = focus === track.id;
-        const closingNow = closing === track.id && !lit;
-        if (!lit && !closingNow) return null;
+        const mode = !lit && closing?.id === track.id ? closing.mode : null;
+        if (!lit && !mode) return null;
         return (
           <span
-            // Keyed by direction so React swaps the element rather than
-            // mutating it: a CSS animation only restarts on a fresh element,
-            // and a return that does not restart is a return nobody sees.
-            key={`${track.id}-${closingNow ? "fall" : "rise"}`}
+            // Keyed by phase so React swaps the element rather than mutating
+            // it: a CSS animation only restarts on a fresh element, and a
+            // return that does not restart is a return nobody sees.
+            key={`${track.id}-${mode ?? "rise"}`}
             aria-hidden="true"
-            className="pointer-events-none fixed inset-0 -z-20 block overflow-hidden"
+            className="pointer-events-none fixed inset-0 block overflow-hidden"
+            // The one that is opening always sits above the one it is
+            // replacing. Without this the stack follows DOM order — which is
+            // the fixed order of TRACKS — so sweeping left to right covered
+            // the new pigment with the old one and sweeping the other way did
+            // not. Both are still behind the symbol field at -10.
+            style={{ zIndex: mode === "hold" ? -21 : -20 }}
           >
             {/* Two levels, each owning one thing. This one places the circle's
                 centre; the inner one scales. Keeping them apart is what lets
@@ -283,9 +306,14 @@ export function TrinityDisc({
                     // animated `transform` replaces the declared one outright,
                     // so a utility class for it would simply be discarded.
                     "--flood-scale": FLOOD_SCALE,
-                    animation: closingNow
-                      ? `flood-fall ${FLOOD_FALL}ms cubic-bezier(0.4, 0, 0.2, 1) both`
-                      : `flood-rise ${FLOOD_RISE}ms ease-out both`,
+                    animation:
+                      mode === "fall"
+                        ? `flood-fall ${FLOOD_FALL}ms cubic-bezier(0.4, 0, 0.2, 1) both`
+                        : mode === "hold"
+                          ? // Covered by the incoming pigment; it only has to
+                            // stay put until that has finished arriving.
+                            `flood-hold ${FLOOD_RISE}ms linear both`
+                          : `flood-rise ${FLOOD_RISE}ms ease-out both`,
                   } as React.CSSProperties
                 }
               />

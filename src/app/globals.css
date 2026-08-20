@@ -307,6 +307,16 @@
   }
 }
 
+/* Moving from one circle to another is one opening and nothing else: the
+   outgoing pigment holds the screen while the new one opens over it. Only
+   leaving the composition draws pigment back. See the note in trinity-disc. */
+@keyframes flood-hold {
+  from,
+  to {
+    transform: translate(-50%, -50%) scale(var(--flood-scale, 20));
+  }
+}
+
 /* Slow breathing for the symbol field. Applied to a wrapper <g>, never to the
    text itself: the text owns an opacity transition for the reveal, and an
    animation on the same property would win outright and the reveal would stop
