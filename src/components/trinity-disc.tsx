@@ -66,12 +66,23 @@ const FLOOD_SCALE = 20;
 const FLOOD_RISE = 700;
 
 /**
- * How long a tap holds the flood before the route changes. The rise is 700ms,
- * so the pigment reaches the edge and then sits there for another 300ms before
- * the destination — which uses that same pigment as its ground — arrives.
- * The owner set this to a second; do not shorten it.
+ * How long a tap holds the flood before the route changes. Touch only — a
+ * pointer has already seen all of this on hover, and a delay there would just
+ * read as lag.
+ *
+ * 🔴 **Derived from when the symbol field finishes arriving, not picked.** The
+ * texture tier starts as late as 520ms and each item fades over 620ms, so the
+ * last symbol lands at 1140ms. At the previous 1000ms the route changed
+ * *before* that — which meant the one thing this pause exists to show had
+ * never once been seen whole on a phone. This holds the finished field for
+ * another 560ms, which is what the owner asked for when he asked to look at
+ * the symbols a little longer.
+ *
+ * So it is bounded below by the field, not by taste: shortening it past 1140
+ * does not make the wait shorter, it makes the wait pointless. If the tier
+ * delays in symbol-field.tsx change, re-derive this.
  */
-const BEAM_HOLD = 1000;
+const BEAM_HOLD = 1700;
 
 /**
  * How long the pigment takes to draw back into its circle once nothing is lit.
