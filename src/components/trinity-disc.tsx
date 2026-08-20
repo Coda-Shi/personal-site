@@ -96,26 +96,43 @@ const VOID = "#050505";
 const FILL_SHIFT = "fill 380ms ease-out";
 
 /**
- * The three lenses where two circles meet.
+ * The three lenses where two circles meet — and who each one belongs to.
  *
- * 🔴 **At rest every overlap is black — no pigment, no blend, no third
- * colour.** The owner's call, and it is the whole reason the regions are
- * painted explicitly rather than stacked translucently: three overlapping
- * circles with alpha compound, so an overlap is *necessarily* some muddled
- * mixture of its parents and there is no way to ask for nothing there.
- * Painting each region once means an overlap can be the ground.
+ * 🔴 **An overlap takes one parent's pigment whole. It is never a mixture.**
  *
- * When a track lights, its two lenses take its pigment, so the circle you are
- * pointing at is briefly whole. That is the honest reading of what the flood
- * is doing — this circle is becoming the page — and a circle that opened out
- * while keeping two bites taken out of it would contradict it.
+ * Three attempts went into this and two of them failed the same way. Stacked
+ * translucently, alpha compounds and every overlap comes out darker than both
+ * parents. Mixed explicitly — screened, or averaged in any colour space — it
+ * comes out muddy, and that is not a technical fault to be tuned away: these
+ * three pigments are dark (L* 22 to 36) and their hues are far apart, so blue
+ * with red gives dark purple, blue with gold gives olive, red with gold gives
+ * brown. There is no mixing rule that rescues that. Painted flat black instead,
+ * the lenses stopped being muddy and started reading as holes punched through
+ * the disc.
  *
- * The middle stays black throughout; see the note on the element itself.
+ * So: no new colour is ever introduced. Each lens simply continues one of its
+ * two parents, and which one is decided by going **clockwise** — creative,
+ * professional, scholarly, and round again. Each circle's colour carries
+ * forward into the overlap ahead of it:
+ *
+ *     creative ∩ professional → creative     (upper middle, oxblood)
+ *     professional ∩ scholarly → professional (lower right, gilt)
+ *     scholarly ∩ creative → scholarly        (lower left, klein)
+ *
+ * It is the same over-and-under rule that makes the Borromean knot in the
+ * Scholarly field Borromean: in every pair one is over, and the cycle has no
+ * winner. That last part is why the middle can only be black — no circle is
+ * over all the others, so the region belonging to all three belongs to none,
+ * which is D9 arrived at rather than imposed.
+ *
+ * **The pointer follows the paint.** A lens carries its owner's hover and its
+ * owner's link, so the region that looks like creative *is* creative. Anything
+ * else would make the colour a lie about where you are.
  */
-const PAIRS: ReadonlyArray<{ clip: TrackId; at: TrackId }> = [
-  { clip: "scholarly", at: "creative" },
-  { clip: "creative", at: "professional" },
-  { clip: "professional", at: "scholarly" },
+const CYCLE: ReadonlyArray<{ from: TrackId; to: TrackId }> = [
+  { from: "creative", to: "professional" },
+  { from: "professional", to: "scholarly" },
+  { from: "scholarly", to: "creative" },
 ];
 
 /** The centre is a fourth focus target, but it lights nothing and colours nothing. */
@@ -340,6 +357,18 @@ export function TrinityDisc({
                 </clipPath>
               );
             })}
+            {/* Two circles' intersection, so the third can be clipped by it and
+                give the triple region. Nested clip-path references are the only
+                way to express an intersection of three shapes in SVG without
+                solving for the arcs by hand. */}
+            <clipPath id="venn-two">
+              <circle
+                cx={centreOf("creative").x}
+                cy={centreOf("creative").y}
+                r={R}
+                clipPath="url(#venn-scholarly)"
+              />
+            </clipPath>
           </defs>
 
           {/* Every region is painted exactly once, back to front: the three
@@ -369,23 +398,52 @@ export function TrinityDisc({
               );
             })}
 
-            {/* The middle needs no element of its own, in either state. It
-                lies inside all three of these lenses, so it is black when they
-                are black and takes the pigment when they take it. */}
-            {PAIRS.map(({ clip, at }) => {
-              const c = centreOf(at);
+            {/* Each lens continues the pigment of the circle behind it in the
+                clockwise cycle, and carries that circle's pointer behaviour
+                too — so the colour tells you truthfully which track you are
+                about to open. */}
+            {CYCLE.map(({ from, to }) => {
+              const c = centreOf(to);
               return (
                 <circle
-                  key={`${clip}-${at}`}
+                  key={`${from}-${to}`}
                   cx={c.x}
                   cy={c.y}
                   r={R}
-                  clipPath={`url(#venn-${clip})`}
-                  className="pointer-events-none"
-                  style={{ fill: litFill ?? VOID, transition: FILL_SHIFT }}
+                  clipPath={`url(#venn-${from})`}
+                  className="cursor-pointer"
+                  style={{
+                    fill: litFill ?? TRACK_CLASSES[from].cssVar,
+                    transition: FILL_SHIFT,
+                  }}
+                  onMouseEnter={() => setFocus(from)}
+                  onPointerDown={openOnTouch(from)}
+                  onClick={() => {
+                    if (!leaving.current) router.push(`/${lang}/${from}`);
+                  }}
                 />
               );
             })}
+
+            {/* The middle, painted last so it wins over all three lenses.
+                Black at rest and belonging to nobody, for the reason in the
+                note on CYCLE: the cycle has no winner. It still takes the lit
+                pigment, because a circle opening out to become the page cannot
+                keep a bite out of its centre.
+
+                Its pointer goes to the hub, not to a track. The portrait
+                covers most of this region already, and the few pixels of it
+                that show are the one part of the disc that is *his* rather
+                than any track's. */}
+            <circle
+              cx={centreOf("professional").x}
+              cy={centreOf("professional").y}
+              r={R}
+              clipPath="url(#venn-two)"
+              className="cursor-pointer"
+              style={{ fill: litFill ?? VOID, transition: FILL_SHIFT }}
+              onMouseEnter={() => setFocus("hub")}
+            />
           </g>
 
           {/* Outlines last, so they read over every region boundary. Each is
