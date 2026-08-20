@@ -115,6 +115,19 @@ const FLOOD_FALL = 540;
 const FILL_SHIFT = "fill 380ms ease-out";
 
 /**
+ * The line work, and all of it on one beat.
+ *
+ * The three arcs and the portrait's ring are drawn together rather than one
+ * after another. They used to be staggered 220ms apart, from D11's "the disc
+ * is plotted, sector after sector" — but that was written for a ring of three
+ * separate sectors. These three do not take turns: each starts where it
+ * crosses a neighbour and ends on the portrait, so they are three strokes of
+ * one gesture converging on one point, and staggering them made it look like
+ * three unrelated events.
+ */
+const PLOT = "plot-stroke 1000ms cubic-bezier(0.65, 0, 0.35, 1) 200ms both";
+
+/**
  * The three lenses where two circles meet — and who each one belongs to.
  *
  * 🔴 **An overlap takes one parent's pigment whole. It is never a mixture.**
@@ -237,6 +250,41 @@ export type Focus = TrackId | "hub" | null;
 function centreOf(track: TrackId) {
   const rad = (VENN[track] * Math.PI) / 180;
   return { x: CX + CENTRE_D * Math.cos(rad), y: CY + CENTRE_D * Math.sin(rad) };
+}
+
+/**
+ * A circle's outline as one arc, drawn from the overlap to the portrait.
+ *
+ * 🔴 **This must not go back to being a `<circle>`.** What is left of each
+ * outline after the masks — the Borromean break at one end, half the middle arc
+ * at the other — is exactly one contiguous 270° arc, running from the outer
+ * crossing with its neighbour, the long way round, to the point where it goes
+ * tangent to the portrait. So it *can* be drawn in one stroke, and it should
+ * be: everything in this composition converges on the portrait, and the
+ * entrance is what says so.
+ *
+ * Drawn as a full circle it could not be. A `<circle>`'s dash always begins at
+ * its own 0°, pointing right, and where that lands relative to the mask differs
+ * per track because the masks are placed in composition space while the local
+ * frames are all axis-aligned. Scholarly's visible span happens to start there
+ * and drew cleanly; creative's runs 90°→30° across 0°, so the dash produced a
+ * stub, a gap, then the rest; professional's broke the same way. That was the
+ * owner's "断开然后短线条播放", and no amount of re-timing fixes it — the start
+ * point has to move.
+ *
+ * The span is 270° for all three: `VENN[track] - 90` is the outer crossing and
+ * +270 lands on the tangent point. The masks still trim the ends precisely,
+ * including BREAK, so this only has to be right to within a degree or two.
+ */
+function outline(track: TrackId) {
+  const c = centreOf(track);
+  const at = (deg: number) => {
+    const rad = (deg * Math.PI) / 180;
+    const round = (n: number) => Math.round(n * 1e3) / 1e3;
+    return `${round(c.x + R * Math.cos(rad))} ${round(c.y + R * Math.sin(rad))}`;
+  };
+  const start = VENN[track] - 90;
+  return `M ${at(start)} A ${R} ${R} 0 1 1 ${at(start + 270)}`;
 }
 
 function labelOf(track: TrackId) {
@@ -552,7 +600,7 @@ export function TrinityDisc({
               circles, then the three lenses over them, then the middle over
               those. Nothing is layered translucently, so no region's colour is
               an accident of what happens to be underneath it. */}
-          <g style={{ animation: "fade-in 700ms ease-out 860ms both" }}>
+          <g style={{ animation: "fade-in 700ms ease-out 1050ms both" }}>
             {TRACKS.map((track) => {
               const c = centreOf(track.id);
               return (
@@ -639,15 +687,18 @@ export function TrinityDisc({
               in the over-circle's pigment, and its boundary with that circle's
               own region is precisely the arc being cut here. Without the cut
               there is a bone line running through one continuous field of
-              colour; with it, the two are simply the same shape. */}
-          {TRACKS.map((track, i) => {
-            const c = centreOf(track.id);
+              colour; with it, the two are simply the same shape.
+
+              All three are drawn on the same beat, each in a single unbroken
+              stroke that starts where it crosses its neighbour and finishes on
+              the portrait. See `outline` for why this is an arc and not a
+              circle — as a circle two of the three came out as a stub, a gap
+              and then the rest. */}
+          {TRACKS.map((track) => {
             return (
-              <circle
+              <path
                 key={track.id}
-                cx={c.x}
-                cy={c.y}
-                r={R}
+                d={outline(track.id)}
                 fill="none"
                 stroke="rgb(242, 239, 233)"
                 strokeWidth={1.1}
@@ -661,9 +712,7 @@ export function TrinityDisc({
                 // of them would leave a plain coloured screen with one circle
                 // drawn on it.
                 strokeOpacity={0.75}
-                style={{
-                  animation: `plot-stroke 900ms cubic-bezier(0.65, 0, 0.35, 1) ${200 + i * 220}ms both`,
-                }}
+                style={{ animation: PLOT }}
               />
             );
           })}
@@ -698,7 +747,7 @@ export function TrinityDisc({
             style={{
               strokeOpacity: focus === "hub" ? 1 : 0.75,
               transition: "stroke-opacity 300ms ease-out",
-              animation: "plot-stroke 900ms cubic-bezier(0.65, 0, 0.35, 1) 200ms both",
+              animation: PLOT,
             }}
           />
         </svg>
