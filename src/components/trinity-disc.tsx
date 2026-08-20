@@ -667,6 +667,40 @@ export function TrinityDisc({
               />
             );
           })}
+
+          {/* 🔴 The ring round the portrait, and it is drawn *here* rather than
+              as a CSS border on the photograph, because it has to be plotted
+              with the other three.
+
+              Everything in the middle now converges on this ring: the three
+              surviving half-arcs each run inward until they go tangent to it
+              and stop. The photograph used to arrive at 1700ms, long after
+              those arcs had been drawn — so for the whole entrance they
+              spiralled into nothing and the middle had no boundary at all.
+              Drawing the ring on the same beat as the first circle gives them
+              something to land on from the start, and the photograph then
+              simply fills a ring that is already there.
+
+              It is also the only ring now. The Link no longer carries a border
+              (two coincident rings read as one fat one) and no longer scales on
+              focus (that slid the photograph out from under a fixed ring);
+              focus brightens this instead. */}
+          <circle
+            cx={CX}
+            cy={CY}
+            r={R_PORTRAIT}
+            fill="none"
+            stroke="rgb(242, 239, 233)"
+            strokeWidth={1.1}
+            pathLength={1}
+            strokeDasharray={1}
+            className="pointer-events-none"
+            style={{
+              strokeOpacity: focus === "hub" ? 1 : 0.75,
+              transition: "stroke-opacity 300ms ease-out",
+              animation: "plot-stroke 900ms cubic-bezier(0.65, 0, 0.35, 1) 200ms both",
+            }}
+          />
         </svg>
 
         {/* The labels are the real links: they carry the accessible name, they
@@ -714,14 +748,22 @@ export function TrinityDisc({
           href={`/${lang}/coda`}
           aria-label={dict.hub.ariaLabel}
           style={{
-            animation: "fade-in 500ms ease-out 1700ms both",
+            // Arrives with the first label, not 600ms after everything else.
+            // The ring finishes drawing at 1100ms; leaving the photograph until
+            // 1700 left the pinwheel's bare centre — three colours meeting at a
+            // point — sitting inside a finished ring for half a second.
+            animation: "fade-in 500ms ease-out 1250ms both",
             width: `${(R_PORTRAIT * 2 * 100) / 400}%`,
             height: `${(R_PORTRAIT * 2 * 100) / 400}%`,
-            transform: `translate(-50%, -50%) scale(${focus === "hub" ? 1.07 : 1})`,
+            transform: "translate(-50%, -50%)",
           }}
-          className={`group absolute top-1/2 left-1/2 flex items-center justify-center overflow-hidden rounded-full border bg-void transition-[transform,border-color] duration-300 ease-out ${
-            focus === "hub" ? "border-bone" : "border-bone/35"
-          }`}
+          // 🔴 No border, and no scale on focus. The ring round the portrait is
+          // drawn in the SVG now (see the note on it) so that it can be plotted
+          // with the rest of the line work; a border here as well would put two
+          // rings a pixel apart, and scaling this element would slide the
+          // photograph out from under the fixed one. Focus is expressed by
+          // brightening that ring instead.
+          className="group absolute top-1/2 left-1/2 flex items-center justify-center overflow-hidden rounded-full bg-void"
           onMouseEnter={() => setFocus("hub")}
           onFocus={() => setFocus("hub")}
           onBlur={() => setFocus(null)}
