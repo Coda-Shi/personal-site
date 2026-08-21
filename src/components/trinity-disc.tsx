@@ -111,6 +111,12 @@ const BEAM_HOLD = 1700;
  */
 const FLOOD_FALL = 540;
 
+/**
+ * The ground. Painted, rather than left unpainted, in the one place where
+ * something has to sit on top of pigment: inside the portrait's ring.
+ */
+const VOID = "#050505";
+
 /** How the seven regions cross between their own colours and the lit one. */
 const FILL_SHIFT = "fill 380ms ease-out";
 
@@ -709,6 +715,23 @@ export function TrinityDisc({
                 }}
               />
             ))}
+
+            {/* 🔴 Inside the ring is ground, never pigment — the photograph is
+                the only thing that belongs there.
+
+                The three wedges are clipped to the middle region, which runs
+                out past the ring to the corners, so without this they meet at
+                a point *inside* it and paint a little three-colour pinwheel
+                where the face goes. It is covered once the photograph arrives,
+                but the photograph is the last thing in, so for most of the
+                entrance that is what you were looking at.
+
+                Exactly R_PORTRAIT, so the outlines' ring — stroked on that
+                same radius and drawn after this — still reads, and the
+                photograph covers this disc precisely. It keeps the ground
+                colour even while a track is lit: the flood does not reach in
+                here, because the photograph is opaque over it either way. */}
+            <circle cx={CX} cy={CY} r={R_PORTRAIT} fill={VOID} className="pointer-events-none" />
           </g>
 
           {/* Outlines last, so they read over every region boundary. Each is
