@@ -130,6 +130,9 @@ export function RecordList({
   );
 }
 
+/** The page's entrance, one beat at a time: mark, title, rule, lede, body. */
+const rise = (delay: number) => ({ animation: `rise-in 700ms ease-out ${delay}ms both` });
+
 export function TrackPage({
   lang,
   track,
@@ -148,26 +151,48 @@ export function TrackPage({
   const copy = getDictionary(lang).tracks[track.id];
 
   return (
-    <SiteShell lang={lang} ground={TRACK_CLASSES[track.id].cssVar}>
+    <SiteShell lang={lang} ground={TRACK_CLASSES[track.id].cssVar} field={track.id} ownEntrance>
       <header>
+        {/* The mark is the one thing here that also exists on the page you
+            came from. Named, it travels: click a circle and its mark leaves
+            the disc and settles at the top of this column, the same object in
+            two places rather than two objects that happen to match. Reached
+            cold, with nothing to travel from, it draws itself instead
+            (`enter`). Never both — see NavigationFlag. */}
         <p className="font-display text-6xl leading-none md:text-7xl">
-          <TrackMark track={track} />
+          <TrackMark track={track} enter name="track-mark" />
         </p>
-        <h1 className="mt-4 font-display text-5xl leading-none font-light tracking-tight md:text-6xl">
+        <h1
+          className="mt-4 font-display text-5xl leading-none font-light tracking-tight md:text-6xl"
+          style={rise(80)}
+        >
           {copy.title}
         </h1>
-        <span aria-hidden="true" className="mt-6 block h-px w-24 bg-bone/50" />
+        {/* Drawn from the left, like the line work on the disc, not faded. */}
+        <span
+          aria-hidden="true"
+          className="mt-6 block h-px w-24 origin-left bg-bone/50"
+          style={{ animation: "rule-in 600ms cubic-bezier(0.65, 0, 0.35, 1) 260ms both" }}
+        />
         {/* Italic marks the lede as a different voice from the entries below.
             Cormorant has a real italic; Chinese has none, so the :lang(zh)
             rule in globals.css swaps this to fangsong upright instead of
             letting the browser shear the glyphs. */}
-        <p className="mt-6 max-w-xl font-display text-xl leading-relaxed italic text-bone/80 md:text-2xl">
+        <p
+          className="mt-6 max-w-xl font-display text-xl leading-relaxed italic text-bone/80 md:text-2xl"
+          style={rise(220)}
+        >
           {copy.lede}
         </p>
       </header>
 
-      {ownEntries ? null : <EntryList entries={track.entries} lang={lang} collapsible />}
-      {children}
+      {/* The body rises as one block, after the header has landed. Per-entry
+          staggering was considered and dropped: a page with eight entries
+          would still be arriving half a second after the reader had started. */}
+      <div style={rise(340)}>
+        {ownEntries ? null : <EntryList entries={track.entries} lang={lang} collapsible />}
+        {children}
+      </div>
     </SiteShell>
   );
 }

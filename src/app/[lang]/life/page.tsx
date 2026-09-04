@@ -29,7 +29,7 @@ export default async function Page({ params }: PageProps<"/[lang]/life">) {
   return (
     <SiteShell lang={lang}>
       <article className="max-w-xl">
-        <Link href={`/${lang}/coda`} className="label text-bone/50 transition-colors hover:text-bone">
+        <Link href={`/${lang}/coda`} className="link-line label text-bone/50 transition-colors hover:text-bone">
           {dict.nav.coda}
         </Link>
 

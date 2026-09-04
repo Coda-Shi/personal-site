@@ -55,7 +55,7 @@ export default async function Page({ params }: PageProps<"/[lang]/writing/[slug]
   return (
     <SiteShell lang={lang}>
       <article>
-        <Link href={`/${lang}/writing`} className="label text-bone/50 transition-colors hover:text-bone">
+        <Link href={`/${lang}/writing`} className="link-line label text-bone/50 transition-colors hover:text-bone">
           {dict.writing.all}
         </Link>
 

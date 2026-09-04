@@ -8,6 +8,7 @@ import {
 } from "next/font/google";
 import localFont from "next/font/local";
 import { notFound } from "next/navigation";
+import { NavigationFlag } from "@/components/navigation-flag";
 import { HTML_LANG, LOCALES, getDictionary, hasLocale } from "@/lib/i18n";
 import { INDEXABLE, OG_LOCALE, SITE_URL } from "@/lib/site";
 import "../globals.css";
@@ -149,7 +150,7 @@ const OG_IMAGE = {
   url: "/opengraph-image.png",
   width: 1200,
   height: 630,
-  alt: `The trinity disc — Scholarly, Professional and Creative around a portrait of ${NAME}`,
+  alt: `Three overlapping circles — Scholarly, Professional and Creative — around a portrait of ${NAME}`,
 };
 
 export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Promise<Metadata> {
@@ -199,7 +200,10 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
 
   return (
     <html lang={HTML_LANG[lang]} className={`${FONT_VARS} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <NavigationFlag />
+        {children}
+      </body>
     </html>
   );
 }

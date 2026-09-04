@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import portrait from "@/assets/portrait.png";
 import { SiteShell } from "@/components/site-shell";
 import { RecordList } from "@/components/track-page";
 import { LIFE } from "@/content/life";
@@ -31,6 +33,8 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/coda">): P
   };
 }
 
+const rise = (delay: number) => ({ animation: `rise-in 700ms ease-out ${delay}ms both` });
+
 // No ground colour, no glyph, a narrower measure, more serif. The three public
 // identities are encoded; this one is not. See D9 in CLAUDE.md.
 export default async function Page({ params }: PageProps<"/[lang]/coda">) {
@@ -40,16 +44,65 @@ export default async function Page({ params }: PageProps<"/[lang]/coda">) {
   const featured = featuredFor(lang);
 
   return (
-    <SiteShell lang={lang}>
+    <SiteShell lang={lang} ownEntrance>
       <header className="max-w-xl">
-        <h1 className="font-display text-5xl leading-none font-light tracking-tight md:text-6xl">
+        {/* The face. You reach this page by clicking it, and it used to be the
+            one page on the site without it. D9 keeps pigment and marks off
+            this page; it says nothing against the photograph, which is the
+            opposite of an encoding.
+
+            Named (inline, like the marks — see trinity-disc.tsx), so that
+            clicking the portrait on the disc grows it into this one — the
+            same object arriving, not a page appearing with a picture on it. The ring is drawn separately and draws itself on
+            around the face as it lands, with the disc's own timing, so the
+            line work on this page is laid down the way it is everywhere
+            else. In colour, as on the disc: see the note there. */}
+        <div className="relative mb-9 size-28 md:size-36">
+          <div
+            className="absolute inset-0 overflow-hidden rounded-full bg-void"
+            style={{
+              animation: "fade-in 500ms ease-out 150ms both",
+              viewTransitionName: "portrait",
+            }}
+          >
+            <Image
+              src={portrait}
+              alt=""
+              priority
+              className="absolute inset-0 size-full object-cover opacity-95"
+            />
+          </div>
+          <svg
+            viewBox="0 0 100 100"
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 size-full text-bone"
+          >
+            <circle
+              cx="50"
+              cy="50"
+              r="49.4"
+              fill="none"
+              stroke="currentColor"
+              strokeOpacity={0.75}
+              strokeWidth={0.9}
+              pathLength={1}
+              strokeDasharray={1}
+              style={{ animation: "plot-stroke 1000ms cubic-bezier(0.65, 0, 0.35, 1) 200ms both" }}
+            />
+          </svg>
+        </div>
+        <h1
+          className="font-display text-5xl leading-none font-light tracking-tight md:text-6xl"
+          style={rise(120)}
+        >
           {dict.hub.heading}
         </h1>
-        <p className="mt-6 font-display text-2xl leading-snug italic text-bone/70">
+        <p className="mt-6 font-display text-2xl leading-snug italic text-bone/70" style={rise(240)}>
           {dict.hub.subheading}
         </p>
       </header>
 
+      <div style={rise(360)}>
       {/* Coda's own account of himself, in his words. */}
       <section className="mt-16 max-w-xl">
         <h2 className="label text-bone/55">{dict.headings.life}</h2>
@@ -109,6 +162,7 @@ export default async function Page({ params }: PageProps<"/[lang]/coda">) {
         <h2 className="label text-bone/55">{dict.headings.advocacy}</h2>
         <RecordList items={ADVOCACY} overrides={dict.advocacy} />
       </section>
+      </div>
     </SiteShell>
   );
 }
