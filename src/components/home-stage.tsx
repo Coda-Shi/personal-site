@@ -71,7 +71,7 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
     <a
       key={address}
       href={`mailto:${address}`}
-      className="label email-link text-bone/55 transition-colors hover:text-bone"
+      className="link-line label email-link text-bone/55 transition-colors hover:text-bone"
     >
       {address}
     </a>
@@ -172,18 +172,18 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             while the visitor is exploring. */}
         <Link
           href={`/${lang}/writing`}
-          className="border-r border-bone/25 pr-8 font-display text-lg italic text-bone/70 transition-colors hover:text-bone"
+          className="link-line border-r border-bone/25 pr-8 font-display text-lg italic text-bone/70 transition-colors hover:text-bone"
         >
           {dict.nav.writing}
         </Link>
-        <Link href={`/${lang}/cv`} className="label text-bone/55 transition-colors hover:text-bone">
+        <Link href={`/${lang}/cv`} className="link-line label text-bone/55 transition-colors hover:text-bone">
           {dict.nav.cv}
         </Link>
         {/* The studio does have a Chinese name — 唱诗人工作室 — so unlike
             Everglory or Crisis Text Line it is not left in Latin. */}
         <a
           href="https://elegists.studio"
-          className="label text-bone/55 transition-colors hover:text-bone"
+          className="link-line label text-bone/55 transition-colors hover:text-bone"
           rel="noreferrer"
         >
           {dict.nav.studio}

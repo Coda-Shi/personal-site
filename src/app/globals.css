@@ -437,3 +437,152 @@
     font-size: 0.78rem;
   }
 }
+
+/* ── Leaving a page is a dissolve; a few things travel ─────────────────────
+   Every page is one React <ViewTransition> with an exit and no enter: the
+   page you leave fades out over the page you are arriving at, which is live
+   underneath it from the first frame. For opaque pages that is exactly a
+   cross-fade, and for the pigment it is better than one — two half-faded
+   layers of the same colour over black dip to three-quarters brightness at
+   the midpoint, while one layer fading over an opaque copy of itself never
+   moves. So the flood that took the screen simply *is* the ground of the
+   next page, which is the thing D10 promised and the route change used to
+   throw away.
+
+   `.page` is React's view-transition class, from the `exit` prop. The two
+   things that travel — a track's mark leaving the disc for the top of its
+   column, the portrait growing into /coda — are named inline on both pages
+   and paired by the browser itself (see trinity-disc.tsx for why not through
+   React), and they ride above the dissolving page. Nothing is named on the
+   way back, so returning is a plain dissolve into the home page drawing
+   itself, and a big mark or portrait with no partner simply fades with the
+   page it is on. */
+::view-transition-group(.page) {
+  animation-duration: 420ms;
+  animation-timing-function: ease-out;
+  z-index: 1;
+}
+
+::view-transition-group(track-mark),
+::view-transition-group(portrait) {
+  animation-duration: 520ms;
+  animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  z-index: 2;
+}
+
+::view-transition-old(track-mark):only-child,
+::view-transition-old(portrait):only-child {
+  animation-duration: 420ms;
+  animation-timing-function: ease-out;
+}
+
+/* The overlay must not eat the clicks of someone who has already moved on. */
+::view-transition {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+/* ── Inner pages arrive the way the disc does ─────────────────────────────
+   The rule under a title is drawn from the left, not faded — the same hand
+   as the line work on the disc. */
+@keyframes rule-in {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* The mark at the top of a track page draws itself on when the page is
+   reached cold: the drawn strokes are dashed to unit length and plotted, the
+   coda's ring inks in behind its bars, and §, being a glyph, fades.
+
+   Switched off wholesale once the document has been navigated within — see
+   NavigationFlag. A page reached from the disc gets its mark by morph, and a
+   mark that has just flown into place must not then re-draw itself. */
+.plot-mark line {
+  animation: plot-stroke 900ms cubic-bezier(0.65, 0, 0.35, 1) 150ms both;
+}
+
+.plot-mark path {
+  animation: fade-in 600ms ease-out 450ms both;
+}
+
+.plot-mark.plot-glyph {
+  animation: fade-in 700ms ease-out 150ms both;
+}
+
+html[data-navigated] .plot-mark line,
+html[data-navigated] .plot-mark path,
+html[data-navigated] .plot-mark.plot-glyph {
+  animation: none;
+}
+
+/* ── One hover, everywhere ────────────────────────────────────────────────
+   Every text link used to answer a hover by brightening, which is clean and
+   says nothing. The disc's vocabulary is a line being drawn, so a link's is
+   too: a bone hairline plots from left to right under the word. The colour
+   lift stays; the line is the gesture. Set slightly above the bottom of the
+   inline box — these are tracked capitals with no descenders, and a line at
+   the descender depth floats.
+
+   Unlayered, like .email-link, so it sits over the Tailwind utilities on the
+   same elements without an ordering fight. */
+.link-line {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  background-position: 0 calc(100% - 0.12em);
+  transition:
+    background-size 260ms ease-out,
+    color 200ms ease-out;
+}
+
+.link-line:hover,
+.link-line:focus-visible {
+  background-size: 100% 1px;
+}
+
+/* ── The field at rest behind a track page ────────────────────────────────
+   Set back and still. On a wide screen it is masked out from under the
+   column so the symbols live in the margins, like marginalia, and the text
+   never has to be read across them; the fade is four rem wide on each side
+   of a 48rem column so it reads as depth rather than as a cut. Narrower than
+   that the column is the screen, and the field simply sits faint behind it. */
+.field-ground {
+  opacity: 0.45;
+}
+
+@media (min-width: 64rem) {
+  .field-ground {
+    mask-image: linear-gradient(
+      to right,
+      #000 calc(50% - 28rem),
+      transparent calc(50% - 24rem),
+      transparent calc(50% + 24rem),
+      #000 calc(50% + 28rem)
+    );
+  }
+}
+
+/* ── Chinese punctuation ──────────────────────────────────────────────────
+   Fullwidth punctuation carries its own half-em of space, and at the start
+   of a line that space is a visible indent: a paragraph opening with 「 sat
+   half a character in from the ones around it. `trim-start` sets an opening
+   mark flush at the line start and closes the gap between two adjacent
+   marks. `hanging-punctuation` lets a closing mark hang past the margin
+   rather than drag its character onto the next line — Safari only, and
+   ignored elsewhere. Both degrade to nothing; neither can break text. */
+:lang(zh) {
+  text-spacing-trim: trim-start;
+  hanging-punctuation: allow-end;
+}

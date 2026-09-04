@@ -36,7 +36,7 @@ export function LanguageToggle({ lang, label }: { lang: Locale; label: string })
       hrefLang={target}
       lang={target}
       prefetch={false}
-      className="label text-bone/55 transition-colors hover:text-bone"
+      className="link-line label text-bone/55 transition-colors hover:text-bone"
       onClick={() => {
         document.cookie = `${LOCALE_COOKIE}=${target};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`;
       }}

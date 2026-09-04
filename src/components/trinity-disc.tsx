@@ -793,7 +793,13 @@ export function TrinityDisc({
             }}
             className="absolute -translate-x-1/2 -translate-y-1/2"
             onPointerDown={openOnTouch(track.id)}
-            onClick={swallowClick}
+            onClick={(event) => {
+              swallowClick(event);
+              // A keyboard or a tap reaches here without ever hovering, and
+              // the mark is only named while its track is lit (below). Lit
+              // now, before the navigation commits, so the pair forms.
+              if (!leaving.current) setFocus(track.id);
+            }}
             onMouseEnter={() => setFocus(track.id)}
             onFocus={() => setFocus(track.id)}
             onBlur={() => setFocus(null)}
@@ -802,11 +808,40 @@ export function TrinityDisc({
               className="flex flex-col items-center gap-0.5 text-center transition-opacity duration-500 ease-out sm:gap-1"
               style={{ opacity: dimmed(track.id) ? 0.3 : 1 }}
             >
+              {/* Named only while lit, so exactly one mark carries the name
+                  when a navigation starts, and it is the one being followed.
+                  The track page's mark carries the same name, and the two
+                  become one object travelling from the disc to the top of
+                  the column. Coming back, nothing here is lit, so nothing
+                  pairs and the big mark simply dissolves with its page —
+                  a morph onto a mark that has not faded in yet would fly to
+                  an empty spot.
+
+                  🔴 An inline `view-transition-name`, not React's
+                  `<ViewTransition name>`. React pairs a deleted named
+                  boundary with an appearing one only through its own
+                  bookkeeping, and across a Next route change that
+                  bookkeeping came up empty every time — the new page was in
+                  the same commit, the old boundary carried the name, and no
+                  pair formed. The browser pairs by name on its own, needs no
+                  bookkeeping, and React still starts the transition through
+                  the page-level exit boundary. */}
               <TrackMark
                 track={track}
+                name={focus === track.id ? "track-mark" : undefined}
                 className="font-display text-base leading-none sm:text-3xl md:text-4xl"
               />
-              <span className="label" style={{ fontSize: "var(--disc-label-size, 10.5px)" }}>
+              {/* The word sits back a step so the mark leads; lighting the
+                  track brings it up to full. On a composition this settled,
+                  three lines of tracked capitals were the most interface-like
+                  thing on it. */}
+              <span
+                className="label transition-opacity duration-300 ease-out"
+                style={{
+                  fontSize: "var(--disc-label-size, 10.5px)",
+                  opacity: focus === track.id ? 1 : 0.72,
+                }}
+              >
                 {dict.tracks[track.id].mark ?? dict.tracks[track.id].title}
               </span>
             </span>
@@ -824,7 +859,12 @@ export function TrinityDisc({
         <Link
           href={`/${lang}/coda`}
           aria-label={dict.hub.ariaLabel}
+          // Named while focused, on the same principle as the marks: click the
+          // face and it grows into the portrait at the top of /coda. Tapping
+          // it on a phone never hovers, so the click lights it first.
+          onClick={() => setFocus("hub")}
           style={{
+            viewTransitionName: focus === "hub" ? "portrait" : undefined,
             // Arrives with the first label, not 600ms after everything else.
             // The ring finishes drawing at 1100ms; leaving the photograph until
             // 1700 left the pinwheel's bare centre — three colours meeting at a

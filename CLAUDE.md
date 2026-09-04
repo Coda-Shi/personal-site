@@ -6,7 +6,7 @@
 >
 > **维护约定**：做了新决策、完成了里程碑、或发现了新陷阱，就更新本文件，并同步「最后更新」日期。决策只增不删——推翻旧决策时把它标记为「已废弃」并说明原因，保留推理链比保留结论更有价值。
 
-**最后更新**：2026-08-19
+**最后更新**：2026-09-04
 
 ---
 
@@ -970,6 +970,64 @@ D28 之后所有者逐轮看图定下的收尾。**视觉自此定稿。**
 
 拆成 `{0,0,0.26,0.06}` 与 `{0,0,0.17,0.19}`,对照六个视口下名字的真实矩形核过。
 
+### D30 — 离页是溶解，记号与头像会「走」过去；内页有了符号层与入场 ✅ 生效中（2026-09-04）
+
+视觉定稿（D29）之后所有者要的一轮「还有哪里可以升级」，八项全做，另换了头像。
+
+#### 头像换新
+
+新照片（水边、侧脸），`scripts/hub-portrait.py _incoming/portrait-2026-09-04.jpg --box 160 150 860 850`。裁切框是手选的：默认的正方形取整张照片，脸只占圆的一半；这个框把发顶留在圆内、下巴以下只留一点衣领。原图照旧在 `_incoming/`，gitignore。
+
+#### 🔴 路由切换是溶解，且只有「出」没有「进」
+
+D10 说「水漫是在预告目的地」，但路由一切换就是硬切——水漫、圆盘、符号层全部消失，目的地作为一个静态栏目出现在一块平涂的颜料上。铺垫了两秒半的东西在该兑现的那一刻被扔掉。
+
+现在每个页面是一个 React `<ViewTransition exit="page" default="none">`（首页在 `[lang]/page.tsx` 包 `HomeStage`，内页在 `SiteShell` 里包一个普通 `<div>`）。**离开的页面淡出（420ms）盖在已经活着的新页面上；新页面不做 enter。** 对不透明页面这和交叉淡入淡出看起来一样，对颜料**更好**：两层半透明的同色叠在黑底上，中点会暗到 75%（0.5P + 0.5·(0.5P + 0.5V)），而一层同色在一块不透明的同色上淡出，亮度纹丝不动。所以水漫铺满的那片颜料**就是**下一页的地面，中间没有一帧下陷。
+
+> 🔴 **`SiteShell` 的根必须是一个普通块级 `<div>`。** `display: contents` 没有盒子、截不了图；任何带 `transform` 的祖先都会变成里面 `fixed` 图层（地面、符号层）的包含块——`rise-in` 跑完停在 `translateY(0)` 也算 transform。所以入场动画只挂在 `<main>` 内部的元素上，符号层和地面是 `<main>` 的兄弟。
+
+`::view-transition { pointer-events: none }`：溶解那 420ms 里点击穿透到新页面。`prefers-reduced-motion` 下伪元素动画时长归零。
+
+#### 🔴 记号与头像用**内联** `view-transition-name`，不用 React 的 `name` prop
+
+圆盘上被点亮的记号和轨道页顶部的大记号同名 `track-mark`，浏览器把两者配成一对：点一个圆，它的记号离开圆盘、落到栏目顶端——同一个东西在走，不是两个东西在换。头像同理，`portrait`：点脸，脸长成 `/coda` 顶部那张。
+
+**先按文档走了 React 的 `<ViewTransition name share="morph">`，配对从来没有形成过。** 生产构建、预取已完成、新页面确认在同一次 commit 里（update 回调结束时 `h1` 已是 "Scholarly"）、旧边界带着名字——但 `appearingViewTransitions` 就是配不上，新旧两侧都没被写上 `view-transition-name`。没有继续挖 React 内部：浏览器本来就按名字配对，不需要 React 的簿记，React 只需要**启动**这次 transition（页面级 exit 边界保证了这一点）。内联样式两边一写就通了。
+
+- 圆盘侧的名字**只在点亮时存在**（`focus === track.id`；头像是 `focus === "hub"`），所以任何时刻恰好一个记号带名字，而且就是被跟随的那个。
+- **返回时不配对**：回到首页时没有东西点亮，大记号和大头像找不到伙伴，就随页面淡出（`::view-transition-old(track-mark):only-child` 对齐到 420ms）。若让它们配对，会飞向一个还没淡入的位置。
+- 键盘和触屏不经过悬停，所以标签 `<Link>` 和头像 `<Link>` 的 `onClick` 先 `setFocus`；同步更新在导航的 transition commit 之前落地。
+- `TrackMark` 的 `§` 是行内 `<span>`，行内元素截不了图，带 `name` 时设 `display: inline-block`。
+
+#### 记号只描一次：`data-navigated`
+
+轨道页顶部的记号冷加载时**描出来**（`enter`：线段 `pathLength=1` 走 `plot-stroke`，终曲记号的环 `fade-in`，`§` 淡入），但从圆盘走过来的记号已经飞到位了，再描一遍是卡顿。`NavigationFlag`（挂在 `[lang]/layout.tsx`）在第一次站内导航后给 `<html>` 打 `data-navigated`，`globals.css` 据此把 `.plot-mark` 的动画关掉。用 `useLayoutEffect` 是为了和新页面同一帧落地。冷加载永远没有这个属性。
+
+#### 内页的符号层与入场
+
+- `SymbolField` 新增 `ground` 模式：`SiteShell` 的 `field` prop 把该轨道的符号层放到栏目后面——同一个组件、同一块画板、同一套位置，所以首页点亮的符号层溶解进来时每个符号都在原地。`opacity: 0.45`、不呼吸、不错峰（页面本身在入场，符号层再花一秒自我拼装就是第二件事）。**≥64rem 时用 `mask-image` 从栏目底下挖掉**（48rem 栏目两侧各 4rem 渐隐），符号住在页边，像旁注；更窄的屏幕栏目就是整个屏幕，符号淡淡地垫在后面。
+- z-index：地面 `-20`、符号层 `-10`。
+- 入场：记号（描或飞）→ 标题 `rise-in` 80ms → 横线 `rule-in`（`scaleX` 从左画出，260ms）→ lede 220ms → 正文整块 340ms。逐条错峰试过又删了：八条经历的页面读者已经开始读了它还在到。其他内页由 `SiteShell` 给正文一个 120ms 的整块 `rise-in`（`ownEntrance` 关掉它）；返回链接 0ms、页脚 480ms。
+- `/coda` 顶部有了脸（`size-28 / md:size-36`，同一张照片，`priority`），圈是单独的 SVG 圆用圆盘同一套 `plot-stroke` 描出来的，**不受 `data-navigated` 抑制**——脸飞过来、线绕着它合拢，正是要的效果。D9 禁的是颜料和记号，照片是编码的反面。
+
+#### 悬停统一、标签退一步、中文标点
+
+- `.link-line`：所有文字链接悬停时一根骨白细线从左向右画出来（`background-size` 0→100%，260ms），颜色提亮保留。圆盘的语汇是「线在画」，链接也是。线位于行内盒底部上方 0.12em——加宽大写没有下伸部，放在下伸深度会飘。方框按钮和整行链接（诗文索引）不用它。
+- 圆盘上的三个词静止时 `opacity: 0.72`，点亮到 1；记号做主。
+- `:lang(zh) { text-spacing-trim: trim-start; hanging-punctuation: allow-end }`——§8 挂了一个月的那条。行首「不再缩进半格，Safari 允许句末标点悬挂。两条都只会退化成无。
+
+#### OG 卡片按 Venn 重画
+
+`scripts/brand-images.py` 画了一个月的旧环形扇区——**每一条链接预览都在展示一个网站上已不存在的设计**。现在逐常量转录 `trinity-disc.tsx`：三圆、顺时针交叠色、漩涡中心、遮罩断线、圈，用 numpy 逐像素判定区域（Pillow 没有布尔几何），4× 超采样。
+
+> ⚠️ **Google 给的 Cormorant 是可变字体**（一个文件一个子集，`wght` 300–700，name 表全叫 "Cormorant Garamond Light"）。没有 SemiBold 文件可找，字重是用 `fontTools.varLib.instancer` 在读入时**造**出来的。名字用 300（页面 h1 是 `font-light`），标签用 600 配 0.16em 字距（`.label`）。
+
+#### 验证方法（这套值得留）
+
+- **预览面板里 `document.visibilityState === "hidden"`，浏览器会直接中止 view transition**（`InvalidStateError: Transition was aborted because of invalid state`）。但 React 的 `update` 回调照常执行，所以给 `document.startViewTransition` 打补丁、在 `start` 时和 `update` 结束后各记一次 `[style*="view-transition-name"]`，就能断言两侧的名字——配没配上看这个，不看动画。
+- **`next dev` 不预取**，目的地会先挂起，这在 dev 里永远看不到配对。用 `next start -p 3001`（`~/dev/.claude/launch.json` 里的 `personal-site-prod`）测生产构建；dev 与 build 可以并行（Next 16 的 `.next/dev`）。
+- 直接调 React props 里的 `onMouseEnter()` 不会同步 commit（在 React 事件系统之外），名字要等下一次渲染才出现；Next `<Link>` 的 `onMouseEnter` 需要一个带 `currentTarget` 的事件对象。
+
 ## 5. 工作流约定
 
 **不要直接改 `main`。** 标准循环：
@@ -1057,6 +1115,7 @@ gh pr create --fill
 - [x] 首页改为波罗米环式三重 Venn，符号层铺满整页（2026-08-19，见 D27）
 - [x] 交叠处顺时针延续单一颜色、水漫只张开、四张学术图版改用扫图（2026-08-19，见 D28）
 - [x] 中心改为漩涡、入场三笔一气并延展成圈、入场期间禁止交互（2026-08-20，见 D29）**视觉定稿**
+- [x] 换头像；离页溶解、记号与头像随导航「走」过去；内页符号层、入场、`/coda` 头像；悬停统一；中文标点；OG 卡片按 Venn 重画（2026-09-04，见 D30）
 - [x] 修掉 `SymbolField` 的 hydration mismatch（见 D15）
 - [x] 中英双语骨架：`/[lang]/` 路由、`proxy.ts`、语言切换开关、中文字体（见 D16、D17）
 - [x] 中文首页文案定稿并上线（简介、三条线名称与 lede、中心、提示语）
@@ -1108,7 +1167,7 @@ gh pr create --fill
 
 1. **CV 正文翻译**。条目在 `content.ts` 的 `TRACKS[].entries`、`EDUCATION`、`ADVOCACY`、`SKILLS`。译文进 `i18n.ts` 的 `zh`，需要先扩 `Dictionary` 类型。**工作量最大的一块，但纯机械。译完必须重跑 `scripts/subset-fangsong.py`**，否则新字符会掉回系统字体。
 2. ~~朱雀仿宋 vendore 进仓库~~ ✅ 2026-08-09 完成，见 D17。
-3. **中文标点空隙**。全角顿号句号在 lede 字号下空得明显，且会把「迷。」这类孤字甩到下一行。可选 `text-spacing-trim: trim-start`（Chrome 支持）；`hanging-punctuation` 目前只有 Safari 支持。所有者尚未定夺。
+3. ~~**中文标点空隙**~~ ✅ 2026-09-04 完成，见 D30：`text-spacing-trim: trim-start` + `hanging-punctuation: allow-end`。
 
 ## 8.5 换机器怎么接上
 

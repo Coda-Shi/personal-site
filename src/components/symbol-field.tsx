@@ -809,9 +809,22 @@ const LAYOUTS: Record<BoardKey, Record<TrackId, Placed[]>> = {
 export function SymbolField({
   track,
   active,
+  ground = false,
 }: {
   track: TrackId;
   active: boolean;
+  /**
+   * At rest behind a track page's column, rather than lit behind the disc.
+   *
+   * Everything is there at once — no staggered arrival, because the page it
+   * sits on is what is arriving, and a field that assembled itself over a
+   * second under a column of text would be a second thing happening. Not
+   * breathing, because it is a background to read against now, and
+   * globals.css sets it back and masks it out from under the column on wide
+   * screens. Same board, same layout: when the lit home page dissolves into
+   * this one, every symbol is already where it was.
+   */
+  ground?: boolean;
 }) {
   /**
    * The plates are held back until the browser has nothing better to do.
@@ -888,11 +901,14 @@ export function SymbolField({
   // Each element carries its own delay so the field assembles unevenly rather
   // than switching on as a block. On the way out the delay drops to zero, so
   // closing a sector is immediate — a staggered exit reads as lag.
-  const reveal = (target: number, delay: number) => ({
-    opacity: active ? target : 0,
-    transition: "opacity 620ms ease-out",
-    transitionDelay: active ? `${delay}ms` : "0ms",
-  });
+  const reveal = (target: number, delay: number) =>
+    ground
+      ? { opacity: target }
+      : {
+          opacity: active ? target : 0,
+          transition: "opacity 620ms ease-out",
+          transitionDelay: active ? `${delay}ms` : "0ms",
+        };
 
   // Both boards are rendered and CSS shows one. Choosing at runtime would make
   // the markup depend on the viewport, which the server cannot know — the exact
@@ -913,7 +929,9 @@ export function SymbolField({
             viewBox={`0 0 ${board.w} ${board.h}`}
             preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
-      className={`symbol-field field-${board.key} pointer-events-none fixed inset-0 -z-10 size-full text-bone`}
+      className={`symbol-field field-${board.key} ${
+        ground ? "field-ground " : ""
+      }pointer-events-none fixed inset-0 -z-10 size-full text-bone`}
     >
       {figures.map((figure) => {
         const box = figure.boxes[key];
@@ -976,7 +994,7 @@ export function SymbolField({
                * picks up where it left off instead of every symbol snapping to
                * the start of its cycle the moment the sector lights.
                */
-              animationPlayState: active ? "running" : "paused",
+              animationPlayState: active && !ground ? "running" : "paused",
             }}
           >
             <text

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { ViewTransition } from "react";
 import { HomeStage } from "@/components/home-stage";
 import { getDictionary, hasLocale } from "@/lib/i18n";
 import { localeAlternates } from "@/lib/site";
@@ -23,5 +24,12 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
 
-  return <HomeStage lang={lang} dict={getDictionary(lang)} />;
+  // Leaving is a dissolve: this page fades out over the one arriving, which
+  // is live underneath it and already wears the pigment the flood showed. The
+  // lit mark and the portrait travel separately — see TrinityDisc.
+  return (
+    <ViewTransition exit="page" default="none">
+      <HomeStage lang={lang} dict={getDictionary(lang)} />
+    </ViewTransition>
+  );
 }
