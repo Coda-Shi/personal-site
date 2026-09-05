@@ -20,6 +20,14 @@ import { nav } from "@/lib/navigation";
  *
  * The name stays. It is one short line, it sits clear of every wedge, and
  * without it a lit page has nobody's name on it.
+ *
+ * On a phone the footer goes too. There the footer is not a quiet row at the
+ * bottom of a big screen but a stack — two addresses and a wrapped nav —
+ * sitting right under the disc, and the owner wants the bloom to have the
+ * whole screen: 颜色绽放的时候就隐去下面的那些联系方式诗文什么的. Desktop is
+ * untouched. Done in CSS off a `data-lit` attribute (see globals.css), on an
+ * inner wrapper rather than the footer itself, because the footer carries
+ * the entrance animation and a finished animation pins opacity — D10.
  */
 /**
  * How the page arrives, decided once, on the first render.
@@ -107,6 +115,7 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
       className={`home-stage relative grid h-dvh w-full place-items-center overflow-hidden ${
         ready ? "" : "pointer-events-none"
       }`}
+      data-lit={lit ? "" : undefined}
     >
       {/* From md up: top-right, opposite the name, outside the header so it
           does not recede with the intro copy when a beam fires.
@@ -185,6 +194,9 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
         className="absolute inset-x-6 bottom-6 z-10 md:inset-x-10 md:bottom-8"
         style={enter(ENTRANCE.footer)}
       >
+        {/* One wrapper for everything in the footer, so that on a phone it can
+            step aside for the flood as a block (see the note at the top). */}
+        <div className="footer-body">
         {/* Phones only — the same two links live top-right from md up. */}
         <div className="mb-3 flex flex-col gap-0.5 md:hidden">{emails}</div>
 
@@ -196,9 +208,10 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             encodes the three public identities; D9 requires the private self
             to stay unencoded, and the writing is the deepest part of that — a
             fourth sector or a fourth mark would contradict the one thing the
-            composition is saying. The footer is also the half of the screen
-            that does not recede when a beam fires, so the door stays open
-            while the visitor is exploring. */}
+            composition is saying. On a desktop the footer is also the half of
+            the screen that does not recede when a beam fires, so the door
+            stays open while the visitor is exploring; on a phone it steps
+            aside with everything else (see the note at the top). */}
         <Link
           href={`/${lang}/writing`}
           className="link-line border-r border-bone/25 pr-8 font-display text-lg italic text-bone/70 transition-colors hover:text-bone"
@@ -269,6 +282,7 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
           </a>
         </span>
           <LanguageToggle lang={lang} label={dict.switchTo} />
+        </div>
         </div>
       </footer>
     </main>
