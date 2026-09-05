@@ -128,25 +128,30 @@ const FILL_SHIFT = "fill 380ms ease-out";
  * then 120° round it, the three laying down the ring between them (see
  * `outline`). Two versions were tried and sent back — three strokes on one
  * beat (D29), and arcs first, a pause, then the ring on its own beat (D31).
- * What the owner asked for, twice, is the single stroke with the three
- * *starting* at different times and finishing when they finish: 三条线在不同
- * 的时间开始，但是不必同时画完. So they begin `stagger` apart in the cycle's
- * clockwise order — creative, professional, scholarly — each taking the same
- * time, and the ring closes in three parts as each arrives.
+ * What the owner asked for is the single stroke with the three *starting*
+ * at different times. So they begin `stagger` apart in the cycle's clockwise
+ * order — creative, professional, scholarly — and, since D33, they all
+ * *arrive together*: every stroke ends at `end`, so the one that starts last
+ * draws fastest, and the three close the ring in the same instant. The
+ * paths are the same length (each is 270° of its own circle and a third of
+ * the ring), and this is what makes the three *look* equal as well: with
+ * equal durations the first one out was ahead at every moment, and the owner
+ * read that as the red line being longer than the others. 现在看起来红色最长.
  *
  * 🔴 The stagger has to be large against the stroke's easing. Ease-in-out
  * draws almost nothing in its first 150ms, so starts 160ms apart looked
  * simultaneous — which is the version that came back. 300ms puts the first
- * stroke a third of the way round before the last one moves.
+ * stroke well on its way before the last one moves.
  *
- * Pigment inks in as the second stroke lands, the face arrives as the last
- * one seals the ring, then the words, then the footer. `done` is the
+ * Pigment inks in as the strokes are closing on the portrait, the face
+ * arrives as the ring seals, then the words, then the footer. `done` is the
  * footer's end, and the page is touchable from then (see HomeStage).
  */
 export const ENTRANCE = {
   lines: 200,
   stagger: 300,
-  linesFor: 900,
+  /** Every stroke's end. Durations are solved from it, per track. */
+  end: 1700,
   ink: 1350,
   portrait: 1600,
   labels: 1750,
@@ -270,16 +275,18 @@ const MIDDLE: ReadonlyArray<{ from: number; to: number; track: TrackId }> = [
 ];
 
 /**
- * The strokes begin in the cycle's order, one `stagger` apart.
+ * The strokes begin in the cycle's order, one `stagger` apart, and all end at
+ * `ENTRANCE.end` — so each one's duration is what is left between its start
+ * and that: 1500, 1200 and 900ms.
  *
  * Declared after CYCLE on purpose: module-level constants are evaluated in
  * source order, and reading CYCLE above its declaration throws at load.
  */
 const DRAW_ORDER: readonly TrackId[] = CYCLE.map(({ from }) => from);
-const plot = (track: TrackId) =>
-  `plot-stroke ${ENTRANCE.linesFor}ms cubic-bezier(0.65, 0, 0.35, 1) ${
-    ENTRANCE.lines + ENTRANCE.stagger * DRAW_ORDER.indexOf(track)
-  }ms both`;
+const plot = (track: TrackId) => {
+  const start = ENTRANCE.lines + ENTRANCE.stagger * DRAW_ORDER.indexOf(track);
+  return `plot-stroke ${ENTRANCE.end - start}ms cubic-bezier(0.65, 0, 0.35, 1) ${start}ms both`;
+};
 
 /**
  * A wedge from the centre, far larger than the middle region, for clipping.

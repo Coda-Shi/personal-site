@@ -423,6 +423,27 @@
   }
 }
 
+/* ── On a phone the footer steps aside for the flood ──────────────────────
+   Below md the footer is a stack right under the disc — two addresses and a
+   wrapped nav — and the owner wants a bloom to have the whole screen there.
+   Same timing as the intro copy at the top: quick out, slow back. Applied to
+   the inner wrapper, not the footer, because the footer carries the entrance
+   animation and a finished animation with `both` pins its opacity (D10).
+   Not tappable while it is gone: a tap that lands on an invisible link is a
+   navigation nobody asked for. Desktop keeps the footer, on purpose — it is
+   the half of the screen that stays while the visitor explores. */
+@media (max-width: 767px) {
+  .home-stage .footer-body {
+    transition: opacity 620ms ease-out;
+  }
+
+  .home-stage[data-lit] .footer-body {
+    opacity: 0;
+    pointer-events: none;
+    transition-duration: 260ms;
+  }
+}
+
 /* The two addresses sit above the footer nav on a phone, and they should read
    as quieter than it. `.label` sets its own font-size, and an arbitrary
    Tailwind size is the same kind of utility, so which one wins is down to
