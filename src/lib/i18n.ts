@@ -304,9 +304,9 @@ const zh: Partial<Dictionary> = {
   hub: {
     name: "Coda",
     qualifier: "其人",
-    ariaLabel: "Coda 其人 — 书写与行路；求索与感受",
+    ariaLabel: "Coda 其人 — 书写与行路；求索与感受。",
     heading: "Coda 其人",
-    subheading: "书写与行路；求索与感受",
+    subheading: "书写与行路；求索与感受。",
   },
   nav: { cv: "简历", coda: "Coda 其人", writing: "诗文", studio: "唱诗人工作室", email: "邮箱" },
   writing: {
