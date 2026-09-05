@@ -370,6 +370,87 @@ function overlaps(a: Box, b: Box) {
 }
 
 /**
+ * Squared gap between two boxes — zero when they touch or overlap.
+ *
+ * Squared, and never rooted: this only ever *ranks* candidates, and a
+ * product of two snapped differences is exactly specified by IEEE 754 where
+ * `Math.hypot` is not (D15). A ranking that could differ by an ulp between
+ * Node and Chrome would be a layout that differs between them.
+ */
+function gap2(a: Box, b: Box) {
+  const dx = Math.max(0, b.x - (a.x + a.w), a.x - (b.x + b.w));
+  const dy = Math.max(0, b.y - (a.y + a.h), a.y - (b.y + b.h));
+  return dx * dx + dy * dy;
+}
+
+/**
+ * How much room a candidate has, squared: its gap to the nearest *text*
+ * already placed, or twice its distance to the board's edge, whichever is
+ * smaller.
+ *
+ * Texts only, not the plates. A plate is content, not a neighbour to keep
+ * away from — the corridor between the disc and Jung's diagram is exactly
+ * the kind of strip that should carry a small word, and measured against the
+ * plate every spot in it scored badly and it stayed bare. The plates still
+ * take part in the overlap test; they just do not push text away.
+ *
+ * The edge term is there because "farthest from everything" is, at the edge
+ * of the board, the edge itself: without it the small words queued up along
+ * the right-hand margin like a column of type. Doubled, so it only bites
+ * when a candidate is actually hugging the edge — an item 60 units in scores
+ * as if it had 120 units of clear space, which is ordinary.
+ */
+function room(box: Box, texts: Box[], board: Board) {
+  let nearest = Infinity;
+  for (const b of texts) {
+    const g = gap2(box, b);
+    if (g < nearest) nearest = g;
+  }
+  const edge = Math.min(
+    box.x - EDGE,
+    board.w - EDGE - (box.x + box.w),
+    box.y - EDGE,
+    board.h - EDGE - (box.y + box.h),
+  );
+  const margin = 2 * edge;
+  return Math.min(nearest, margin * margin);
+}
+
+/**
+ * How many valid positions are weighed before one is chosen.
+ *
+ * 🔴 **Placement is best-of-several, not first-fit.** First-fit — take the
+ * first candidate that clears everything — is what random-with-rejection
+ * had always done, and it is why the field had holes: a candidate is
+ * accepted wherever it happens to fall, so two items land side by side
+ * while the band next to the disc, or the strip under a plate, stays bare.
+ * The owner: 学术底页里面有一些空处看着不舒服.
+ *
+ * Now every item draws up to this many valid candidates and takes the one
+ * farthest from everything placed so far (Mitchell's best-candidate
+ * sampling). Each item goes to the emptiest room left, so the holes fill in
+ * order of size, and the result is blue-noise rather than white: even
+ * without being regular. The sizes, tiers and bands are untouched, so the
+ * 错落有致 the owner likes — large and small, near and far — is exactly as it
+ * was; only the gaps between neighbours evened out. Twelve is enough to close
+ * the holes and few enough that the field still reads as scattered rather
+ * than as laid on a grid.
+ */
+const CANDIDATES = 12;
+
+/**
+ * How many positions are drawn for an item before it is given up on.
+ *
+ * Raised from 140 when placement became best-of-several: the earlier items
+ * now take the roomiest spots, which leaves the later ones a more broken-up
+ * board to fit into, and the phone board — 1000 units across with the disc
+ * taking 600 of them — was dropping two more of Scholarly's items than it
+ * had. More draws find the slots that are still there. Cheap: this runs once
+ * per board per track, at module load.
+ */
+const ATTEMPTS = 240;
+
+/**
  * Reserved rectangles, as fractions of the board, that no glyph may enter.
  *
  * The field used to be masked to its own 120° wedge, so the copy was safe by
@@ -650,6 +731,8 @@ function layout(track: TrackId, board: Board): Placed[] {
         ? FIGURES.map((f) => f.boxes[board.key])
         : [];
   const placed: Placed[] = [];
+  /** The text boxes alone, for `room` — the plates are in `taken`, not here. */
+  const texts: Box[] = [];
   let seed = track.length * 97 + 5;
 
   const queue: [Tier, SymbolItem][] = [
@@ -686,9 +769,22 @@ function layout(track: TrackId, board: Board): Placed[] {
     for (const step of [1, 0.88]) {
       if (settled) break;
 
+      /** The best position found at this size, if any — see CANDIDATES. */
+      let best: {
+        box: Box;
+        cx: number;
+        cy: number;
+        k: number;
+        size: number;
+        lines: string[];
+        seed: number;
+        room: number;
+      } | null = null;
+      let valid = 0;
+
       // Size, wrapping and box all depend on where the item lands, so they are
       // solved per candidate rather than once up front.
-      for (let attempt = 0; attempt < 140 && !settled; attempt += 1) {
+      for (let attempt = 0; attempt < ATTEMPTS && valid < CANDIDATES; attempt += 1) {
         seed += 1;
         // Any bearing: the field is no longer masked to a wedge, so the
         // candidate can land anywhere the rejection test below allows.
@@ -759,32 +855,42 @@ function layout(track: TrackId, board: Board): Placed[] {
         if (!insideField(box, board)) continue;
         if (taken.some((b) => overlaps(b, box))) continue;
 
-        taken.push(box);
-        // Everything that signals depth keys off the same k: further out means
-        // smaller, dimmer, softer, and later to arrive.
-        // 2.25–4.25s, halved from 4.5–8.5 at the owner's request, and the
-        // swing in `@keyframes drift` deepened from 0.68→1 to 0.46→1 to go
-        // with it. The first pass ran 9–17s and read as nothing happening at
-        // all; this is the third setting and the first one you can see.
-        const period = Math.round(2250 + rand(seed * 5 + 11) * 2000);
-        placed.push({
-          key: `${tier}-${item.text}`,
-          lines,
-          face: item.face,
-          cx,
-          cy,
-          size,
-          opacity: t.o0 + (t.o1 - t.o0) * k,
-          delay: Math.round(t.d0 + rand(seed * 3 + 7) * (t.d1 - t.d0)),
-          // Under half a unit there is nothing to see, and every non-zero
-          // value here costs the compositor a filter region of its own. This
-          // drops the filter from roughly a third of the field for free.
-          blur: snap(t.blur * k, 1e2) < 0.45 ? 0 : snap(t.blur * k, 1e2),
-          period,
-          phase: Math.round(rand(seed * 7 + 13) * period),
-        });
-        settled = true;
+        valid += 1;
+        const score = room(box, texts, board);
+        // Strictly greater, so an equal score keeps the earlier candidate.
+        if (best === null || score > best.room) {
+          best = { box, cx, cy, k, size, lines, seed, room: score };
+        }
       }
+
+      if (best === null) continue;
+      const { box, cx, cy, k, size, lines, seed: chosen } = best;
+      taken.push(box);
+      texts.push(box);
+      // Everything that signals depth keys off the same k: further out means
+      // smaller, dimmer, softer, and later to arrive.
+      // 2.25–4.25s, halved from 4.5–8.5 at the owner's request, and the
+      // swing in `@keyframes drift` deepened from 0.68→1 to 0.46→1 to go
+      // with it. The first pass ran 9–17s and read as nothing happening at
+      // all; this is the third setting and the first one you can see.
+      const period = Math.round(2250 + rand(chosen * 5 + 11) * 2000);
+      placed.push({
+        key: `${tier}-${item.text}`,
+        lines,
+        face: item.face,
+        cx,
+        cy,
+        size,
+        opacity: t.o0 + (t.o1 - t.o0) * k,
+        delay: Math.round(t.d0 + rand(chosen * 3 + 7) * (t.d1 - t.d0)),
+        // Under half a unit there is nothing to see, and every non-zero
+        // value here costs the compositor a filter region of its own. This
+        // drops the filter from roughly a third of the field for free.
+        blur: snap(t.blur * k, 1e2) < 0.45 ? 0 : snap(t.blur * k, 1e2),
+        period,
+        phase: Math.round(rand(chosen * 7 + 13) * period),
+      });
+      settled = true;
     }
     // Still nowhere: dropped. A gap reads as composition; an overlap reads as
     // a bug.
