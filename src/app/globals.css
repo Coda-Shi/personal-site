@@ -76,6 +76,18 @@
     }
   }
 
+  /* On a short window the name stays at its phone size. A landscape phone is
+     wider than md, so it would otherwise get the 30px desktop name — and on
+     a 375px-tall window that is 8% of the height, ending 1px below the
+     wide board's name guard, where two of the field's smallest words then
+     sat on its baseline. Unlayered rather than a utility so it beats
+     `md:text-3xl` without depending on order. */
+  @media (max-height: 600px) {
+    .home-name {
+      font-size: 1.5rem;
+    }
+  }
+
   /* The roles line alone carries the home screen on a phone. The sentence
      under it is three lines of wrap at 375px, which crowds the disc and
      buries the one line that actually says who he is. It returns at md,
@@ -177,6 +189,19 @@
 @media (orientation: landscape) {
   .home-stage {
     --disc: min(56vh, 30rem, 34vw);
+  }
+}
+
+/* The 2:1 board (see BOARDS.ultra in symbol-field.tsx) can be width-limited
+   on viewports between 1.8:1 and 2:1, and it is 4000 units across rather
+   than 3200: at 34vw the disc's outer extent would reach 632 board units,
+   over that board's rMin of 600. 30vw holds it at 558. Neither arm changes
+   the disc on a common desktop — at 1600×816 and 1920×940 the 56vh and 30rem
+   arms still bind. Same media query as the board switch below, and it must
+   stay the same. */
+@media (orientation: landscape) and (min-aspect-ratio: 9/5) and (min-height: 600px) {
+  .home-stage {
+    --disc: min(56vh, 30rem, 30vw);
   }
 }
 
@@ -409,7 +434,8 @@
    fitted into 768×1024 renders as a 480px strip across the middle of the
    screen. Orientation is also the honest test: what decides which board fits
    is the window's shape, not its size. */
-.field-tall {
+.field-tall,
+.field-ultra {
   display: none;
 }
 
@@ -419,6 +445,20 @@
   }
 
   .field-tall {
+    display: block;
+  }
+}
+
+/* Wide *and* tall enough: a desktop browser on a 16:9 or 16:10 screen. The
+   height floor keeps landscape phones (812×375 is 2.17:1) on the wide board,
+   whose guards are sized for them. Mirrored exactly by the media query in
+   SymbolField that decides which board warms its plates — keep them in step. */
+@media (orientation: landscape) and (min-aspect-ratio: 9/5) and (min-height: 600px) {
+  .field-wide {
+    display: none;
+  }
+
+  .field-ultra {
     display: block;
   }
 }
