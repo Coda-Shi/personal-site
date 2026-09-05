@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import { PhotoDeck } from "@/components/photo-deck";
 import { VideoEmbed } from "@/components/video-embed";
+import { PERFORMANCES } from "@/content/performances";
 import { BILIBILI, COVER, MUSIC, STUDIO_URL, TRACKS } from "@/lib/content";
 import { EntryList, TrackPage } from "@/components/track-page";
 import { getDictionary, hasLocale, localise } from "@/lib/i18n";
@@ -152,6 +154,15 @@ export default async function Page({ params }: PageProps<"/[lang]/creative">) {
         </ul>
 
       </section>
+
+      {/* Photographs from the stage, when there are any — the list is empty
+          until the owner sends them, and an empty heading is worse than none. */}
+      {PERFORMANCES.length ? (
+        <section className="mt-16">
+          <h2 className="label text-bone/75">{dict.headings.live}</h2>
+          <PhotoDeck photos={PERFORMANCES} labels={dict.deck} />
+        </section>
+      ) : null}
     </TrackPage>
   );
 }
