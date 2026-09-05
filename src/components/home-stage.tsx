@@ -133,7 +133,7 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             not, which makes overlap impossible to reason about — cap the boxes
             and the geometry becomes checkable. */}
         <h1
-          className="oldstyle w-fit font-display text-2xl leading-none font-light tracking-tight md:text-3xl"
+          className="home-name oldstyle w-fit font-display text-2xl leading-none font-light tracking-tight md:text-3xl"
           style={enter(0)}
         >
           {NAME}

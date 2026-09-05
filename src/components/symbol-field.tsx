@@ -51,7 +51,7 @@ import {
  * something the server cannot know, which is the hydration failure D15 exists
  * to prevent.
  */
-type BoardKey = "wide" | "tall";
+type BoardKey = "wide" | "tall" | "ultra";
 
 type Board = {
   key: BoardKey;
@@ -111,6 +111,29 @@ const BOARDS: Record<BoardKey, Board> = {
    * of the phone go unused — which cost eleven of Scholarly's symbols.
    */
   tall: { key: "tall", w: 1000, h: 2000, rMin: 315, reach: 0.62, reachOuter: 0.92 },
+  /**
+   * 2:1, for the screens most desktops actually are.
+   *
+   * The 8:5 board was matched to a laptop's *screen*; a browser on that
+   * screen is shorter than the screen by its own chrome, and a 16:9 monitor
+   * with a tab strip and address bar gives a viewport around 1.9–2.1 to 1.
+   * Fitted with `meet`, the 8:5 board on those is height-limited and leaves
+   * a bare band down each side — 147px of nothing either side at 1600×816,
+   * which is what the owner was looking at. This board covers them.
+   *
+   * Same height as the wide board, so wherever a board is height-limited
+   * the scale — and with it every tier's rendered size — is identical; only
+   * the width grew. rMin 600 rather than 580 because this board can also be
+   * *width*-limited (viewports between 1.8:1 and 2:1), and there the disc is
+   * capped at 30vw so that its outer extent stays at 558 units or under; the
+   * height-limited case gives 521. Both clear 600. The wide board's 34vw
+   * would have put the extent at 632 — see the `--disc` rule in globals.css.
+   *
+   * `reachOuter` 1.65: the corners are 2236 units out and the texture band's
+   * outer radius is 1360; the band is clipped to the rectangle per bearing,
+   * so this only has to be large enough.
+   */
+  ultra: { key: "ultra", w: 4000, h: 2000, rMin: 600, reach: 1, reachOuter: 1.65 },
 };
 
 const centre = (b: Board) => ({ x: b.w / 2, y: b.h / 2 });
@@ -527,6 +550,23 @@ const RESERVED: Record<
     // the nav row wraps; a tablet keeps its addresses up top and needs 0.949.
     { x0: 0, y0: 0.85, x1: 1, y1: 1 },
   ],
+  /**
+   * Measured at 1080×600, 1366×700, 1600×816, 1920×940 and 2560×1200 — the
+   * board only serves viewports at least 600 tall, so nothing here has to
+   * make room for a landscape phone, and every guard is shallower than the
+   * wide board's. The addresses need 0.11 of the height, not 0.22, which is
+   * what opens up the top-right corner the owner pointed at; the footer only
+   * runs across the left 0.62 of the width and needs 0.07 of the height.
+   */
+  ultra: [
+    // The name: widest at 1080×600 (0.222), deepest at 1366×700 (0.096).
+    { x0: 0, y0: 0, x1: 0.23, y1: 0.1 },
+    // The two addresses, top right: from 0.752 at 1080×600, to 0.102 deep.
+    { x0: 0.75, y0: 0, x1: 1, y1: 0.11 },
+    // The footer row: from 0.936 down at 1366×700, and 0.61 of the width at
+    // 1080×600. The right of the bottom band is free.
+    { x0: 0, y0: 0.93, x1: 0.62, y1: 1 },
+  ],
 };
 
 /** Every corner must clear the disc, the board edge and the reserved blocks. */
@@ -594,6 +634,12 @@ const PLATE_BOXES: Record<BoardKey, Box[]> = {
   tall: [
     { x: 660, y: 420, w: 210, h: 296 },
     { x: 40, y: 1280, w: 330, h: 399 },
+  ],
+  // The wide pair, each moved 160 units outward on the wider board — still
+  // flanking the disc rather than pushed to the corners.
+  ultra: [
+    { x: 3000, y: 660, w: 440, h: 620 },
+    { x: 360, y: 620, w: 620, h: 750 },
   ],
 };
 
@@ -674,6 +720,7 @@ const FIGURES: ReadonlyArray<{
     boxes: {
       wide: { x: 560, y: 130, w: 560, h: 480 },
       tall: { x: 30, y: 1330, w: 380, h: 326 },
+      ultra: { x: 700, y: 220, w: 560, h: 480 },
     },
   },
   {
@@ -684,6 +731,7 @@ const FIGURES: ReadonlyArray<{
     boxes: {
       wide: { x: 2320, y: 560, w: 520, h: 615 },
       tall: { x: 700, y: 400, w: 275, h: 325 },
+      ultra: { x: 2820, y: 520, w: 520, h: 615 },
     },
   },
   {
@@ -694,6 +742,7 @@ const FIGURES: ReadonlyArray<{
     boxes: {
       wide: { x: 250, y: 1040, w: 430, h: 551 },
       tall: { x: 40, y: 270, w: 260, h: 333 },
+      ultra: { x: 300, y: 1050, w: 430, h: 551 },
     },
   },
   {
@@ -704,6 +753,7 @@ const FIGURES: ReadonlyArray<{
     boxes: {
       wide: { x: 2540, y: 1230, w: 520, h: 464 },
       tall: { x: 660, y: 1290, w: 310, h: 277 },
+      ultra: { x: 2950, y: 1250, w: 520, h: 464 },
     },
   },
 ];
@@ -910,6 +960,11 @@ const LAYOUTS: Record<BoardKey, Record<TrackId, Placed[]>> = {
     creative: layout("creative", BOARDS.tall),
     professional: layout("professional", BOARDS.tall),
   },
+  ultra: {
+    scholarly: layout("scholarly", BOARDS.ultra),
+    creative: layout("creative", BOARDS.ultra),
+    professional: layout("professional", BOARDS.ultra),
+  },
 };
 
 export function SymbolField({
@@ -985,11 +1040,19 @@ export function SymbolField({
    */
   const [liveBoard, setLiveBoard] = useState<BoardKey | null>(null);
   useEffect(() => {
+    // 🔴 These two must stay the exact complement of the rules that pick a
+    // board in globals.css: portrait → tall, wide-and-tall-enough → ultra,
+    // everything else → wide. If they drift, the visible board is the one
+    // that never loads its plates.
     const mq = window.matchMedia("(orientation: portrait)");
-    const pick = () => setLiveBoard(mq.matches ? "tall" : "wide");
-    // Rotating a phone changes which board CSS shows, so the other one has to
-    // be able to warm up late.
+    const ultra = window.matchMedia(
+      "(orientation: landscape) and (min-aspect-ratio: 9/5) and (min-height: 600px)",
+    );
+    const pick = () => setLiveBoard(mq.matches ? "tall" : ultra.matches ? "ultra" : "wide");
+    // Rotating a phone, or resizing a window across the 1.8:1 line, changes
+    // which board CSS shows, so the others have to be able to warm up late.
     mq.addEventListener("change", pick);
+    ultra.addEventListener("change", pick);
     // `requestIdleCallback` is typed as always present but Safari shipped it
     // late, so the guard is a runtime one. Written as an `if` rather than a
     // ternary because TypeScript reads `idle ? …` on a function type as a
@@ -999,12 +1062,14 @@ export function SymbolField({
       const timer = window.setTimeout(pick, 1800);
       return () => {
         mq.removeEventListener("change", pick);
+        ultra.removeEventListener("change", pick);
         window.clearTimeout(timer);
       };
     }
     const handle = idle(pick, { timeout: 3000 });
     return () => {
       mq.removeEventListener("change", pick);
+      ultra.removeEventListener("change", pick);
       window.cancelIdleCallback(handle);
     };
   }, []);
@@ -1060,9 +1125,18 @@ export function SymbolField({
       // one than on the other and the board re-fitted between them — the
       // texture stepped sideways during the dissolve. This keeps the box the
       // same size on both, the last few pixels sitting under the scrollbar.
+      //
+      // 🔴 And `h-full`, explicitly. An absolutely positioned *replaced*
+      // element with a width and `height: auto` takes its height from its
+      // intrinsic ratio — this SVG's viewBox — and `bottom: 0` is simply
+      // ignored. So `inset-y-0` alone made the layer 100vw / 1.6 tall: on a
+      // 2:1 screen that is 18% taller than the viewport, the board fitted by
+      // width instead of height, and the bottom row of the field was cut off.
+      // It went unnoticed because the 1512×944 test viewport happens to have
+      // the board's own aspect, where the two heights coincide.
       className={`symbol-field field-${board.key} ${
         ground ? "field-ground " : ""
-      }pointer-events-none fixed inset-y-0 left-0 -z-10 w-screen text-bone`}
+      }pointer-events-none fixed top-0 left-0 -z-10 h-full w-screen text-bone`}
     >
       {figures.map((figure) => {
         const box = figure.boxes[key];
