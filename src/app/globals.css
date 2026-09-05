@@ -317,6 +317,30 @@
   }
 }
 
+/* ── The field rides the flood ────────────────────────────────────────────
+   The symbol layer is scaled about the lit circle's centre, from inside the
+   circle (where the disc paints over it) to full, on the flood's clock — so
+   the symbols come out of the colour and go back into it, never floating on
+   nothing. Durations are set inline from lib/flood.ts, next to the flood's
+   own. See SymbolField. */
+@keyframes field-rise {
+  from {
+    transform: scale(var(--field-min, 0.05));
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes field-fall {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(var(--field-min, 0.05));
+  }
+}
+
 /* Slow breathing for the symbol field. Applied to a wrapper <g>, never to the
    text itself: the text owns an opacity transition for the reveal, and an
    animation on the same property would win outright and the reveal would stop

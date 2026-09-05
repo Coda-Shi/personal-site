@@ -8,9 +8,10 @@ import { useEffect, useRef, useState } from "react";
 // the emitted filename, so replacing the photograph can never leave the image
 // optimiser serving the previous one off a cached URL.
 import portrait from "@/assets/portrait.png";
-import { SymbolField } from "@/components/symbol-field";
+import { SymbolField, type FieldPhase } from "@/components/symbol-field";
 import { TrackMark } from "@/components/track-mark";
 import { TRACKS, TRACK_CLASSES, type TrackId } from "@/lib/content";
+import { FLOOD_FALL, FLOOD_RISE, FLOOD_SCALE } from "@/lib/flood";
 import type { Dictionary, Locale } from "@/lib/i18n";
 
 /**
@@ -77,12 +78,6 @@ const R_LABEL = CENTRE_D + R * 0.45;
  */
 const R_PORTRAIT = 46;
 
-/** How far a flood grows. Covers the furthest viewport corner with room over. */
-const FLOOD_SCALE = 20;
-
-/** How long the pigment takes to reach the edge of the screen. */
-const FLOOD_RISE = 700;
-
 /**
  * How long a tap holds the flood before the route changes. Touch only — a
  * pointer has already seen all of this on hover, and a delay there would just
@@ -103,15 +98,6 @@ const FLOOD_RISE = 700;
 const BEAM_HOLD = 1700;
 
 /**
- * How long the pigment takes to draw back into its circle once nothing is lit.
- *
- * Quicker than the rise on purpose. Opening is the interesting direction and
- * wants to be watched; closing is the visitor having moved on, and a slow
- * close reads as the page being slow to let go.
- */
-const FLOOD_FALL = 540;
-
-/**
  * The ground. Painted, rather than left unpainted, in the one place where
  * something has to sit on top of pigment: inside the portrait's ring.
  */
@@ -124,46 +110,38 @@ const FILL_SHIFT = "fill 380ms ease-out";
  * The entrance, as one timeline. Every delay on the home page reads from
  * here, so a beat can be moved without hunting through two files for numbers.
  *
- * The three arcs draw together, on one beat — see `arc` for why they do not
- * take turns. What changed after D29 is that the ring no longer closes in the
- * last 15% of the same stroke. The arcs arrive at the portrait and *stop*; a
- * breath later the ring closes from the three points where they stopped. Two
- * gestures rather than one: the lines converge, then the circle is made. The
- * pause is what gives the closing its weight — drawn as a continuation it was
- * over before it registered as a thing happening. The owner's word: 质感.
- *
- * Pigment inks in as the ring closes, the face arrives as it seals, then the
- * three words, then the footer. `done` is the footer's end, and the page is
- * touchable from then (see HomeStage).
+ * Each outline is one stroke: 270° from the outer crossing to the portrait,
+ * then 120° round it, the three laying down the ring between them (see
+ * `outline`). D31 split that into two — arcs first, a pause, then the ring on
+ * its own beat — and the owner sent it back: go back to the single stroke,
+ * and from there stagger *when the three begin*. So they start `stagger`
+ * apart, in the clockwise order of the cycle — creative, professional,
+ * scholarly — each taking the same time, and the ring closes in three parts
+ * as each stroke arrives. Pigment inks in as the last stroke is finishing,
+ * the face arrives as the ring seals, then the words, then the footer.
+ * `done` is the footer's end, and the page is touchable from then.
  */
 export const ENTRANCE = {
   lines: 200,
-  linesFor: 850,
-  ring: 1180,
-  ringFor: 520,
+  stagger: 160,
+  linesFor: 1000,
   ink: 1250,
-  portrait: 1600,
-  labels: 1750,
+  portrait: 1450,
+  labels: 1650,
   labelStep: 150,
-  footer: 2200,
-  done: 2900,
+  footer: 2100,
+  done: 2800,
 } as const;
-
-const PLOT_ARC = `plot-stroke ${ENTRANCE.linesFor}ms cubic-bezier(0.65, 0, 0.35, 1) ${ENTRANCE.lines}ms both`;
-/** Quick to leave, slow to settle: a pen finishing a stroke, not starting one. */
-const PLOT_RING = `plot-stroke ${ENTRANCE.ringFor}ms cubic-bezier(0.3, 0, 0.15, 1) ${ENTRANCE.ring}ms both`;
 
 /**
  * Coming back from a track page, how long the flood stays full before it draws
  * back in. It covers the dissolve (420ms, globals.css): the old page fades out
  * over an identical sheet of pigment, and only once it has gone does the
- * pigment start home. Sooner, and the column fades over a ring that is already
- * shrinking — two things happening where one is the point. The symbols hold a
- * little longer still, so the order reads: the page goes, the colour goes, the
- * symbols go.
+ * pigment start home — and the symbols go back in with it, riding the same
+ * scale (see SymbolField). Sooner, and the column fades over a ring that is
+ * already shrinking: two things happening where one is the point.
  */
 const RETURN_HOLD = 420;
-const RETURN_FIELD_HOLD = RETURN_HOLD + 300;
 
 /**
  * The three lenses where two circles meet — and who each one belongs to.
@@ -266,6 +244,13 @@ const MIDDLE: ReadonlyArray<{ from: number; to: number; track: TrackId }> = [
   { from: 270, to: 390, track: "creative" },
 ];
 
+/** The strokes begin in the cycle's order, one `stagger` apart. */
+const DRAW_ORDER: readonly TrackId[] = CYCLE.map(({ from }) => from);
+const plot = (track: TrackId) =>
+  `plot-stroke ${ENTRANCE.linesFor}ms cubic-bezier(0.65, 0, 0.35, 1) ${
+    ENTRANCE.lines + ENTRANCE.stagger * DRAW_ORDER.indexOf(track)
+  }ms both`;
+
 /**
  * A wedge from the centre, far larger than the middle region, for clipping.
  *
@@ -321,30 +306,31 @@ function point(cx: number, cy: number, r: number, deg: number) {
  * +270 lands on the tangent point. The masks still trim the ends precisely,
  * including BREAK, so this only has to be right to within a degree or two.
  */
-function arc(track: TrackId) {
+function outline(track: TrackId) {
   const c = centreOf(track);
   const start = VENN[track] - 90;
-  return `M ${point(c.x, c.y, R, start)} A ${R} ${R} 0 1 1 ${point(c.x, c.y, R, start + 270)}`;
-}
-
-/**
- * ...and then, a breath later, the ring.
- *
- * The three tangent points sit at bearings 270°, 30° and 150° — 120° apart,
- * because each is opposite its own circle's centre. So each line, having
- * arrived at its own tangent point, carries on round the portrait to the next
- * one, and the three of them lay down the whole rim between them, 120° each.
- * It joins smoothly rather than turning a corner: a circle's tangent direction
- * where it touches another circle *is* that circle's tangent direction.
- *
- * It was one path with the arc, closing in the stroke's last 15%. It is a
- * second path now so that it can start on its own beat (see ENTRANCE) — the
- * lines arrive, stop, and *then* the circle is made. Same start point, same
- * direction, so nothing about the geometry changed; only the time did.
- */
-function ring(track: TrackId) {
+  /**
+   * ...and then it becomes the ring.
+   *
+   * The three tangent points sit at bearings 270°, 30° and 150° — 120° apart,
+   * because each is opposite its own circle's centre. So each line, having
+   * arrived at its own tangent point, carries on round the portrait to the
+   * next one, and the three of them lay down the whole rim between them, 120°
+   * each. It joins smoothly rather than turning a corner: a circle's tangent
+   * direction where it touches another circle *is* that circle's tangent
+   * direction. The rim is 15% of the path's length, so it draws in the last
+   * 15% of the stroke.
+   *
+   * One path, not two. D31 cut the rim off into its own path so it could
+   * close on a later beat; the owner asked for the single stroke back, with
+   * the stagger moved to where the three *begin* instead (see ENTRANCE).
+   */
   const meets = VENN[track] + 180;
-  return `M ${point(CX, CY, R_PORTRAIT, meets)} A ${R_PORTRAIT} ${R_PORTRAIT} 0 0 1 ${point(CX, CY, R_PORTRAIT, meets + 120)}`;
+  return [
+    `M ${point(c.x, c.y, R, start)}`,
+    `A ${R} ${R} 0 1 1 ${point(c.x, c.y, R, start + 270)}`,
+    `A ${R_PORTRAIT} ${R_PORTRAIT} 0 0 1 ${point(CX, CY, R_PORTRAIT, meets + 120)}`,
+  ].join(" ");
 }
 
 function labelOf(track: TrackId) {
@@ -397,15 +383,23 @@ export function TrinityDisc({
   const lastLit = useRef<TrackId | null>(null);
 
   /**
+   * True while a returning flood is holding through the dissolve. It is what
+   * tells the field to stay put at full strength rather than fade, which is
+   * what a flood on `hold` otherwise means (an outgoing pigment being covered
+   * during a sweep).
+   */
+  const [returnHold, setReturnHold] = useState(returning !== null);
+
+  /**
    * Coming back from a track page, the page you left dissolves over *this*
    * one, and what it dissolves into must be what it looked like when you
    * went: the disc drawn, that track's pigment across the whole screen, its
    * symbols in their places. So the flood starts full — `hold`, the same
    * element that keeps an outgoing pigment on screen during a sweep — and
    * once the dissolve has finished it does what it does when a pointer leaves
-   * the disc: draws back into its circle. The symbols fade after it. The
-   * owner asked for exactly this order — 符号复归原位，然后颜色消失 — in place
-   * of the entrance playing again, which said "you have never been here".
+   * the disc: draws back into its circle, and the symbols go back in with
+   * it, on the same scale, while the colour is still there to carry them.
+   * The owner's words: 符号在颜色还在的时候原路返回圈内原来的位置.
    *
    * Both timers stand down if something gets lit in the meantime; the focus
    * effect below owns the flood from then.
@@ -413,7 +407,9 @@ export function TrinityDisc({
   useEffect(() => {
     if (!returning) return;
     const fall = window.setTimeout(() => {
-      if (lastLit.current === null) setClosing({ id: returning, mode: "fall" });
+      if (lastLit.current !== null) return;
+      setReturnHold(false);
+      setClosing({ id: returning, mode: "fall" });
     }, RETURN_HOLD);
     const done = window.setTimeout(() => {
       if (lastLit.current === null) setClosing(null);
@@ -431,6 +427,7 @@ export function TrinityDisc({
     lastLit.current = lit;
     if (!previous) {
       setClosing(null);
+      setReturnHold(false);
       return;
     }
     /**
@@ -502,6 +499,23 @@ export function TrinityDisc({
    */
   const litFill =
     focus !== null && focus !== "hub" ? TRACK_CLASSES[focus].cssVar : null;
+
+  /**
+   * What each track's symbols are doing, derived from the same state as its
+   * pigment so the two can never disagree: out with the flood while lit;
+   * back in with it while it falls; held in place at full strength while a
+   * returning flood waits out the dissolve; fading where they stand while
+   * another pigment covers theirs; and otherwise tucked inside the circle,
+   * invisible.
+   */
+  const fieldPhase = (id: TrackId): FieldPhase => {
+    if (focus === id) return "rise";
+    if (closing?.id === id) {
+      if (closing.mode === "fall") return "fall";
+      return returnHold && returning === id ? "shown" : "fade";
+    }
+    return "idle";
+  };
 
   return (
     <>
@@ -577,14 +591,20 @@ export function TrinityDisc({
         );
       })}
 
-      {TRACKS.map((track) => (
-        <SymbolField
-          key={track.id}
-          track={track.id}
-          active={focus === track.id}
-          held={returning === track.id ? RETURN_FIELD_HOLD : undefined}
-        />
-      ))}
+      {/* Each field rides its own circle's flood: it comes out of the circle
+          when the pigment opens and goes back into it when the pigment draws
+          in, scaled about the same centre. See SymbolField for the phases. */}
+      {TRACKS.map((track) => {
+        const c = centreOf(track.id);
+        return (
+          <SymbolField
+            key={track.id}
+            track={track.id}
+            phase={fieldPhase(track.id)}
+            origin={{ x: (c.x - CX) / 400, y: (c.y - CY) / 400 }}
+          />
+        );
+      })}
 
       <div
         className="relative mx-auto aspect-square w-full max-w-[var(--disc)]"
@@ -834,18 +854,11 @@ export function TrinityDisc({
               }}
             >
               <path
-                d={arc(track.id)}
+                d={outline(track.id)}
                 pathLength={1}
                 strokeDasharray={1}
                 mask={`url(#venn-under-${track.id})`}
-                style={{ animation: settled ? undefined : PLOT_ARC }}
-              />
-              {/* The rim is never under anything, so it needs no mask. */}
-              <path
-                d={ring(track.id)}
-                pathLength={1}
-                strokeDasharray={1}
-                style={{ animation: settled ? undefined : PLOT_RING }}
+                style={{ animation: settled ? undefined : plot(track.id) }}
               />
             </g>
           ))}

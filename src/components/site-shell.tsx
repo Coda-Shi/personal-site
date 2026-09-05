@@ -58,7 +58,7 @@ export function SiteShell({
             style={{ backgroundColor: ground }}
           />
         ) : null}
-        {field ? <SymbolField track={field} active ground /> : null}
+        {field ? <SymbolField track={field} ground /> : null}
         <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 py-10 md:px-10 md:py-14">
           <Link
             href={`/${lang}`}
