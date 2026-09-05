@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LanguageToggle } from "@/components/language-toggle";
-import { TrinityDisc, type Focus } from "@/components/trinity-disc";
-import { EMAILS, GITHUB, INSTAGRAM, NAME } from "@/lib/content";
+import { ENTRANCE, TrinityDisc, type Focus } from "@/components/trinity-disc";
+import { EMAILS, GITHUB, INSTAGRAM, NAME, type TrackId } from "@/lib/content";
 import type { Dictionary, Locale } from "@/lib/i18n";
+import { nav } from "@/lib/navigation";
 
 /**
  * Owns which sector is lit, because two separate things react to it: the disc,
@@ -21,13 +22,28 @@ import type { Dictionary, Locale } from "@/lib/i18n";
  * without it a lit page has nobody's name on it.
  */
 /**
- * When the entrance has finished and the page becomes touchable.
+ * How the page arrives, decided once, on the first render.
  *
- * The footer is the last thing in: it rises at 1850ms over 700ms. Everything
- * else — the line work, the pigment, the labels, the portrait — has landed by
- * then.
+ * Cold — by URL, with no history in this document — it draws itself: the
+ * entrance. Reached from elsewhere on the site it is *already there*: the
+ * disc drawn, nothing animating, touchable at once. The page you are leaving
+ * dissolves over it. And if the page you are leaving is one of the three
+ * track pages, its pigment is still across the whole screen and its symbols
+ * are still in their places, so the home page arrives in that state and then
+ * closes it — the flood draws back into its circle, the symbols fade. The
+ * owner's words for what he wanted instead of the entrance replaying: 符号复归
+ * 原位，然后颜色消失.
+ *
+ * `nav.from` is the previous page's path, and it is `null` on the server and
+ * on the first render of a fresh document alike, so a cold load reads the
+ * same on both sides. See lib/navigation.ts.
  */
-const ENTRANCE = 2550;
+function arrival(): { settled: boolean; returning: TrackId | null } {
+  const from = nav.from;
+  if (from === null) return { settled: false, returning: null };
+  const track = /^\/(?:en|zh)\/(scholarly|professional|creative)\/?$/.exec(from)?.[1];
+  return { settled: true, returning: (track as TrackId | undefined) ?? null };
+}
 
 export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
   const [focus, setFocus] = useState<Focus>(null);
@@ -48,15 +64,21 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
    * half seconds with nothing visibly happening, which is worse than the
    * problem being solved.
    */
-  const [ready, setReady] = useState(false);
+  const [{ settled, returning }] = useState(arrival);
+  const [ready, setReady] = useState(settled);
   useEffect(() => {
+    if (ready) return;
     // One timer either way, rather than an early `setReady(true)` — setting
     // state synchronously inside an effect is a lint error and, more to the
     // point, a re-render the browser has not asked for yet.
     const instant = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timer = window.setTimeout(() => setReady(true), instant ? 0 : ENTRANCE);
+    const timer = window.setTimeout(() => setReady(true), instant ? 0 : ENTRANCE.done);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [ready]);
+
+  /** The entrance's rise, or nothing at all on a page that is already here. */
+  const enter = (delay: number) =>
+    settled ? undefined : { animation: `rise-in 700ms ease-out ${delay}ms both` };
 
   // The hub lights no beam, so it should not clear the copy either.
   const lit = focus !== null && focus !== "hub";
@@ -103,7 +125,7 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             and the geometry becomes checkable. */}
         <h1
           className="oldstyle w-fit font-display text-2xl leading-none font-light tracking-tight md:text-3xl"
-          style={{ animation: "rise-in 700ms ease-out both" }}
+          style={enter(0)}
         >
           {NAME}
         </h1>
@@ -111,7 +133,7 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             text. They cannot share an element: a finished animation with
             fill-mode `both` pins opacity to its end value and the transition
             never gets a say. */}
-        <div style={{ animation: "rise-in 700ms ease-out 130ms both" }}>
+        <div style={enter(130)}>
           {/* Two lines: the three faces, then what they span. The roles line
               is brighter and stays on one line where it can — it is the
               caption to the disc below it. */}
@@ -125,7 +147,7 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             {dict.profile}
           </p>
         </div>
-        <div style={{ animation: "rise-in 700ms ease-out 260ms both" }}>
+        <div style={enter(260)}>
           {/* Capped to the same column as the two lines above it, not `w-fit`.
               It is a full sentence, and tracked-out capitals set it 515px wide
               — wider than the paragraph it sits under, so the block bulged at
@@ -149,12 +171,19 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
       </header>
 
       <div className="w-full px-6">
-        <TrinityDisc lang={lang} dict={dict} focus={focus} setFocus={setFocus} />
+        <TrinityDisc
+          lang={lang}
+          dict={dict}
+          focus={focus}
+          setFocus={setFocus}
+          settled={settled}
+          returning={returning}
+        />
       </div>
 
       <footer
         className="absolute inset-x-6 bottom-6 z-10 md:inset-x-10 md:bottom-8"
-        style={{ animation: "rise-in 700ms ease-out 1850ms both" }}
+        style={enter(ENTRANCE.footer)}
       >
         {/* Phones only — the same two links live top-right from md up. */}
         <div className="mb-3 flex flex-col gap-0.5 md:hidden">{emails}</div>

@@ -810,9 +810,20 @@ export function SymbolField({
   track,
   active,
   ground = false,
+  held,
 }: {
   track: TrackId;
   active: boolean;
+  /**
+   * Mounted already visible, and released after this many milliseconds.
+   *
+   * For the home page arriving from this track's page: the symbols are on the
+   * screen when the visitor gets here and have to still be there — in their
+   * places, at full strength — while the old page dissolves, and only then
+   * fade. Without this the field would mount at zero and there would be
+   * nothing under the dissolve but pigment.
+   */
+  held?: number;
   /**
    * At rest behind a track page's column, rather than lit behind the disc.
    *
@@ -843,6 +854,14 @@ export function SymbolField({
    * to land. In practice idle wins by a second or more and the plates are
    * decoded and waiting before anyone reaches the disc.
    */
+  const [holding, setHolding] = useState(held !== undefined);
+  useEffect(() => {
+    if (held === undefined) return;
+    const timer = window.setTimeout(() => setHolding(false), held);
+    return () => window.clearTimeout(timer);
+  }, [held]);
+  const visible = active || holding;
+
   /**
    * ...and only for the board that is actually on screen.
    *
@@ -896,7 +915,7 @@ export function SymbolField({
    * in play for the first second or two. Once the board *is* known it decides
    * alone, so the off-screen board never loads a thing.
    */
-  const warmFor = (key: BoardKey) => (liveBoard === null ? active : liveBoard === key);
+  const warmFor = (key: BoardKey) => (liveBoard === null ? visible : liveBoard === key);
 
   // Each element carries its own delay so the field assembles unevenly rather
   // than switching on as a block. On the way out the delay drops to zero, so
@@ -905,7 +924,7 @@ export function SymbolField({
     ground
       ? { opacity: target }
       : {
-          opacity: active ? target : 0,
+          opacity: visible ? target : 0,
           transition: "opacity 620ms ease-out",
           transitionDelay: active ? `${delay}ms` : "0ms",
         };
@@ -994,7 +1013,7 @@ export function SymbolField({
                * picks up where it left off instead of every symbol snapping to
                * the start of its cycle the moment the sector lights.
                */
-              animationPlayState: active && !ground ? "running" : "paused",
+              animationPlayState: visible && !ground ? "running" : "paused",
             }}
           >
             <text

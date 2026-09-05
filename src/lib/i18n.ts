@@ -144,6 +144,8 @@ export type Dictionary = {
     selectedCover: string;
     /** The questions Scholarly is organised around. */
     questions: string;
+    /** Photographs from the stage, inside Creative. */
+    live: string;
     poems: string;
     advocacy: string;
     contact: string;
@@ -170,6 +172,8 @@ export type Dictionary = {
     coverNote: string;
     play: string;
   };
+  /** The two arrows on the deck of photographs. */
+  deck: { previous: string; next: string };
 };
 
 const en: Dictionary = {
@@ -219,6 +223,7 @@ const en: Dictionary = {
     selected: "Selected work",
     selectedCover: "Selected cover",
     questions: "Questions I keep returning to",
+    live: "On stage",
     poems: "Poems",
     advocacy: "Advocacy",
     contact: "Contact",
@@ -243,6 +248,7 @@ const en: Dictionary = {
     coverNote: "The heavy music I love, and the intensity only it can carry.",
     play: "Play the video",
   },
+  deck: { previous: "Previous photograph", next: "Next photograph" },
 };
 
 /**
@@ -321,6 +327,7 @@ const zh: Partial<Dictionary> = {
     selected: "精选作品",
     selectedCover: "精选翻唱",
     questions: "我关心的问题",
+    live: "演出",
     poems: "诗",
     advocacy: "行路",
     contact: "联系",
@@ -523,6 +530,7 @@ const zh: Partial<Dictionary> = {
     coverNote: "我钟爱的重型音乐，和只有它才能表达的激烈情绪。",
     play: "播放视频",
   },
+  deck: { previous: "上一张", next: "下一张" },
   music: {
     "summer-2022": {
       event: "Summer Music Festival",

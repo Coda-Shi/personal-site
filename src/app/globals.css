@@ -586,3 +586,47 @@ html[data-navigated] .plot-mark.plot-glyph {
   text-spacing-trim: trim-start;
   hanging-punctuation: allow-end;
 }
+
+/* ── The deck ─────────────────────────────────────────────────────────────
+   The next photograph waits underneath, tilted and set back; turning the deck
+   is that card rising into the flat position, and that is the whole
+   animation. See PhotoDeck. */
+.deck-under {
+  transform: rotate(-3deg) translate(0.75rem, 1rem) scale(0.965);
+  animation: fade-in 300ms ease-out 140ms both;
+}
+
+@keyframes deck-lift {
+  from {
+    transform: rotate(-3deg) translate(0.75rem, 1rem) scale(0.965);
+    opacity: 0.45;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.deck-lift {
+  animation: deck-lift 420ms cubic-bezier(0.3, 0, 0.15, 1) both;
+}
+
+.deck-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--color-bone) 35%, transparent);
+  color: color-mix(in srgb, var(--color-bone) 70%, transparent);
+  transition:
+    border-color 200ms ease-out,
+    color 200ms ease-out;
+}
+
+.deck-arrow:hover,
+.deck-arrow:focus-visible {
+  border-color: var(--color-bone);
+  color: var(--color-bone);
+}
