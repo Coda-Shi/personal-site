@@ -6,21 +6,6 @@ import {
   type SymbolItem,
   type TrackId,
 } from "@/lib/content";
-import { FIELD_MIN_SCALE, FLOOD_FALL, FLOOD_RISE } from "@/lib/flood";
-
-/**
- * What a field is doing on the home page. Derived by TrinityDisc from the
- * same state as the pigment, so the two always agree.
- *
- * - `rise`: out of the circle with the flood, symbols arriving unevenly.
- * - `shown`: in place at full strength, nothing moving — a returning flood
- *   holding through the dissolve.
- * - `fade`: in place, fading — another pigment is covering this one.
- * - `fall`: back into the circle with the flood, still at full strength; the
- *   symbols vanish behind the disc rather than in the open.
- * - `idle`: inside the circle, invisible.
- */
-export type FieldPhase = "rise" | "shown" | "fade" | "fall" | "idle";
 
 /**
  * The faint layer of notation that fills a sector's beam once it is lit.
@@ -823,20 +808,22 @@ const LAYOUTS: Record<BoardKey, Record<TrackId, Placed[]>> = {
 
 export function SymbolField({
   track,
-  phase = "idle",
-  origin,
+  active,
   ground = false,
+  held,
 }: {
   track: TrackId;
-  /** See FieldPhase. Ignored for a field on the ground. */
-  phase?: FieldPhase;
+  active: boolean;
   /**
-   * The lit circle's centre, as fractions of `--disc` from the viewport's
-   * centre — the same offsets the flood uses. The field scales about this
-   * point, which is what makes it come out of *that* circle and go back into
-   * it, rather than out of the middle of the screen.
+   * Mounted already visible, and released after this many milliseconds.
+   *
+   * For the home page arriving from this track's page: the symbols are on the
+   * screen when the visitor gets here and have to still be there — in their
+   * places, at full strength — while the old page dissolves, and only then
+   * fade. Without this the field would mount at zero and there would be
+   * nothing under the dissolve but pigment.
    */
-  origin?: { x: number; y: number };
+  held?: number;
   /**
    * At rest behind a track page's column, rather than lit behind the disc.
    *
@@ -867,35 +854,13 @@ export function SymbolField({
    * to land. In practice idle wins by a second or more and the plates are
    * decoded and waiting before anyone reaches the disc.
    */
-  const visible = ground || phase === "rise" || phase === "shown" || phase === "fall";
-
-  /**
-   * The field rides the flood. It is scaled about the lit circle's centre,
-   * from FIELD_MIN_SCALE — inside the circle, behind the disc — to full, on
-   * the flood's own clock: out as the pigment opens, back in as it draws in.
-   * The owner's words for the return: 符号在颜色还在的时候原路返回圈内原来的位置.
-   * Same durations and curves as `flood-rise` and `flood-fall`, read from the
-   * same module, so the symbols are never floating on nothing.
-   *
-   * A CSS animation rather than a transition so that a fresh rise always
-   * starts from inside the circle, and so the fall has the flood's exact
-   * easing rather than a transition's approximation of it.
-   */
-  const ride: React.CSSProperties | undefined = ground
-    ? undefined
-    : {
-        transformOrigin: origin
-          ? `calc(50% + var(--disc) * ${origin.x}) calc(50% + var(--disc) * ${origin.y})`
-          : undefined,
-        transform: phase === "idle" ? `scale(${FIELD_MIN_SCALE})` : undefined,
-        animation:
-          phase === "rise"
-            ? `field-rise ${FLOOD_RISE}ms ease-out both`
-            : phase === "fall"
-              ? `field-fall ${FLOOD_FALL}ms cubic-bezier(0.4, 0, 0.2, 1) both`
-              : undefined,
-        "--field-min": FIELD_MIN_SCALE,
-      } as React.CSSProperties;
+  const [holding, setHolding] = useState(held !== undefined);
+  useEffect(() => {
+    if (held === undefined) return;
+    const timer = window.setTimeout(() => setHolding(false), held);
+    return () => window.clearTimeout(timer);
+  }, [held]);
+  const visible = active || holding;
 
   /**
    * ...and only for the board that is actually on screen.
@@ -961,7 +926,7 @@ export function SymbolField({
       : {
           opacity: visible ? target : 0,
           transition: "opacity 620ms ease-out",
-          transitionDelay: phase === "rise" ? `${delay}ms` : "0ms",
+          transitionDelay: active ? `${delay}ms` : "0ms",
         };
 
   // Both boards are rendered and CSS shows one. Choosing at runtime would make
@@ -992,8 +957,6 @@ export function SymbolField({
       className={`symbol-field field-${board.key} ${
         ground ? "field-ground " : ""
       }pointer-events-none fixed inset-y-0 left-0 -z-10 w-screen text-bone`}
-      data-phase={ground ? undefined : phase}
-      style={ride}
     >
       {figures.map((figure) => {
         const box = figure.boxes[key];

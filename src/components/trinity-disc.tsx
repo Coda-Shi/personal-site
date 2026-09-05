@@ -8,10 +8,9 @@ import { useEffect, useRef, useState } from "react";
 // the emitted filename, so replacing the photograph can never leave the image
 // optimiser serving the previous one off a cached URL.
 import portrait from "@/assets/portrait.png";
-import { SymbolField, type FieldPhase } from "@/components/symbol-field";
+import { SymbolField } from "@/components/symbol-field";
 import { TrackMark } from "@/components/track-mark";
 import { TRACKS, TRACK_CLASSES, type TrackId } from "@/lib/content";
-import { FLOOD_FALL, FLOOD_RISE, FLOOD_SCALE } from "@/lib/flood";
 import type { Dictionary, Locale } from "@/lib/i18n";
 
 /**
@@ -78,6 +77,12 @@ const R_LABEL = CENTRE_D + R * 0.45;
  */
 const R_PORTRAIT = 46;
 
+/** How far a flood grows. Covers the furthest viewport corner with room over. */
+const FLOOD_SCALE = 20;
+
+/** How long the pigment takes to reach the edge of the screen. */
+const FLOOD_RISE = 700;
+
 /**
  * How long a tap holds the flood before the route changes. Touch only — a
  * pointer has already seen all of this on hover, and a delay there would just
@@ -98,6 +103,15 @@ const R_PORTRAIT = 46;
 const BEAM_HOLD = 1700;
 
 /**
+ * How long the pigment takes to draw back into its circle once nothing is lit.
+ *
+ * Quicker than the rise on purpose. Opening is the interesting direction and
+ * wants to be watched; closing is the visitor having moved on, and a slow
+ * close reads as the page being slow to let go.
+ */
+const FLOOD_FALL = 540;
+
+/**
  * The ground. Painted, rather than left unpainted, in the one place where
  * something has to sit on top of pigment: inside the portrait's ring.
  */
@@ -112,36 +126,47 @@ const FILL_SHIFT = "fill 380ms ease-out";
  *
  * Each outline is one stroke: 270° from the outer crossing to the portrait,
  * then 120° round it, the three laying down the ring between them (see
- * `outline`). D31 split that into two — arcs first, a pause, then the ring on
- * its own beat — and the owner sent it back: go back to the single stroke,
- * and from there stagger *when the three begin*. So they start `stagger`
- * apart, in the clockwise order of the cycle — creative, professional,
- * scholarly — each taking the same time, and the ring closes in three parts
- * as each stroke arrives. Pigment inks in as the last stroke is finishing,
- * the face arrives as the ring seals, then the words, then the footer.
- * `done` is the footer's end, and the page is touchable from then.
+ * `outline`). Two versions were tried and sent back — three strokes on one
+ * beat (D29), and arcs first, a pause, then the ring on its own beat (D31).
+ * What the owner asked for, twice, is the single stroke with the three
+ * *starting* at different times and finishing when they finish: 三条线在不同
+ * 的时间开始，但是不必同时画完. So they begin `stagger` apart in the cycle's
+ * clockwise order — creative, professional, scholarly — each taking the same
+ * time, and the ring closes in three parts as each arrives.
+ *
+ * 🔴 The stagger has to be large against the stroke's easing. Ease-in-out
+ * draws almost nothing in its first 150ms, so starts 160ms apart looked
+ * simultaneous — which is the version that came back. 300ms puts the first
+ * stroke a third of the way round before the last one moves.
+ *
+ * Pigment inks in as the second stroke lands, the face arrives as the last
+ * one seals the ring, then the words, then the footer. `done` is the
+ * footer's end, and the page is touchable from then (see HomeStage).
  */
 export const ENTRANCE = {
   lines: 200,
-  stagger: 160,
-  linesFor: 1000,
-  ink: 1250,
-  portrait: 1450,
-  labels: 1650,
+  stagger: 300,
+  linesFor: 900,
+  ink: 1350,
+  portrait: 1600,
+  labels: 1750,
   labelStep: 150,
-  footer: 2100,
-  done: 2800,
+  footer: 2200,
+  done: 2900,
 } as const;
 
 /**
  * Coming back from a track page, how long the flood stays full before it draws
  * back in. It covers the dissolve (420ms, globals.css): the old page fades out
  * over an identical sheet of pigment, and only once it has gone does the
- * pigment start home — and the symbols go back in with it, riding the same
- * scale (see SymbolField). Sooner, and the column fades over a ring that is
- * already shrinking: two things happening where one is the point.
+ * pigment start home. Sooner, and the column fades over a ring that is already
+ * shrinking — two things happening where one is the point. The field holds a
+ * little longer still, so the order reads: the page goes, the colour goes, the
+ * texture goes. The track's *mark* travels back during the dissolve itself —
+ * see `markName` — so it is home on the disc before the colour moves.
  */
 const RETURN_HOLD = 420;
+const RETURN_FIELD_HOLD = RETURN_HOLD + 300;
 
 /**
  * The three lenses where two circles meet — and who each one belongs to.
@@ -244,7 +269,12 @@ const MIDDLE: ReadonlyArray<{ from: number; to: number; track: TrackId }> = [
   { from: 270, to: 390, track: "creative" },
 ];
 
-/** The strokes begin in the cycle's order, one `stagger` apart. */
+/**
+ * The strokes begin in the cycle's order, one `stagger` apart.
+ *
+ * Declared after CYCLE on purpose: module-level constants are evaluated in
+ * source order, and reading CYCLE above its declaration throws at load.
+ */
 const DRAW_ORDER: readonly TrackId[] = CYCLE.map(({ from }) => from);
 const plot = (track: TrackId) =>
   `plot-stroke ${ENTRANCE.linesFor}ms cubic-bezier(0.65, 0, 0.35, 1) ${
@@ -383,23 +413,34 @@ export function TrinityDisc({
   const lastLit = useRef<TrackId | null>(null);
 
   /**
-   * True while a returning flood is holding through the dissolve. It is what
-   * tells the field to stay put at full strength rather than fade, which is
-   * what a flood on `hold` otherwise means (an outgoing pigment being covered
-   * during a sweep).
+   * The track whose mark is on its way back from its page.
+   *
+   * 🔴 **This is what the owner meant by 符号原路返回.** Not the texture — the
+   * three marks themselves: ⊨, § and the coda. Going out, the lit mark
+   * leaves the disc and lands at the top of its page (D30). Coming back, the
+   * page's big mark must fly the same way home and settle where it started,
+   * *while the colour is still on the screen*. Naming the returning track's
+   * mark on the disc is what lets the browser pair it with the page's; the
+   * morph runs during the dissolve, so the mark is back on the disc before
+   * the flood begins to draw in.
+   *
+   * Cleared once the close is over, and the moment anything is lit: a lit
+   * mark takes the name (see `markName`), and two elements with one name
+   * would make the browser skip the whole transition.
    */
-  const [returnHold, setReturnHold] = useState(returning !== null);
+  const [returnMark, setReturnMark] = useState<TrackId | null>(returning);
 
   /**
    * Coming back from a track page, the page you left dissolves over *this*
    * one, and what it dissolves into must be what it looked like when you
    * went: the disc drawn, that track's pigment across the whole screen, its
-   * symbols in their places. So the flood starts full — `hold`, the same
-   * element that keeps an outgoing pigment on screen during a sweep — and
-   * once the dissolve has finished it does what it does when a pointer leaves
-   * the disc: draws back into its circle, and the symbols go back in with
-   * it, on the same scale, while the colour is still there to carry them.
-   * The owner's words: 符号在颜色还在的时候原路返回圈内原来的位置.
+   * texture in place. So the flood starts full — `hold`, the same element
+   * that keeps an outgoing pigment on screen during a sweep — and once the
+   * dissolve has finished it does what it does when a pointer leaves the
+   * disc: draws back into its circle. The texture fades after it. That is the
+   * order the owner asked for, with the mark itself travelling home first,
+   * in place of the entrance playing again, which said "you have never been
+   * here".
    *
    * Both timers stand down if something gets lit in the meantime; the focus
    * effect below owns the flood from then.
@@ -407,12 +448,12 @@ export function TrinityDisc({
   useEffect(() => {
     if (!returning) return;
     const fall = window.setTimeout(() => {
-      if (lastLit.current !== null) return;
-      setReturnHold(false);
-      setClosing({ id: returning, mode: "fall" });
+      if (lastLit.current === null) setClosing({ id: returning, mode: "fall" });
     }, RETURN_HOLD);
     const done = window.setTimeout(() => {
-      if (lastLit.current === null) setClosing(null);
+      if (lastLit.current !== null) return;
+      setClosing(null);
+      setReturnMark(null);
     }, RETURN_HOLD + FLOOD_FALL);
     return () => {
       window.clearTimeout(fall);
@@ -427,7 +468,7 @@ export function TrinityDisc({
     lastLit.current = lit;
     if (!previous) {
       setClosing(null);
-      setReturnHold(false);
+      setReturnMark(null);
       return;
     }
     /**
@@ -501,20 +542,14 @@ export function TrinityDisc({
     focus !== null && focus !== "hub" ? TRACK_CLASSES[focus].cssVar : null;
 
   /**
-   * What each track's symbols are doing, derived from the same state as its
-   * pigment so the two can never disagree: out with the flood while lit;
-   * back in with it while it falls; held in place at full strength while a
-   * returning flood waits out the dissolve; fading where they stand while
-   * another pigment covers theirs; and otherwise tucked inside the circle,
-   * invisible.
+   * Which mark carries the `view-transition-name`, if any. The lit one while
+   * something is lit — it is about to leave — and otherwise the one on its
+   * way back. Never both: the lit track wins outright, so a hover during the
+   * return cannot put one name on two elements.
    */
-  const fieldPhase = (id: TrackId): FieldPhase => {
-    if (focus === id) return "rise";
-    if (closing?.id === id) {
-      if (closing.mode === "fall") return "fall";
-      return returnHold && returning === id ? "shown" : "fade";
-    }
-    return "idle";
+  const markName = (id: TrackId) => {
+    if (focus !== null) return focus === id ? "track-mark" : undefined;
+    return returnMark === id ? "track-mark" : undefined;
   };
 
   return (
@@ -591,20 +626,14 @@ export function TrinityDisc({
         );
       })}
 
-      {/* Each field rides its own circle's flood: it comes out of the circle
-          when the pigment opens and goes back into it when the pigment draws
-          in, scaled about the same centre. See SymbolField for the phases. */}
-      {TRACKS.map((track) => {
-        const c = centreOf(track.id);
-        return (
-          <SymbolField
-            key={track.id}
-            track={track.id}
-            phase={fieldPhase(track.id)}
-            origin={{ x: (c.x - CX) / 400, y: (c.y - CY) / 400 }}
-          />
-        );
-      })}
+      {TRACKS.map((track) => (
+        <SymbolField
+          key={track.id}
+          track={track.id}
+          active={focus === track.id}
+          held={returning === track.id ? RETURN_FIELD_HOLD : undefined}
+        />
+      ))}
 
       <div
         className="relative mx-auto aspect-square w-full max-w-[var(--disc)]"
@@ -895,14 +924,13 @@ export function TrinityDisc({
               className="flex flex-col items-center gap-0.5 text-center transition-opacity duration-500 ease-out sm:gap-1"
               style={{ opacity: dimmed(track.id) ? 0.3 : 1 }}
             >
-              {/* Named only while lit, so exactly one mark carries the name
-                  when a navigation starts, and it is the one being followed.
-                  The track page's mark carries the same name, and the two
-                  become one object travelling from the disc to the top of
-                  the column. Coming back, nothing here is lit, so nothing
-                  pairs and the big mark simply dissolves with its page —
-                  a morph onto a mark that has not faded in yet would fly to
-                  an empty spot.
+              {/* Named while lit, so exactly one mark carries the name when
+                  a navigation starts, and it is the one being followed. The
+                  track page's mark carries the same name, and the two become
+                  one object travelling from the disc to the top of the
+                  column. Coming back it is named again — `returnMark` — so
+                  the page's big mark flies home to it, over the pigment that
+                  is still on the screen, and settles where it started.
 
                   🔴 An inline `view-transition-name`, not React's
                   `<ViewTransition name>`. React pairs a deleted named
@@ -915,7 +943,7 @@ export function TrinityDisc({
                   the page-level exit boundary. */}
               <TrackMark
                 track={track}
-                name={focus === track.id ? "track-mark" : undefined}
+                name={markName(track.id)}
                 className="font-display text-base leading-none sm:text-3xl md:text-4xl"
               />
               {/* The word sits back a step so the mark leads; lighting the
