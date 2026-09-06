@@ -194,14 +194,15 @@
 
 /* The 2:1 board (see BOARDS.ultra in symbol-field.tsx) can be width-limited
    on viewports between 1.8:1 and 2:1, and it is 4000 units across rather
-   than 3200: at 34vw the disc's outer extent would reach 632 board units,
-   over that board's rMin of 600. 30vw holds it at 558. Neither arm changes
-   the disc on a common desktop — at 1600×816 and 1920×940 the 56vh and 30rem
-   arms still bind. Same media query as the board switch below, and it must
-   stay the same. */
+   than 3200: at 34vw the disc's outer extent would reach 632 board units.
+   28vw is 1120 units — the same the 56vh arm gives when the board is
+   height-limited — so the extent is 532 on every viewport this board
+   serves, and the symbols can come in to 560. At 1920×940 the 30rem arm
+   still binds; at 1600×816 this one does, at 448px against 457. Same media
+   query as the board switch below, and it must stay the same. */
 @media (orientation: landscape) and (min-aspect-ratio: 9/5) and (min-height: 600px) {
   .home-stage {
-    --disc: min(56vh, 30rem, 30vw);
+    --disc: min(56vh, 30rem, 28vw);
   }
 }
 

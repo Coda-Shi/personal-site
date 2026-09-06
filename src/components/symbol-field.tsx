@@ -89,7 +89,7 @@ const BOARDS: Record<BoardKey, Board> = {
    * Measured fit: 1512×944 → 1510×944 (a 2px sliver bare); 1280×800 → exact;
    * 1920×1080 → 1728×1080; 1024×768 → 1024×640.
    */
-  wide: { key: "wide", w: 3200, h: 2000, rMin: 580, reach: 1, reachOuter: 1.35 },
+  wide: { key: "wide", w: 3200, h: 2000, rMin: 560, reach: 1, reachOuter: 1.35 },
   /**
    * 1:2, near enough a phone. At 375×812 this scales to 0.375 and renders
    * 375×750 — 92% of the height against the square board's 46% — and the type
@@ -123,17 +123,19 @@ const BOARDS: Record<BoardKey, Board> = {
    *
    * Same height as the wide board, so wherever a board is height-limited
    * the scale — and with it every tier's rendered size — is identical; only
-   * the width grew. rMin 600 rather than 580 because this board can also be
-   * *width*-limited (viewports between 1.8:1 and 2:1), and there the disc is
-   * capped at 30vw so that its outer extent stays at 558 units or under; the
-   * height-limited case gives 521. Both clear 600. The wide board's 34vw
-   * would have put the extent at 632 — see the `--disc` rule in globals.css.
+   * the width grew. This board can also be *width*-limited (viewports
+   * between 1.8:1 and 2:1), and there the disc is capped at 28vw — which is
+   * 1120 board units, exactly what the 56vh arm gives when the board is
+   * height-limited — so the disc's outer extent is 532 units either way and
+   * rMin 560 clears it by the same 28 the wide board has. The wide board's
+   * 34vw would have put the extent at 632; see the `--disc` rule in
+   * globals.css.
    *
    * `reachOuter` 1.65: the corners are 2236 units out and the texture band's
    * outer radius is 1360; the band is clipped to the rectangle per bearing,
    * so this only has to be large enough.
    */
-  ultra: { key: "ultra", w: 4000, h: 2000, rMin: 600, reach: 1, reachOuter: 1.65 },
+  ultra: { key: "ultra", w: 4000, h: 2000, rMin: 560, reach: 1, reachOuter: 1.65 },
 };
 
 const centre = (b: Board) => ({ x: b.w / 2, y: b.h / 2 });
@@ -160,12 +162,15 @@ const PAD = 12;
  * constant number of board units whatever the viewport.
  *
  * Worked out from the composition's outer extent, 190 of its own 400 units:
- * the wide board needs at most 532 (the 0.56vh arm) against R_MIN 580, and the
- * phone board at most 294.5 (the 0.62vw arm) against its 315.
+ * the wide board needs at most 532 (the 0.56vh arm) against its rMin of 560,
+ * the 2:1 board the same 532 against the same 560, and the phone board at
+ * most 294.5 (the 0.62vw arm) against its 315. Twenty-eight units of clear
+ * space — about 11px on a laptop — is as close as the owner wanted the
+ * symbols brought in: 让显示出来的符号距离中心三环更接近一点. It was 48–68.
  *
- * 🔴 Re-derive both whenever CENTRE_D, R or a `--disc` cap changes. Nothing
- * fails loudly if these drift — the symbols simply start drawing under the
- * disc.
+ * 🔴 Re-derive all three whenever CENTRE_D, R or a `--disc` cap changes.
+ * Nothing fails loudly if these drift — the symbols simply start drawing
+ * under the disc.
  *
  * There is deliberately no outer *radius* cap. The board is a fully visible
  * square, so the corners sit at radius 1414 and a circular ceiling would throw
@@ -218,7 +223,7 @@ const TIERS: Record<
     width: 470,
     min: 50,
     max: 62,
-    r0: 620,
+    r0: 600,
     r1: 900,
     o0: 0.54,
     o1: 0.44,
@@ -231,7 +236,7 @@ const TIERS: Record<
     width: 330,
     min: 34,
     max: 46,
-    r0: 600,
+    r0: 570,
     r1: 1120,
     o0: 0.4,
     o1: 0.26,
@@ -244,7 +249,7 @@ const TIERS: Record<
     width: 190,
     min: 24,
     max: 31,
-    r0: 600,
+    r0: 570,
     r1: 1360,
     o0: 0.28,
     o1: 0.13,
@@ -563,9 +568,10 @@ const RESERVED: Record<
     { x0: 0, y0: 0, x1: 0.23, y1: 0.1 },
     // The two addresses, top right: from 0.752 at 1080×600, to 0.102 deep.
     { x0: 0.75, y0: 0, x1: 1, y1: 0.11 },
-    // The footer row: from 0.936 down at 1366×700, and 0.61 of the width at
-    // 1080×600. The right of the bottom band is free.
-    { x0: 0, y0: 0.93, x1: 0.62, y1: 1 },
+    // The footer row: from 0.936 down at 1366×700, and 0.70 of the width at
+    // 1080×600 now that the language switch sits at its left end. The right
+    // of the bottom band is free.
+    { x0: 0, y0: 0.93, x1: 0.72, y1: 1 },
   ],
 };
 

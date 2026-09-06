@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { LanguageToggle } from "@/components/language-toggle";
+import { LanguageSwitch } from "@/components/language-switch";
 import { ENTRANCE, TrinityDisc, type Focus } from "@/components/trinity-disc";
 import { EMAILS, GITHUB, INSTAGRAM, NAME, type TrackId } from "@/lib/content";
 import type { Dictionary, Locale } from "@/lib/i18n";
@@ -201,6 +201,13 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
         <div className="mb-3 flex flex-col gap-0.5 md:hidden">{emails}</div>
 
         <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
+        {/* First in the row, at the owner's request: which language you are
+            reading is the first thing to settle, before where to go. */}
+        <LanguageSwitch
+          lang={lang}
+          label={dict.switchTo}
+          className="border-r border-bone/25 pr-8"
+        />
         {/* Set apart from the utility links, and in the display face rather
             than in .label, because it is a place and they are tools.
 
@@ -281,7 +288,6 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             </svg>
           </a>
         </span>
-          <LanguageToggle lang={lang} label={dict.switchTo} />
         </div>
         </div>
       </footer>
