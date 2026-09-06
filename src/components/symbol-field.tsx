@@ -689,24 +689,31 @@ const plates = (board: Board) =>
  * 🔴 **Placement is a composition, weighed by hand per board.** Reserved
  * before any glyph is placed, and not through `insideField` — re-check the
  * corners by hand against rMin and the guards whenever a guard, a board or a
- * box changes; that has caught me out three times. The rules that settled
- * the current arrangement, after the owner found Jung and the semiotic square
- * stacked too close on the right: three plates a side, in a ring — R.S.I.,
- * the graph of desire and the hexagrams on the left; the Luo Shu, Jung and
- * the square on the right; the curve on top. No two large plates stack on
- * one side: the right column has only 1260 units between the address guard
- * and the footer, which is why Jung (615) and the square (464) could never
- * breathe there, so Jung takes the far right and the square sits lower and
- * in against the disc, the two meeting corner to corner on a diagonal. Large
- * and small alternate around the ring, and the two smallest (the Luo Shu,
- * the hexagrams) sit against the ring on opposite corners.
+ * box changes; that has caught me out three times.
+ *
+ * 🔴 **No column takes three large plates.** Between the address guard and
+ * the footer there are about 1260 units, and three plates plus the gaps that
+ * keep them apart do not fit in it — this is the arithmetic behind the
+ * owner's complaint that Jung and the semiotic square sat too close, and it
+ * is what every rearrangement since has run into. A column takes two, or one
+ * large and two small at different depths.
+ *
+ * Eight plates now, in a ring: R.S.I. above and the graph of desire below on
+ * the left, with the Luo Shu out at the far left between them and the
+ * hexagrams in against the ring beneath; the brain and Jung side by side on
+ * the upper right with the semiotic square below them; the curve on top.
+ * Large and small alternate around the ring. The brain takes the inner
+ * position of that pair and Jung the outer, which is where the owner wanted
+ * Jung — smaller and further out — and where the brain belongs, since it is
+ * what the work is now.
  *
  * A board without a box for a plate does not show it. The phone board is
- * 1000 units across with the disc taking 600 of them, and seven plates would
- * be seven thumbnails: it carries the five that read at that size — the
- * knot, the square, the curve, the hexagrams and the Luo Shu — and leaves out
- * Jung's diagram and the graph of desire, which are dense with small labels
- * and turn to fur under 120px. The desktop boards carry all seven.
+ * 1000 units across with the disc taking 600 of them, and eight plates would
+ * be eight thumbnails: it carries the five that read at that size — the
+ * knot, the brain, the curve, the hexagrams and the Luo Shu — and leaves out
+ * Jung's diagram, the graph of desire and the semiotic square, all three of
+ * them dense with small labels that turn to fur under 120px. The desktop
+ * boards carry all eight.
  */
 const FIGURES: ReadonlyArray<{
   key: string;
@@ -732,12 +739,11 @@ const FIGURES: ReadonlyArray<{
     opacity: 0.28,
     delay: 200,
     boxes: {
-      // Far right, upper. The square used to stack straight beneath it with
-      // 145 units of air, and the owner read the two as one clump; the square
-      // now sits lower and nearer the disc, so the pair meet corner to corner
-      // on a diagonal instead.
-      wide: { x: 2600, y: 500, w: 520, h: 615 },
-      ultra: { x: 3240, y: 480, w: 520, h: 615 },
+      // 400×473, down from 520×615 — the owner asked for it smaller (把荣格
+      // 变小一点), and the room it gives up is what the brain stands in. Out
+      // at the far right, with the brain inside it.
+      wide: { x: 2760, y: 480, w: 400, h: 473 },
+      ultra: { x: 3180, y: 480, w: 400, h: 473 },
     },
   },
   {
@@ -757,11 +763,27 @@ const FIGURES: ReadonlyArray<{
     delay: 420,
     boxes: {
       // Lower right, pulled in against the disc rather than out to the
-      // corner — diagonal to Jung, not under it. Its near corner clears rMin
-      // by a few units; the footer guard bounds it below.
+      // corner. Its near corner clears rMin by a few units; the footer guard
+      // bounds it below. Off the phone now — see the brain's boxes.
       wide: { x: 2120, y: 1226, w: 520, h: 464 },
-      tall: { x: 660, y: 1290, w: 310, h: 277 },
       ultra: { x: 2620, y: 1280, w: 520, h: 464 },
+    },
+  },
+  {
+    key: "brain",
+    href: "/scholarly/brain.svg",
+    opacity: 0.32,
+    delay: 230,
+    // Upper right, in against the ring, where Jung used to be the outer half
+    // of a pair with the square. Its near corner sits 626 from the centre.
+    boxes: {
+      wide: { x: 2200, y: 500, w: 420, h: 323 },
+      // The phone carries it instead of the semiotic square. Both are about
+      // the same size there and only one of them survives it: the square is
+      // eight words of labelling on a 116px plate, and the brain is a
+      // silhouette.
+      tall: { x: 660, y: 1300, w: 320, h: 246 },
+      ultra: { x: 2600, y: 500, w: 420, h: 323 },
     },
   },
   {
@@ -799,16 +821,12 @@ const FIGURES: ReadonlyArray<{
     opacity: 0.32,
     delay: 370,
     boxes: {
-      // Upper right of the disc, just under the address guard. Three plates
-      // a side: R.S.I., the graph of desire and the hexagrams on the left;
-      // the Luo Shu, Jung and the square on the right; the curve on top.
-      //
-      // Twenty units larger than it was, and grown upward and to the right:
-      // the near corner clears rMin by three units at 2140, so the extra size
-      // had to come out of the far side, not this one.
-      wide: { x: 2140, y: 520, w: 320, h: 320 },
+      // Far left, between R.S.I. above and the graph of desire below — it
+      // interleaves with them rather than stacking, being out at the margin
+      // where neither reaches. It gave up the upper-right slot to the brain.
+      wide: { x: 100, y: 600, w: 300, h: 300 },
       tall: { x: 395, y: 275, w: 210, h: 210 },
-      ultra: { x: 2560, y: 510, w: 320, h: 320 },
+      ultra: { x: 200, y: 600, w: 300, h: 300 },
     },
   },
 ];
