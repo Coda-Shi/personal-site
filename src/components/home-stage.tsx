@@ -204,8 +204,24 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
         {/* One wrapper for everything in the footer, so that on a phone it can
             step aside for the flood as a block (see the note at the top). */}
         <div className="footer-body">
-        {/* Phones only — the same two links live top-right from md up. */}
-        <div className="mb-3 flex flex-col gap-0.5 md:hidden">{emails}</div>
+        {/* Phones only — the same two links live top-right from md up, and
+            the consultation shares their line rather than taking one of its
+            own. A phone footer is already three rows deep; the addresses are
+            the shortest thing in it and the only row with space to the right
+            of it, which is where the owner asked for this to go.
+
+            Two lines inside the box, not one: "CONSULT ME · IN PREPARATION"
+            set in tracked capitals is 275px, and there are about 170 to play
+            with. Stacked it is 126 and it stands as tall as the two addresses
+            beside it. The desktop copy of it is in the row below, where there
+            is room for one line. */}
+        <div className="mb-3 flex items-center justify-between gap-3 md:hidden">
+          <span className="flex flex-col gap-0.5">{emails}</span>
+          <span className="label consult-phone flex shrink-0 flex-col items-end gap-px border border-bone/20 px-2.5 py-1 leading-tight text-bone/40">
+            {dict.consult.label}
+            <span className="text-bone/25">{dict.consult.status}</span>
+          </span>
+        </div>
 
         <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
         {/* First in the row, at the owner's request: which language you are
@@ -317,7 +333,7 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             the only soft-cornered object on the page. Quieter than the links
             beside it on purpose. There is nowhere for it to go yet, so it is
             a span and says why. */}
-        <span className="label ml-auto flex items-center gap-2.5 border border-bone/20 px-3.5 py-1.5 text-bone/40">
+        <span className="label ml-auto hidden items-center gap-2.5 border border-bone/20 px-3.5 py-1.5 text-bone/40 md:flex">
           {dict.consult.label}
           <span aria-hidden="true" className="text-bone/20">
             ·

@@ -188,9 +188,10 @@ export type Dictionary = {
    * part of the label rather than a tooltip because the whole point is that
    * it is read.
    *
-   * The owner asked for 与我咨询; that is not how 咨询 takes its object — it
-   * is 向我咨询 or 预约咨询, and the second is what a button would say. He has
-   * the choice; this is the one in place until he makes it.
+   * The owner asked for 与我咨询, which is not how 咨询 takes its object; given
+   * 向我咨询 and 预约咨询 he chose the first, in the English he wrote himself —
+   * "Consult me". So the two locales say the same thing: consult me, rather
+   * than book a slot with me.
    */
   consult: { label: string; status: string };
 };
@@ -271,7 +272,7 @@ const en: Dictionary = {
     play: "Play the video",
   },
   deck: { previous: "Previous photograph", next: "Next photograph" },
-  consult: { label: "Book a consultation", status: "In preparation" },
+  consult: { label: "Consult me", status: "In Preparation" },
 };
 
 /**
@@ -559,7 +560,7 @@ const zh: Partial<Dictionary> = {
     play: "播放视频",
   },
   deck: { previous: "上一张", next: "下一张" },
-  consult: { label: "预约咨询", status: "准备中" },
+  consult: { label: "向我咨询", status: "准备中" },
   music: {
     "summer-2022": {
       event: "Summer Music Festival",
