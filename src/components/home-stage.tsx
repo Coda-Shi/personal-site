@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LanguageSwitch } from "@/components/language-switch";
 import { ENTRANCE, TrinityDisc, type Focus } from "@/components/trinity-disc";
-import { EMAILS, GITHUB, INSTAGRAM, NAME, type TrackId } from "@/lib/content";
+import { EMAILS, INSTAGRAM, NAME, type TrackId } from "@/lib/content";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { nav } from "@/lib/navigation";
 
@@ -223,13 +223,17 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
+        {/* Tighter gaps under md, so that the language switch, the writing,
+            the CV and the marks all sit on one line — the owner asked for
+            that row not to wrap. Measured at 375: 294 of 327. It still wraps
+            below about 330, and gap-y-2 is what catches it when it does. */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 md:gap-x-8">
         {/* First in the row, at the owner's request: which language you are
             reading is the first thing to settle, before where to go. */}
         <LanguageSwitch
           lang={lang}
           label={dict.switchTo}
-          className="border-r border-bone/25 pr-8"
+          className="border-r border-bone/25 pr-3 md:pr-8"
         />
         {/* Set apart from the utility links, and in the display face rather
             than in .label, because it is a place and they are tools.
@@ -244,7 +248,7 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             aside with everything else (see the note at the top). */}
         <Link
           href={`/${lang}/writing`}
-          className="link-line border-r border-bone/25 pr-8 font-display text-lg italic text-bone/70 transition-colors hover:text-bone"
+          className="link-line border-r border-bone/25 pr-3 font-display text-lg italic text-bone/70 transition-colors hover:text-bone md:pr-8"
         >
           {dict.nav.writing}
         </Link>
@@ -252,11 +256,16 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
           {dict.nav.cv}
         </Link>
         {/* Icons, not words: the footer had four text links competing for one
-            line on a phone, and these three are the only items on it that are
-            elsewhere rather than here. The two social marks are drawn — see
-            the note in content.ts on why neither is the real logo. Each keeps
-            an accessible name, since an icon on its own has none. */}
-        <span className="flex items-center gap-4">
+            line on a phone, and these are the only items on it that are
+            elsewhere rather than here. Instagram's mark is drawn — see the
+            note in content.ts on why it is not the real logo. Each keeps an
+            accessible name, since an icon on its own has none.
+
+            GitHub was here and the owner had it removed outright: 全面删除
+            github 入口. It was the only link in the footer pointing at work
+            nobody comes to this site for, and dropping it is most of what
+            makes the phone row fit on one line. */}
+        <span className="flex items-center gap-3 md:gap-4">
           {/* The studio, as its lyre and quill rather than as its name, at
               the owner's word. Taller than the two beside it and the same
               width, so the row keeps its rhythm while the mark keeps its
@@ -276,29 +285,6 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
               height={24}
               className="h-6 w-auto"
             />
-          </a>
-          <a
-            href={GITHUB}
-            aria-label="GitHub"
-            rel="noreferrer"
-            className="text-bone/55 transition-colors hover:text-bone"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              className="size-[1.1rem]"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.7}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="6.5" cy="4.8" r="2.3" />
-              <circle cx="6.5" cy="19.2" r="2.3" />
-              <circle cx="17.5" cy="4.8" r="2.3" />
-              <path d="M6.5 7.1v9.8" />
-              <path d="M17.5 7.1v2.4a4 4 0 0 1-4 4h-3.2" />
-            </svg>
           </a>
           <a
             href={INSTAGRAM}
