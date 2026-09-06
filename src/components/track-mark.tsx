@@ -45,7 +45,7 @@ const svgProps = {
 } as const;
 
 /** Dashed to unit length, so `plot-stroke` draws it whatever its geometry. */
-const plotted = { pathLength: 1, strokeDasharray: 1 } as const;
+const plotted = { pathLength: 1, strokeDasharray: "1 2" } as const;
 
 export function TrackMark({
   track,

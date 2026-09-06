@@ -86,7 +86,7 @@ export default async function Page({ params }: PageProps<"/[lang]/coda">) {
               strokeOpacity={0.75}
               strokeWidth={0.9}
               pathLength={1}
-              strokeDasharray={1}
+              strokeDasharray="1 2"
               style={{ animation: "plot-stroke 1000ms cubic-bezier(0.65, 0, 0.35, 1) 200ms both" }}
             />
           </svg>

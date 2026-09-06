@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 // Imported rather than referenced by public/ path: Next puts a content hash in
 // the emitted filename, so replacing the photograph can never leave the image
 // optimiser serving the previous one off a cached URL.
@@ -241,6 +241,59 @@ const UNDER = Object.fromEntries(CYCLE.map(({ from, to }) => [from, to])) as Rec
 const BREAK = 3.5;
 
 /**
+ * How far a middle wedge overruns the arc it shares a pigment across.
+ *
+ * 🔴 **Two fills must never end on the same arc with a third showing between
+ * them.** The middle is where that happened. Each wedge is clipped to the
+ * middle region, whose three arcs are exactly the edges of the three lenses;
+ * the lenses are painted in a cycle, so along each arc the last lens across
+ * it ends there too, anti-aliased, on top of the lens it neighbours. A wedge
+ * clipped to the very same arc covers those edge pixels only as far as that
+ * fringe does, and the fringe bleeds through the wedge's own fringe as a
+ * dotted hairline wherever the two wear different pigments — the red
+ * circle's right-hand arc across the gold, and fainter on the other two. The
+ * owner's words: 红色圆圈在蓝色和黄色上有一个虚线.
+ *
+ * So each wedge is clipped by its two arcs at different radii. Across the arc
+ * it shares a pigment with (`spill` in MIDDLE) it overruns by SEAM: the
+ * fringe is buried under solid wedge, and the wedge's own edge lands on the
+ * same pigment, where nothing can show. Across its real boundary (`bound`)
+ * it ends exactly on the arc, and the 1.1 stroke drawn there hides the
+ * meeting. Two units, so that on a phone's 232px disc — 0.58px a unit — the
+ * overrun still clears the fringe's half-pixel with room to spare.
+ *
+ * The lenses do not need it, and the first attempt proved it: overrunning
+ * them by half a unit left the middle's seam where it was, half a unit
+ * further out, and put a hairline of lens pigment beside every stroke. A
+ * lens's fringe lands on the base of its own pigment or under a stroke — once
+ * the base circles keep out of each other's way, which is BASE_INSET.
+ */
+const SEAM = 2;
+
+/**
+ * How far inside the circle that passes over it a base circle stops.
+ *
+ * The three base circles are full discs painted in TRACKS order, so the last
+ * one lies on top of the other two inside its overlaps — and one of those
+ * overlaps has to wear the *earlier* circle's pigment, which is what makes
+ * the link Borromean rather than a pile. A lens repaints it, and the lens's
+ * edge runs exactly along the base circle's edge: the base's anti-aliased
+ * fringe under the lens's, the two pigments mixing in a faint dotted line
+ * the length of the arc. That is the red circle across the blue — the
+ * fainter of the two lines the owner saw, and the one no choice of order
+ * removes, because every order has a last circle.
+ *
+ * So no base circle is painted where another passes over it. The region is
+ * the lens's anyway, and what lies under the lens there is the base of the
+ * pigment the lens wears, so a fringe on it shows nothing. Two units inside
+ * the over-circle's edge rather than on it, so the cut sits under solid lens
+ * on any disc: the lens ends on that edge with its own half-pixel fringe, and
+ * at 0.58px a unit on a phone, two units is what clears it. Hit-testing
+ * ignores masks, so the hover targets are what they were.
+ */
+const BASE_INSET = 2;
+
+/**
  * The middle turns. It is a pinwheel, not a hole and not a colour.
  *
  * 🔴 **Nothing here is a matter of taste — the colouring is forced.** The middle
@@ -268,10 +321,21 @@ const BREAK = 3.5;
  * Swap any one of them and two edges vanish where one should have stayed: the
  * middle goes flat and the turn is gone.
  */
-const MIDDLE: ReadonlyArray<{ from: number; to: number; track: TrackId }> = [
-  { from: 30, to: 150, track: "professional" },
-  { from: 150, to: 270, track: "scholarly" },
-  { from: 270, to: 390, track: "creative" },
+const MIDDLE: ReadonlyArray<{
+  from: number;
+  to: number;
+  track: TrackId;
+  /** The circle whose arc this sliver shares a pigment across; it overruns it by SEAM. */
+  spill: TrackId;
+  /** The circle whose arc is its real boundary, stroked; it ends exactly there. */
+  bound: TrackId;
+}> = [
+  // Each sliver sits at the corner where `spill` and `bound` cross, inside
+  // the third circle. `spill` is always the circle tangent at `from`: across
+  // it lies the lens of the other two, which wears this sliver's pigment.
+  { from: 30, to: 150, track: "professional", spill: "creative", bound: "professional" },
+  { from: 150, to: 270, track: "scholarly", spill: "professional", bound: "scholarly" },
+  { from: 270, to: 390, track: "creative", spill: "scholarly", bound: "creative" },
 ];
 
 /**
@@ -656,27 +720,49 @@ export function TrinityDisc({
                 </clipPath>
               );
             })}
-            {/* Two circles' intersection, so the third can be clipped by it and
-                give the triple region. Nested clip-path references are the only
-                way to express an intersection of three shapes in SVG without
-                solving for the arcs by hand. */}
-            <clipPath id="venn-two">
-              <circle
-                cx={centreOf("creative").x}
-                cy={centreOf("creative").y}
-                r={R}
-                clipPath="url(#venn-scholarly)"
-              />
-            </clipPath>
-            {/* The middle region itself, for the pinwheel to be cut out of. */}
-            <clipPath id="venn-mid">
-              <circle
-                cx={centreOf("professional").x}
-                cy={centreOf("professional").y}
-                r={R}
-                clipPath="url(#venn-two)"
-              />
-            </clipPath>
+            {/* Each base circle stops short of the circle over it: see BASE_INSET. */}
+            {TRACKS.map((track) => {
+              const over = centreOf(OVER[track.id]);
+              return (
+                <mask
+                  key={track.id}
+                  id={`venn-base-${track.id}`}
+                  maskUnits="userSpaceOnUse"
+                  x="0"
+                  y="0"
+                  width="400"
+                  height="400"
+                >
+                  <rect x="0" y="0" width="400" height="400" fill="#fff" />
+                  <circle cx={over.x} cy={over.y} r={R - BASE_INSET} fill="#000" />
+                </mask>
+              );
+            })}
+            {/* One clip per middle wedge: the two circles whose arcs bound its
+                sliver, nested, because a nested clip-path reference is the
+                only way to intersect two shapes in SVG without solving for the
+                arcs by hand. Two circles are enough — within its wedge the
+                sliver is all that lies inside both. They sit at different
+                radii: see SEAM. */}
+            {MIDDLE.map(({ track, spill, bound }) => {
+              const over = centreOf(spill);
+              const edge = centreOf(bound);
+              return (
+                <Fragment key={track}>
+                  <clipPath id={`venn-mid-${track}-bound`}>
+                    <circle cx={edge.x} cy={edge.y} r={R} />
+                  </clipPath>
+                  <clipPath id={`venn-mid-${track}`}>
+                    <circle
+                      cx={over.x}
+                      cy={over.y}
+                      r={R + SEAM}
+                      clipPath={`url(#venn-mid-${track}-bound)`}
+                    />
+                  </clipPath>
+                </Fragment>
+              );
+            })}
             {/* Half-plane per circle, splitting its middle arc at the bearing
                 where it goes tangent to the portrait. Only the half on the
                 far side survives — see the note on MIDDLE for why exactly
@@ -770,6 +856,7 @@ export function TrinityDisc({
                   cx={c.x}
                   cy={c.y}
                   r={R}
+                  mask={`url(#venn-base-${track.id})`}
                   className="cursor-pointer"
                   style={{
                     fill: litFill ?? TRACK_CLASSES[track.id].cssVar,
@@ -824,7 +911,7 @@ export function TrinityDisc({
               <path
                 key={track}
                 d={wedge(from, to)}
-                clipPath="url(#venn-mid)"
+                clipPath={`url(#venn-mid-${track})`}
                 className="cursor-pointer"
                 style={{
                   fill: litFill ?? TRACK_CLASSES[track].cssVar,
@@ -892,7 +979,14 @@ export function TrinityDisc({
               <path
                 d={outline(track.id)}
                 pathLength={1}
-                strokeDasharray={1}
+                // Dash 1, gap 2 — the gap longer than the path. With a gap of
+                // exactly 1 the next dash begins exactly at the path's end,
+                // and the rasteriser's rounding of the arc lengths leaves a
+                // sub-pixel sliver of it showing at the start point before
+                // the stroke has moved: a dot sitting on the crossing while
+                // the line is still to come. The keyframe starts a little
+                // past 1 for the same reason, at the other end.
+                strokeDasharray="1 2"
                 mask={`url(#venn-under-${track.id})`}
                 style={{ animation: settled ? undefined : plot(track.id) }}
               />

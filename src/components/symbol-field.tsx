@@ -299,8 +299,10 @@ const FAR_SHRINK = 0.22;
  * against the 0.62em of the mono grid. Sizing on 0.62 and colliding on 0.62
  * put the factor equation 6 units into its neighbour.
  */
-const ADVANCE = { mono: 0.62, serif: 0.46 } as const;
-const BOX_ADVANCE = { mono: 0.78, serif: 0.52 } as const;
+const ADVANCE = { mono: 0.62, serif: 0.46, han: 1 } as const;
+// A Han glyph is exactly one em wide, so the two tables agree; the margin is
+// for the letter-spacing the render adds.
+const BOX_ADVANCE = { mono: 0.78, serif: 0.52, han: 1.05 } as const;
 
 /**
  * Greedy word wrap. A single long word is left to overrun.
@@ -667,56 +669,54 @@ const plates = (board: Board) =>
  * means either crossing the disc or falling off the board.
  */
 /**
- * The Scholarly field's four drawn figures.
+ * The Scholarly field's seven plates.
  *
- * Reserved before any glyph is placed, like the Creative plates, and for the
- * same reason: they are compositions, not fill. Two flank the disc on the left
- * and two on the right, which is the only arrangement the board allows — the
- * middle is a 580-unit hole, the top strip between the name and the addresses
- * is 420 units deep, and none of these figures is that short.
- *
- * Every box was checked against rMin at all four corners and against the
- * reserved rectangles; the tightest is the square's inner corner at 326 on the
- * phone board, against rMin 300. **These do not go through `insideField`**, so
- * re-check them by hand whenever a guard or a board changes — that has caught
- * me out twice already.
- */
-/**
- * The Scholarly field's four figures: Lacan's R.S.I. knot and his completed
- * graph of desire, Jung's map of the psyche, and the Greimas square.
- *
- * 🔴 **Treated scans, not drawings — and do not redraw them.** All four were
+ * 🔴 **Four are treated scans, and are not to be redrawn.** All four were
  * hand-built in SVG first, which is the right call for a figure with ten
  * labels and the wrong one for these. The R.S.I. diagram alone carries four
  * rings, nine named regions and nine annotations on leader lines, and
  * approximating that many tangencies by eye put the fourth ring straight
  * through Imaginaire and Réel instead of grazing them: the figure stopped
  * reading as three interlocked rings at all. The owner's word for the result
- * was 奇怪的圆圈 and it was exactly right.
+ * was 奇怪的圆圈 and it was exactly right. These have settled geometry that is
+ * not ours to interpret; a scan transcribes perfectly, and
+ * `scripts/figure-lineart.py` keys the paper out and lands the strokes in bone.
  *
- * These have settled geometry that is not ours to interpret. Reproducing them
- * is transcription, and a scan transcribes perfectly. `scripts/figure-lineart.py`
- * keys the paper out and lands the strokes in bone — the same treatment the
- * Creative plates get, which is what the owner asked for.
+ * Three are drawn, as SVG, by `scripts/figures.py`: the normal curve, the
+ * hexagrams 乾 and 坤, and the Luo Shu. Those are pure geometry with a few
+ * figures on them — there is nothing in a bell curve to misinterpret — and a
+ * curve or nine dots has no business being pixels. Their labels are glyph
+ * outlines from the site's own faces, because an SVG loaded through <image>
+ * gets no web fonts.
  *
- * Reserved before any glyph is placed, like the Creative plates. Two flank the
- * disc on the left and two on the right, which is the only arrangement the
- * board allows — the middle is a 580-unit hole and the strip between the name
- * and the addresses is 420 units deep, shorter than any of them.
+ * 🔴 **Placement is a composition, weighed by hand per board.** Reserved
+ * before any glyph is placed, and not through `insideField` — re-check the
+ * corners by hand against rMin and the guards whenever a guard, a board or a
+ * box changes; that has caught me out three times. The rules that settled
+ * the current arrangement, after the owner found Jung and the semiotic square
+ * stacked too close on the right: three plates a side, in a ring — R.S.I.,
+ * the graph of desire and the hexagrams on the left; the Luo Shu, Jung and
+ * the square on the right; the curve on top. No two large plates stack on
+ * one side: the right column has only 1260 units between the address guard
+ * and the footer, which is why Jung (615) and the square (464) could never
+ * breathe there, so Jung takes the far right and the square sits lower and
+ * in against the disc, the two meeting corner to corner on a diagonal. Large
+ * and small alternate around the ring, and the two smallest (the Luo Shu,
+ * the hexagrams) sit against the ring on opposite corners.
  *
- * Every box was checked against rMin at all four corners and against the
- * reserved rectangles; the tightest is the square's inner corner at 361 on the
- * phone board, against rMin 300. **These do not go through `insideField`**, so
- * re-check them by hand whenever a guard or a board changes — that has caught
- * me out twice already. Heights come from the emitted plates' aspect ratios;
- * re-run the script and they may shift a unit or two.
+ * A board without a box for a plate does not show it. The phone board is
+ * 1000 units across with the disc taking 600 of them, and seven plates would
+ * be seven thumbnails: it carries the five that read at that size — the
+ * knot, the square, the curve, the hexagrams and the Luo Shu — and leaves out
+ * Jung's diagram and the graph of desire, which are dense with small labels
+ * and turn to fur under 120px. The desktop boards carry all seven.
  */
 const FIGURES: ReadonlyArray<{
   key: string;
   href: string;
   opacity: number;
   delay: number;
-  boxes: Record<BoardKey, Box>;
+  boxes: Partial<Record<BoardKey, Box>>;
 }> = [
   {
     key: "rsi",
@@ -735,9 +735,12 @@ const FIGURES: ReadonlyArray<{
     opacity: 0.28,
     delay: 200,
     boxes: {
-      wide: { x: 2320, y: 560, w: 520, h: 615 },
-      tall: { x: 700, y: 400, w: 275, h: 325 },
-      ultra: { x: 2820, y: 520, w: 520, h: 615 },
+      // Far right, upper. The square used to stack straight beneath it with
+      // 145 units of air, and the owner read the two as one clump; the square
+      // now sits lower and nearer the disc, so the pair meet corner to corner
+      // on a diagonal instead.
+      wide: { x: 2600, y: 500, w: 520, h: 615 },
+      ultra: { x: 3240, y: 480, w: 520, h: 615 },
     },
   },
   {
@@ -747,7 +750,6 @@ const FIGURES: ReadonlyArray<{
     delay: 310,
     boxes: {
       wide: { x: 250, y: 1040, w: 430, h: 551 },
-      tall: { x: 40, y: 270, w: 260, h: 333 },
       ultra: { x: 300, y: 1050, w: 430, h: 551 },
     },
   },
@@ -757,9 +759,52 @@ const FIGURES: ReadonlyArray<{
     opacity: 0.28,
     delay: 420,
     boxes: {
-      wide: { x: 2540, y: 1230, w: 520, h: 464 },
+      // Lower right, pulled in against the disc rather than out to the
+      // corner — diagonal to Jung, not under it. Its near corner clears rMin
+      // by a few units; the footer guard bounds it below.
+      wide: { x: 2120, y: 1226, w: 520, h: 464 },
       tall: { x: 660, y: 1290, w: 310, h: 277 },
-      ultra: { x: 2950, y: 1250, w: 520, h: 464 },
+      ultra: { x: 2620, y: 1280, w: 520, h: 464 },
+    },
+  },
+  {
+    key: "normal",
+    href: "/scholarly/normal.svg",
+    opacity: 0.3,
+    delay: 150,
+    // Wide and shallow, so it takes the strip above the disc that nothing
+    // else fits.
+    boxes: {
+      wide: { x: 1340, y: 120, w: 520, h: 300 },
+      tall: { x: 40, y: 290, w: 330, h: 190 },
+      ultra: { x: 1740, y: 110, w: 520, h: 300 },
+    },
+  },
+  {
+    key: "hexagrams",
+    href: "/scholarly/hexagrams.svg",
+    opacity: 0.34,
+    delay: 260,
+    boxes: {
+      // Lower left of the disc, answering the Luo Shu at its upper right:
+      // the two small plates sit on opposite corners of the ring.
+      wide: { x: 880, y: 1380, w: 240, h: 300 },
+      tall: { x: 720, y: 400, w: 200, h: 250 },
+      ultra: { x: 1200, y: 1400, w: 240, h: 300 },
+    },
+  },
+  {
+    key: "luoshu",
+    href: "/scholarly/luoshu.svg",
+    opacity: 0.32,
+    delay: 370,
+    boxes: {
+      // Upper right of the disc, just under the address guard. Three plates
+      // a side: R.S.I., the graph of desire and the hexagrams on the left;
+      // the Luo Shu, Jung and the square on the right; the curve on top.
+      wide: { x: 2140, y: 540, w: 300, h: 300 },
+      tall: { x: 400, y: 280, w: 200, h: 200 },
+      ultra: { x: 2560, y: 520, w: 300, h: 300 },
     },
   },
 ];
@@ -784,7 +829,10 @@ function layout(track: TrackId, board: Board): Placed[] {
     track === "creative"
       ? plates(board).map((p) => p.box)
       : track === "scholarly"
-        ? FIGURES.map((f) => f.boxes[board.key])
+        ? FIGURES.flatMap((f) => {
+            const box = f.boxes[board.key];
+            return box ? [box] : [];
+          })
         : [];
   const placed: Placed[] = [];
   /** The text boxes alone, for `room` — the plates are in `taken`, not here. */
@@ -1146,6 +1194,7 @@ export function SymbolField({
     >
       {figures.map((figure) => {
         const box = figure.boxes[key];
+        if (!box) return null;
         return (
           <image
             key={figure.key}
@@ -1218,10 +1267,13 @@ export function SymbolField({
               fontFamily={
                 item.face === "serif"
                   ? "var(--font-display)"
-                  : "var(--font-mono)"
+                  : item.face === "han"
+                    ? "var(--font-noto-serif-sc)"
+                    : "var(--font-mono)"
               }
+              // Han has no italic (D17); it is set upright, in Song.
               fontStyle={item.face === "serif" ? "italic" : undefined}
-              letterSpacing={item.face === "serif" ? 0 : 1.1}
+              letterSpacing={item.face === "serif" ? 0 : item.face === "han" ? 1.6 : 1.1}
               style={{
                 ...reveal(item.opacity, item.delay),
                 filter: item.blur ? `blur(${item.blur}px)` : undefined,
