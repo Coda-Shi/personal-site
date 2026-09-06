@@ -494,6 +494,11 @@
    Tailwind size is the same kind of utility, so which one wins is down to
    Tailwind's own ordering — measured 12.48px where 9px was asked for. This
    rule is unlayered, so it beats both without a fight. */
+.consult-phone {
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+}
+
 .email-link {
   font-size: 0.63rem;
 }
