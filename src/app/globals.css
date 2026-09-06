@@ -514,16 +514,22 @@
    Tailwind size is the same kind of utility, so which one wins is down to
    Tailwind's own ordering — measured 12.48px where 9px was asked for. This
    rule is unlayered, so it beats both without a fight. */
-/* The consultation, dimmed because it does nothing yet: the fill is its
-   colour at 30% over the ground, which reads as the same object with the light
-   off. Turning it on is raising that number. The line around it is bone.
+/* The consultation, dimmed because it does nothing yet: its colour at 30%,
+   which over the near-black ground reads as the same object with the light
+   off. Turning it on is raising that number.
+
+   Transparent rather than mixed into the ground, at the owner's word. The two
+   are the same colour where the page is black — 30% of #7600BC over #050505 is
+   the #270338 the mix produced — and they part company the moment a sector
+   lights: the desktop footer does not recede, so a solid box sat on the flood
+   like a sticker while this one takes its tint.
 
    🔴 The purple is in the box and not in the type, and it has to be. #7600BC
    on #050505 is 2.35:1 — below legible before anything is dimmed at all — and
    "not enabled" can only mean darker still. The label stays bone; the box
    carries the colour. */
 .consult {
-  background-color: color-mix(in srgb, var(--color-consult) 30%, var(--color-void));
+  background-color: color-mix(in srgb, var(--color-consult) 30%, transparent);
   /* Bone, at the owner's word, not the purple it was. The rule reads as the
      same hairline every other bordered thing on the site is drawn with, and
      the purple stays where it can be dark without taking anything with it. */
