@@ -177,12 +177,21 @@ export function TrackPage({
         {/* Italic marks the lede as a different voice from the entries below.
             Cormorant has a real italic; Chinese has none, so the :lang(zh)
             rule in globals.css swaps this to fangsong upright instead of
-            letting the browser shear the glyphs. */}
+            letting the browser shear the glyphs.
+
+            One block per sentence, so the break between them holds at every
+            measure — the owner asked for it on the phone and on the desktop
+            both. Each sentence still wraps inside itself; what it cannot do
+            is share a line with the other one. */}
         <p
           className="mt-6 max-w-xl font-display text-xl leading-relaxed italic text-bone/80 md:text-2xl"
           style={rise(220)}
         >
-          {copy.lede}
+          {copy.lede.map((line) => (
+            <span key={line} className="block">
+              {line}
+            </span>
+          ))}
         </p>
       </header>
 

@@ -50,6 +50,13 @@ FIGURES = [
     ("image-1787189327869.png", "jung.png", 512),
     ("image-1787189319870.png", "graph-of-desire.png", 512),
     ("image-1787189335504.png", "semiotic-square.png", 640),
+    # The brain came later and with a name. The owner supplied it and confirmed
+    # it is free to distribute; the three quiz arrows, their numbers and the
+    # scanner's black edge were lifted out first, by taking the ink's connected
+    # components and dropping the ones that fell wholly inside four regions —
+    # they touch nothing else in the figure, so nothing else moved. The
+    # anatomical abbreviations stay, as the labels do on the other three.
+    ("brain.png", "brain.png", 440),
 ]
 
 # Alpha is quantised to this many levels before saving. A line drawing's entropy

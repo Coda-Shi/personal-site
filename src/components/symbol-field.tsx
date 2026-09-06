@@ -544,15 +544,25 @@ const RESERVED: Record<
   ],
   tall: [
     /**
-     * One shallow band covers both things that stay: the name (0.48 wide and
-     * 0.03 deep on a phone, 0.14 and 0.06 on a tablet) and, on a tablet, the
-     * two addresses top right (0.73 to past the edge, 0.08 deep). A phone
-     * keeps its addresses in the footer instead.
+     * 🔴 **The phone board reserves its two edges and nothing else.** It used
+     * to hold back 0.12 at the top and 0.15 at the bottom for the name and
+     * the footer, and the owner asked for both: 手机版给符号底页更多的版面.
+     *
+     * They were guarding against nothing. On the home page this layer is
+     * invisible until a sector lights, and the moment one does the header
+     * recedes and the footer steps aside (D34) — so at the only moment the
+     * field is on a phone, neither is there. On a track page the field is
+     * ground at 0.45 and under 64rem it carries no mask, so body text already
+     * sits over symbols the length of the page; the header is not a special
+     * case of that.
+     *
+     * What is left is the edge itself: 0.05 at the top and 0.04 at the
+     * bottom, enough that an ascender or a descender is not clipped by the
+     * viewport. The desktop boards keep their real guards — there the chrome
+     * stays put while the visitor explores.
      */
-    { x0: 0, y0: 0, x1: 1, y1: 0.12 },
-    // The footer. Deepest on a phone (0.873), where the addresses join it and
-    // the nav row wraps; a tablet keeps its addresses up top and needs 0.949.
-    { x0: 0, y0: 0.85, x1: 1, y1: 1 },
+    { x0: 0, y0: 0, x1: 1, y1: 0.05 },
+    { x0: 0, y0: 0.96, x1: 1, y1: 1 },
   ],
   /**
    * Measured at 1080×600, 1366×700, 1600×816, 1920×940 and 2560×1200 — the
@@ -709,10 +719,12 @@ const plates = (board: Board) =>
  *
  * A board without a box for a plate does not show it. The phone board is
  * 1000 units across with the disc taking 600 of them, and eight plates would
- * be eight thumbnails: it carries the five that read at that size — the
- * knot, the brain, the curve, the hexagrams and the Luo Shu — and leaves out
- * Jung's diagram, the graph of desire and the semiotic square, all three of
- * them dense with small labels that turn to fur under 120px. The desktop
+ * be eight thumbnails. It carries four, one to a corner — the knot top right,
+ * the curve top left, the hexagrams bottom left, the brain bottom right —
+ * with the ring of the disc left clear between them for the words. It was
+ * five, and the owner had the Luo Shu taken off: 不然太拥挤. Jung's diagram,
+ * the graph of desire and the semiotic square are not on it either, all three
+ * being dense with small labels that turn to fur under 120px. The desktop
  * boards carry all eight.
  */
 const FIGURES: ReadonlyArray<{
@@ -729,7 +741,10 @@ const FIGURES: ReadonlyArray<{
     delay: 90,
     boxes: {
       wide: { x: 560, y: 130, w: 560, h: 480 },
-      tall: { x: 30, y: 1330, w: 380, h: 326 },
+      // Top right on the phone, at the owner's word. It was bottom left, and
+      // the knot is the plate this field is known by — on a phone the top of
+      // the board is what you see before you scroll anything.
+      tall: { x: 600, y: 260, w: 380, h: 326 },
       ultra: { x: 700, y: 220, w: 560, h: 480 },
     },
   },
@@ -771,19 +786,27 @@ const FIGURES: ReadonlyArray<{
   },
   {
     key: "brain",
-    href: "/scholarly/brain.svg",
-    opacity: 0.32,
+    href: "/scholarly/brain.png",
+    opacity: 0.3,
     delay: 230,
     // Upper right, in against the ring, where Jung used to be the outer half
-    // of a pair with the square. Its near corner sits 626 from the centre.
+    // of a pair with the square. Its near corner sits 621 from the centre.
+    //
+    // This was a drawn plate for one afternoon — the owner's reference was a
+    // textbook engraving and I would not copy it, so `brain()` in
+    // scripts/figures.py built one from the anatomy. Then he said he had
+    // cleared the image for distribution, which settles it: a scan
+    // transcribes an engraving perfectly and my hand does not, and the same
+    // argument already governs the other four scanned plates. The drawing is
+    // gone; the treatment is figure-lineart.py, like theirs.
     boxes: {
-      wide: { x: 2200, y: 500, w: 420, h: 323 },
+      wide: { x: 2200, y: 500, w: 420, h: 338 },
       // The phone carries it instead of the semiotic square. Both are about
       // the same size there and only one of them survives it: the square is
       // eight words of labelling on a 116px plate, and the brain is a
       // silhouette.
-      tall: { x: 660, y: 1300, w: 320, h: 246 },
-      ultra: { x: 2600, y: 500, w: 420, h: 323 },
+      tall: { x: 660, y: 1300, w: 320, h: 257 },
+      ultra: { x: 2600, y: 500, w: 420, h: 338 },
     },
   },
   {
@@ -811,7 +834,9 @@ const FIGURES: ReadonlyArray<{
       // Lower left of the disc, answering the Luo Shu at its upper right:
       // the two small plates sit on opposite corners of the ring.
       wide: { x: 860, y: 1400, w: 300, h: 189 },
-      tall: { x: 700, y: 400, w: 260, h: 164 },
+      // Bottom left, into the corner R.S.I. vacated: four plates, one to a
+      // corner, and the ring of the disc left clear between them.
+      tall: { x: 60, y: 1400, w: 300, h: 189 },
       ultra: { x: 1170, y: 1400, w: 300, h: 189 },
     },
   },
@@ -825,7 +850,6 @@ const FIGURES: ReadonlyArray<{
       // interleaves with them rather than stacking, being out at the margin
       // where neither reaches. It gave up the upper-right slot to the brain.
       wide: { x: 100, y: 600, w: 300, h: 300 },
-      tall: { x: 395, y: 275, w: 210, h: 210 },
       ultra: { x: 200, y: 600, w: 300, h: 300 },
     },
   },

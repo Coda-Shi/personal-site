@@ -55,7 +55,7 @@ export const HTML_LANG: Record<Locale, string> = {
  * `title`. Falls back to `title`, so a track only needs this if it has the
  * problem.
  */
-type TrackCopy = { title: string; mark?: string; lede: string };
+type TrackCopy = { title: string; mark?: string; lede: readonly [string, string] };
 
 /**
  * CV overrides, keyed by the `id` on each record in content.ts.
@@ -108,6 +108,11 @@ export type Dictionary = {
     heading: string;
     subheading: string;
   };
+  /**
+   * `studio` is the accessible name of the mark in the footer, not a label
+   * anyone reads — the link shows the lyre-and-quill and nothing else. Keep
+   * it a real name for that reason.
+   */
   nav: { cv: string; coda: string; writing: string; studio: string; email: string };
   writing: {
     title: string;
@@ -199,7 +204,10 @@ const en: Dictionary = {
     subheading: "as a writer and an advocate",
   },
   nav: {
-    cv: "Curriculum vitae",
+    // Two letters at the owner's word. It is a footer link, not a heading,
+    // and "CV" is what the thing is called out loud in both languages the
+    // site is read in.
+    cv: "CV",
     coda: "Coda himself",
     writing: "Verse & Prose",
     studio: "Elegists Studio",
@@ -290,15 +298,20 @@ const zh: Partial<Dictionary> = {
   tracks: {
     scholarly: {
       title: "学术",
-      lede: "哲学、公共事务、心理学研究与实践。对人类集体心灵的智识执迷与福祉关怀。",
+      // Split at the full stop the sentence already had — the break is
+      // formatting, and none of these words are mine to change.
+      lede: ["哲学、公共事务、心理学研究与实践。", "对人类集体心灵的智识执迷与福祉关怀。"],
     },
     professional: {
       title: "实务",
-      lede: "运营、合规、工业与政策研究。调查与系统设计，实现远大目标的努力。",
+      // ⚠️ The English lost "policy" and became "System design with
+      // investigation" on 2026-09-06; this still says 工业与政策研究 and
+      // 调查与系统设计. Flagged with the owner — his words, his call.
+      lede: ["运营、合规、工业与政策研究。", "调查与系统设计，实现远大目标的努力。"],
     },
     creative: {
       title: "创作",
-      lede: "游戏工作室、音乐团体、文学作品。终于挣脱心智囚笼、抵达现实的愿景。",
+      lede: ["游戏工作室、音乐团体、文学作品。", "终于挣脱心智囚笼、抵达现实的愿景。"],
     },
   },
   hub: {

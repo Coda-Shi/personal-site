@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LanguageSwitch } from "@/components/language-switch";
@@ -228,21 +229,32 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
         <Link href={`/${lang}/cv`} className="link-line label text-bone/55 transition-colors hover:text-bone">
           {dict.nav.cv}
         </Link>
-        {/* The studio does have a Chinese name — 唱诗人工作室 — so unlike
-            Everglory or Crisis Text Line it is not left in Latin. */}
-        <a
-          href="https://elegists.studio"
-          className="link-line label text-bone/55 transition-colors hover:text-bone"
-          rel="noreferrer"
-        >
-          {dict.nav.studio}
-        </a>
         {/* Icons, not words: the footer had four text links competing for one
-            line on a phone, and these two are the only items on it that are
-            elsewhere rather than here. Both marks are drawn — see the note in
-            content.ts on why neither is the real logo. Each keeps an
-            accessible name, since an icon on its own has none. */}
+            line on a phone, and these three are the only items on it that are
+            elsewhere rather than here. The two social marks are drawn — see
+            the note in content.ts on why neither is the real logo. Each keeps
+            an accessible name, since an icon on its own has none. */}
         <span className="flex items-center gap-4">
+          {/* The studio, as its lyre and quill rather than as its name, at
+              the owner's word. Taller than the two beside it and the same
+              width, so the row keeps its rhythm while the mark keeps its
+              proportion; it is a real logo and cannot be restroked, so the
+              hover is carried on opacity where theirs is carried on colour.
+              The name survives as the link's accessible name. */}
+          <a
+            href="https://elegists.studio"
+            aria-label={dict.nav.studio}
+            rel="noreferrer"
+            className="opacity-55 transition-opacity hover:opacity-100"
+          >
+            <Image
+              src="/creative/elegists-mark.png"
+              alt=""
+              width={17}
+              height={24}
+              className="h-6 w-auto"
+            />
+          </a>
           <a
             href={GITHUB}
             aria-label="GitHub"
