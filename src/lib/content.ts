@@ -509,10 +509,12 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
       { text: "transitional object", face: "serif" },
       { text: "identification with the aggressor", face: "serif" },
       { text: "collective unconscious", face: "serif" },
-      // The only cultural-psychology terms in the sector. Without them the
-      // field reads as continental philosophy and gives no sign that the work
-      // at Tsinghua is quantitative and cross-cultural.
-      { text: "WEIRD samples", face: "serif" },
+      // Hegel's, and the one word in the field that names a movement rather
+      // than a thing: what is cancelled, kept and lifted in the same act.
+      { text: "Aufhebung", face: "serif" },
+      // The cultural-psychology term in the sector. Without it the field reads
+      // as continental philosophy and gives no sign that the work at Tsinghua
+      // is quantitative and cross-cultural.
       { text: "tight vs loose cultures", face: "serif" },
       // The Delta Lab's own subject.
       { text: "volitional personality change", face: "serif" },

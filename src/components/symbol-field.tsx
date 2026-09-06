@@ -191,9 +191,13 @@ type Tier = "anchor" | "support" | "texture";
  *
  * There is no setting at which all forty-seven items are legible. The wedge
  * offers about 1.5M square units and legible type would want double that, so
- * the field is stratified instead: a foreground that can be read, and a
- * background that is out of focus on purpose. `blur` is what makes the
- * difference read as distance rather than as a rendering fault.
+ * the field is stratified instead: a foreground that can be read and a
+ * background that recedes, by size and by dimness together.
+ *
+ * There was a third cue, a depth-of-field blur that grew with radius, and the
+ * owner had it taken out: 呼吸效果足够纵深感了 — the breathing carries the
+ * depth on its own. It also cost a compositor filter region per item on two
+ * thirds of the field, which is the part of the removal nobody has to see.
  */
 const TIERS: Record<
   Tier,
@@ -208,8 +212,6 @@ const TIERS: Record<
     /** Reveal window: base delay plus jitter, so the field arrives unevenly. */
     d0: number;
     d1: number;
-    /** Depth-of-field, in board units, reached at the far edge of the field. */
-    blur: number;
     /**
      * Longest line before wrapping. Per tier, not global: a single threshold
      * broke the anchors, which are short and set large — "Amplectere omnia" at
@@ -229,7 +231,6 @@ const TIERS: Record<
     o1: 0.44,
     d0: 0,
     d1: 160,
-    blur: 0,
     maxLine: 9999,
   },
   support: {
@@ -242,7 +243,6 @@ const TIERS: Record<
     o1: 0.26,
     d0: 130,
     d1: 330,
-    blur: 0.9,
     maxLine: 370,
   },
   texture: {
@@ -255,7 +255,6 @@ const TIERS: Record<
     o1: 0.13,
     d0: 280,
     d1: 520,
-    blur: 2.6,
     // Tighter than it looks like it should be. A wide flat box is the hardest
     // shape to seat in an annular wedge, and the items that kept getting
     // dropped were always the longest phrases. Wrapping them to a near-square
@@ -280,10 +279,10 @@ const TIERS: Record<
 /**
  * How much an item shrinks at the far edge of its band.
  *
- * Without this the depth cues disagree: blur keys off radius while size keys
- * off tier, so a large support item far out came through bigger *and* softer
- * than a small texture item near in — reading as a focus fault rather than as
- * distance. Size, dimness and blur now all track the same k.
+ * Without this the depth cues disagree: dimness keys off radius while size
+ * keys off tier, so a large support item far out came through bigger *and*
+ * fainter than a small texture item near in — reading as a fault rather than
+ * as distance. Size, dimness and delay now all track the same k.
  */
 const FAR_SHRINK = 0.22;
 
@@ -383,8 +382,6 @@ type Placed = {
   size: number;
   opacity: number;
   delay: number;
-  /** Board units. Grows with distance, so the far field falls out of focus. */
-  blur: number;
   /** Breathing period and phase, both ms. Phase is applied as a negative delay. */
   period: number;
   phase: number;
@@ -785,12 +782,15 @@ const FIGURES: ReadonlyArray<{
     href: "/scholarly/hexagrams.svg",
     opacity: 0.34,
     delay: 260,
+    // Wide and shallow since the names came off and the two hexagrams were
+    // pulled apart: 270×170, and the boxes carry that ratio so `meet` has
+    // nothing to letterbox.
     boxes: {
       // Lower left of the disc, answering the Luo Shu at its upper right:
       // the two small plates sit on opposite corners of the ring.
-      wide: { x: 880, y: 1380, w: 240, h: 300 },
-      tall: { x: 720, y: 400, w: 200, h: 250 },
-      ultra: { x: 1200, y: 1400, w: 240, h: 300 },
+      wide: { x: 860, y: 1400, w: 300, h: 189 },
+      tall: { x: 700, y: 400, w: 260, h: 164 },
+      ultra: { x: 1170, y: 1400, w: 300, h: 189 },
     },
   },
   {
@@ -802,9 +802,13 @@ const FIGURES: ReadonlyArray<{
       // Upper right of the disc, just under the address guard. Three plates
       // a side: R.S.I., the graph of desire and the hexagrams on the left;
       // the Luo Shu, Jung and the square on the right; the curve on top.
-      wide: { x: 2140, y: 540, w: 300, h: 300 },
-      tall: { x: 400, y: 280, w: 200, h: 200 },
-      ultra: { x: 2560, y: 520, w: 300, h: 300 },
+      //
+      // Twenty units larger than it was, and grown upward and to the right:
+      // the near corner clears rMin by three units at 2140, so the extra size
+      // had to come out of the far side, not this one.
+      wide: { x: 2140, y: 520, w: 320, h: 320 },
+      tall: { x: 395, y: 275, w: 210, h: 210 },
+      ultra: { x: 2560, y: 510, w: 320, h: 320 },
     },
   },
 ];
@@ -972,7 +976,7 @@ function layout(track: TrackId, board: Board): Placed[] {
       taken.push(box);
       texts.push(box);
       // Everything that signals depth keys off the same k: further out means
-      // smaller, dimmer, softer, and later to arrive.
+      // smaller, dimmer, and later to arrive.
       // 2.25–4.25s, halved from 4.5–8.5 at the owner's request, and the
       // swing in `@keyframes drift` deepened from 0.68→1 to 0.46→1 to go
       // with it. The first pass ran 9–17s and read as nothing happening at
@@ -987,10 +991,6 @@ function layout(track: TrackId, board: Board): Placed[] {
         size,
         opacity: t.o0 + (t.o1 - t.o0) * k,
         delay: Math.round(t.d0 + rand(chosen * 3 + 7) * (t.d1 - t.d0)),
-        // Under half a unit there is nothing to see, and every non-zero
-        // value here costs the compositor a filter region of its own. This
-        // drops the filter from roughly a third of the field for free.
-        blur: snap(t.blur * k, 1e2) < 0.45 ? 0 : snap(t.blur * k, 1e2),
         period,
         phase: Math.round(rand(chosen * 7 + 13) * period),
       });
@@ -1274,10 +1274,7 @@ export function SymbolField({
               // Han has no italic (D17); it is set upright, in Song.
               fontStyle={item.face === "serif" ? "italic" : undefined}
               letterSpacing={item.face === "serif" ? 0 : item.face === "han" ? 1.6 : 1.1}
-              style={{
-                ...reveal(item.opacity, item.delay),
-                filter: item.blur ? `blur(${item.blur}px)` : undefined,
-              }}
+              style={reveal(item.opacity, item.delay)}
             >
               {item.lines.map((line, i) => (
                 <tspan
