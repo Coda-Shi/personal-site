@@ -419,7 +419,14 @@ export const EDUCATION: CvRecord[] = [
  * lyrics are excluded outright; they are the most aggressively enforced text
  * there is, and no amount of faintness makes reproducing them fair use.
  */
-export type SymbolItem = { text: string; face: "mono" | "serif" };
+/**
+ * `han` is Chinese, set upright in Song — never italic, which does not exist
+ * for Han script (D17), and never the vendored Fangsong, which would put its
+ * 400 KB onto the English home page for eight short phrases. Song is the
+ * classical face on the Chinese side (D23), and Google's slicing loads only
+ * the glyphs used.
+ */
+export type SymbolItem = { text: string; face: "mono" | "serif" | "han" };
 
 /**
  * Three tiers, and only three. Font size stops working as an encoding past
@@ -452,6 +459,13 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
       { text: "Memento mori", face: "serif" },
       { text: "Amplectere omnia", face: "serif" },
       { text: "Σ = ΛΦΛ′ + Θ", face: "mono" },
+      // Chosen by the owner from the Chinese-thought list, 2026-09-05. 知行合一
+      // sits opposite the factor equation on purpose: one measures, the other
+      // refuses to measure knowing and doing apart. 见群龙无首 is the Qian
+      // hexagram's ninth line — a host of dragons and no head — on the page
+      // of someone who runs a studio.
+      { text: "知行合一", face: "han" },
+      { text: "见群龙无首", face: "han" },
     ],
     support: [
       { text: "Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.", face: "serif" },
@@ -464,8 +478,16 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
       { text: "Λ_g = Λ", face: "mono" },
       { text: "M ⊨ φ", face: "mono" },
       { text: "∀x(Px → Qx)", face: "mono" },
-      { text: "N = 10,080", face: "mono" },
+      // Bayes, in place of the sample size the owner asked to drop.
+      // No-break spaces: the wrapper splits on plain spaces, and a formula
+      // is one word to it — it may overrun a line, never break across two.
+      { text: "P(θ\u00a0|\u00a0x)\u00a0∝\u00a0P(x\u00a0|\u00a0θ)\u00a0P(θ)", face: "mono" },
       { text: "Δχ²(df)", face: "mono" },
+      // 书不尽言，言不尽意 answers the Tractatus lines above it from the other
+      // side of the world; 反者道之动 and 凡所有相，皆是虚妄 are the owner's.
+      { text: "书不尽言，言不尽意", face: "han" },
+      { text: "反者道之动", face: "han" },
+      { text: "凡所有相，皆是虚妄", face: "han" },
     ],
     // Trimmed 2026-08-10. Legible type and forty-seven items do not both fit in
     // one 120° wedge — the arithmetic is about 1.5M square units against nearly
@@ -480,6 +502,7 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
       // Everything the owner named by hand is at the front; the bare logic
       // marks and the duplicate fit index are at the back, where nobody will
       // miss one.
+      { text: "慎独", face: "han" },
       { text: "paranoid-schizoid position", face: "serif" },
       { text: "β → α", face: "mono" },
       { text: "L · H · K", face: "mono" },
@@ -532,6 +555,10 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
       { text: "Kaizen", face: "serif" },
       { text: "takt time", face: "serif" },
       { text: "lockout / tagout", face: "serif" },
+      // Guiguzi's opening and closing — placed here rather than in Scholarly
+      // at the owner's nod: it is a manual of dealing, and sharper among the
+      // standards than among the philosophers.
+      { text: "捭阖", face: "han" },
     ],
     texture: [
       { text: "6S", face: "mono" },

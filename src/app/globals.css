@@ -264,9 +264,13 @@
 /* Paired with pathLength="1" on the path, so one keyframe works for any
    geometry and nothing depends on a custom property resolving inside a
    keyframe — that combination has historically been buggy in Safari. */
+/* From a little past the path's length, not from exactly 1: with the dash
+   ending exactly at the start point, rounding leaves a sub-pixel sliver of it
+   showing before the stroke moves — a dot at the crossing. The strokes'
+   dash pattern is "1 2" for the same reason at the other end. */
 @keyframes plot-stroke {
   from {
-    stroke-dashoffset: 1;
+    stroke-dashoffset: 1.02;
   }
   to {
     stroke-dashoffset: 0;
