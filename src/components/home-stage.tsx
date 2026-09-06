@@ -278,11 +278,19 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             rel="noreferrer"
             className="opacity-55 transition-opacity hover:opacity-100"
           >
+            {/* 🔴 Eager. It is 24px tall and always inside the first
+                viewport — there is nothing to defer — and lazily it was
+                measured on production sitting at naturalWidth 0 twelve
+                seconds in, leaving a hole between the CV and Instagram. The
+                footer sits at the bottom of an `h-dvh` page that never
+                scrolls, which is exactly the case the lazy heuristic is
+                worst at. */}
             <Image
               src="/creative/elegists-mark.png"
               alt=""
               width={17}
               height={24}
+              loading="eager"
               className="h-6 w-auto"
             />
           </a>
