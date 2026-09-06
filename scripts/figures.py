@@ -8,6 +8,9 @@ Writes, as SVG, in bone on nothing:
     public/scholarly/hexagrams.svg   乾 and 坤, the first two hexagrams
     public/scholarly/luoshu.svg      the Luo Shu, the 3×3 magic square as dots
 
+The last two are drawn from the owner's own references; read their docstrings
+before changing a number in either.
+
 The four scanned plates (R.S.I., graph of desire, Jung, the semiotic square)
 are photographs of settled diagrams and go through scripts/figure-lineart.py.
 These three are pure geometry with a few labels, so they are drawn rather
@@ -15,12 +18,12 @@ than scanned — and drawn as SVG rather than PNG, because a curve and nine
 dots have no reason to be pixels. Same treatment: bone strokes, transparent
 ground, opacity applied by the field.
 
-Every label is a glyph outline, not text. An SVG loaded through <image> gets
-no web fonts, so text would fall back to whatever the OS has. The outlines
-come from the site's own faces: Cormorant for the Latin figures (instanced
-from the variable font next/font emitted into .next, which is why this runs
-after a build) and Zhuque Fangsong for 乾 and 坤 (the upstream ttf in the
-repo root, see D17).
+Only the curve carries labels, and every one of them is a glyph outline, not
+text: an SVG loaded through <image> gets no web fonts, so text would fall back
+to whatever the OS has. The outlines are Cormorant, instanced from the
+variable font next/font emitted into .next — which is why this runs after a
+build. The hexagrams and the Luo Shu carry no type at all; the owner asked for
+the names off, so nothing here needs Zhuque Fangsong any more.
 """
 
 import io
@@ -146,87 +149,159 @@ def normal_curve() -> str:
 
 def hexagrams() -> str:
     """
-    乾 and 坤, the first two hexagrams — six unbroken lines and six broken
-    ones, the whole of the Book of Changes folded into its first two figures.
-    Named beneath in Zhuque Fangsong, the face the site's literary voice is
-    set in (D17).
+    乾 and 坤, the first two hexagrams: six unbroken lines, six broken ones.
+
+    Bars only — the owner asked for the names off (这两个图都不要带字), and he
+    is right: a caption on a plate that sits at a third of an opacity behind a
+    page of type is one more thing asking to be read, and these two figures
+    are known by their shape to anyone who knows them at all.
+
+    They also stand apart now. The columns were 84 units apart and 84 wide, so
+    they touched: 乾's solid bar ran straight into 坤's left half and the pair
+    read as one block of broken lines rather than as two hexagrams. The gap is
+    half a bar wide, which is what the owner's reference shows.
     """
-    W, H = 240, 300
-    bar_w, bar_h, gap, split = 84, 10, 14, 14
-    top = 34
+    bar_w, bar_h, row_gap, split, col_gap, margin = 100, 10, 18, 18, 50, 10
+    block_h = 6 * bar_h + 5 * row_gap
+    W = margin * 2 + bar_w * 2 + col_gap
+    H = margin * 2 + block_h
+
     parts = [f'<g fill="{BONE}">']
-    for column, broken in ((36, False), (120, True)):
+    for column, broken in ((margin, False), (margin + bar_w + col_gap, True)):
         for i in range(6):
-            y = top + i * (bar_h + gap)
+            y = margin + i * (bar_h + row_gap)
             if broken:
                 half = (bar_w - split) / 2
                 parts.append(f'  <rect x="{column}" y="{y}" width="{half}" height="{bar_h}"/>')
-                parts.append(f'  <rect x="{column + half + split}" y="{y}" width="{half}" height="{bar_h}"/>')
+                parts.append(
+                    f'  <rect x="{column + half + split}" y="{y}" width="{half}" height="{bar_h}"/>'
+                )
             else:
                 parts.append(f'  <rect x="{column}" y="{y}" width="{bar_w}" height="{bar_h}"/>')
     parts.append("</g>")
-
-    fangsong = Type(TTFont(ROOT / "ZhuqueFangsong-Regular.ttf"), 40)
-    names = fangsong.path("乾", 36 + bar_w / 2, 240) + " " + fangsong.path("坤", 120 + bar_w / 2, 240)
-    parts.append(f'<path fill="{BONE}" d="{names}"/>')
     return svg(W, H, "\n".join(parts))
 
 
 def luoshu() -> str:
     """
-    The Luo Shu: 4 9 2 / 3 5 7 / 8 1 6, every row, column and diagonal
-    summing to fifteen — a magic square from before the first millennium,
-    drawn the way it has always been drawn, as dots: hollow for the odd
-    (yang) numbers, filled for the even (yin) ones, each number's dots
-    threaded on a line.
+    The Luo Shu: 4 9 2 / 3 5 7 / 8 1 6, every row, column and diagonal summing
+    to fifteen — a magic square from before the first millennium, drawn as dots.
+
+    Two things were wrong before, and both are the owner's corrections.
+
+    **Parity.** Yang (odd) dots are hollow and yin (even) dots are solid, not
+    the other way round. On paper the yang dots are white and the yin ones
+    black; here the ink is bone and the ground is pigment, so a yang dot is a
+    ring with the pigment showing through it and a yin dot is a disc of bone.
+
+    **The corners.** The even numbers are not straight rows. Each sits at a
+    corner as two short rows tilted onto the diagonal that points at that
+    corner — 4 up-left, 2 up-right, 8 down-left, 6 down-right — so the figure
+    turns under a half rotation exactly as the square does, where opposite
+    cells sum to ten. 2 is the one exception: a single pair along its
+    diagonal, because two rows of one dot would lie across it instead.
+
+    The threads stop at the edge of every dot rather than running under it, so
+    a line never shows through a hollow one.
     """
-    W, H = 360, 360
-    cell = 120
-    r = 6.5
-    step = 12.5
-    parts = [f'<g stroke="{BONE}" stroke-width="1.5">']
+    # Dots that touch read as one blob at the size this plate renders, and the
+    # owner's reference has clear air between them: spacing is just under three
+    # radii, and the cell is wide enough that the nine holds its own row
+    # without crowding the four and the two beside it.
+    W = H = 390
+    cell = 130
+    r = 7.0
+    step = 20.0
+    sep = 20.0
+    arm = 28.0
+    diag = 1 / math.sqrt(2)
 
-    def dots(n: int, cx: float, cy: float, along: str):
-        span = (n - 1) * step
-        out = []
-        coords = []
-        for i in range(n):
-            if along == "h":
-                coords.append((cx - span / 2 + i * step, cy))
-            else:
-                coords.append((cx, cy - span / 2 + i * step))
-        if n > 1:
-            (x0, y0), (x1, y1) = coords[0], coords[-1]
-            out.append(f'  <path d="M {x0} {y0} L {x1} {y1}" fill="none"/>')
-        # Yang (odd) dots are light: bone. Yin (even) dots are dark: a black
-        # fill under a bone rim, which the field's opacity turns into a dot of
-        # deeper pigment — hollow, to the eye. Both hide the thread behind them.
-        fill = BONE if n % 2 == 1 else "#000"
-        for x, y in coords:
-            out.append(f'  <circle cx="{x}" cy="{y}" r="{r}" fill="{fill}"/>')
-        return out
-
-    # cell centres: col 0..2, row 0..2
-    def c(col: int, row: int):
+    def centre(col: int, row: int):
         return cell * col + cell / 2, cell * row + cell / 2
 
+    def straight(n: int, cx: float, cy: float, axis: str):
+        span = (n - 1) * step
+        return [
+            (cx - span / 2 + i * step, cy) if axis == "h" else (cx, cy - span / 2 + i * step)
+            for i in range(n)
+        ]
+
+    def tilted(n: int, cx: float, cy: float, u: tuple):
+        """n dots as two rows of n/2 along u, the diagonal pointing at the corner."""
+        ux, uy = u
+        vx, vy = -uy, ux
+        if n == 2:
+            return [(cx - ux * sep / 2, cy - uy * sep / 2), (cx + ux * sep / 2, cy + uy * sep / 2)]
+        m = n // 2
+        span = (m - 1) * step
+        pts = []
+        for side in (-1, 1):
+            for i in range(m):
+                d = -span / 2 + i * step
+                pts.append((cx + ux * d + vx * side * sep / 2, cy + uy * d + vy * side * sep / 2))
+        return pts
+
     layout = [
-        (4, 0, 0, "h"), (9, 1, 0, "h"), (2, 2, 0, "h"),
-        (3, 0, 1, "v"), (5, 1, 1, "x"), (7, 2, 1, "v"),
-        (8, 0, 2, "h"), (1, 1, 2, "h"), (6, 2, 2, "h"),
+        (4, 0, 0, "tilt", (-diag, -diag)),
+        (9, 1, 0, "line", "h"),
+        (2, 2, 0, "tilt", (diag, -diag)),
+        (3, 0, 1, "line", "v"),
+        (5, 1, 1, "cross", None),
+        (7, 2, 1, "line", "v"),
+        (8, 0, 2, "tilt", (-diag, diag)),
+        (1, 1, 2, "line", "h"),
+        (6, 2, 2, "tilt", (diag, diag)),
     ]
-    for n, col, row, along in layout:
-        cx, cy = c(col, row)
-        if along == "x":
-            # The centre five is a cross: one dot in the middle, four around it.
-            parts += dots(1, cx, cy, "h")
-            parts.append(f'  <path d="M {cx - 2 * step} {cy} L {cx + 2 * step} {cy} M {cx} {cy - 2 * step} L {cx} {cy + 2 * step}" fill="none"/>')
-            for dx, dy in ((-2 * step, 0), (2 * step, 0), (0, -2 * step), (0, 2 * step)):
-                parts.append(f'  <circle cx="{cx + dx}" cy="{cy + dy}" r="{r}" fill="{BONE}"/>')
+
+    threads: list[str] = []
+    dots: list[str] = []
+
+    def link(a, b):
+        """A segment from the edge of one dot to the edge of the next."""
+        (x0, y0), (x1, y1) = a, b
+        dx, dy = x1 - x0, y1 - y0
+        length = math.hypot(dx, dy)
+        if length <= 2 * (r + 1):
+            return
+        ux, uy = dx / length, dy / length
+        inset = r + 1
+        threads.append(
+            f'  <path d="M {x0 + ux * inset:.2f} {y0 + uy * inset:.2f}'
+            f' L {x1 - ux * inset:.2f} {y1 - uy * inset:.2f}"/>'
+        )
+
+    for n, col, row, kind, spec in layout:
+        cx, cy = centre(col, row)
+        if kind == "line":
+            pts = straight(n, cx, cy, spec)
+            for a, b in zip(pts, pts[1:]):
+                link(a, b)
+        elif kind == "cross":
+            pts = [(cx, cy)] + [(cx - arm, cy), (cx + arm, cy), (cx, cy - arm), (cx, cy + arm)]
+            for q in pts[1:]:
+                link(pts[0], q)
         else:
-            parts += dots(n, cx, cy, along)
-    parts.append("</g>")
-    return svg(W, H, "\n".join(parts))
+            pts = tilted(n, cx, cy, spec)
+            if n == 2:
+                link(*pts)
+            else:
+                m = n // 2
+                # Round the parallelogram: down one row, back along the other.
+                loop = pts[:m] + pts[m:][::-1]
+                for a, b in zip(loop, loop[1:] + loop[:1]):
+                    link(a, b)
+        fill = "none" if n % 2 else BONE
+        for x, y in pts:
+            dots.append(f'  <circle cx="{x:.2f}" cy="{y:.2f}" r="{r}" fill="{fill}"/>')
+
+    body = "\n".join(
+        [f'<g fill="none" stroke="{BONE}" stroke-width="1.6" stroke-linecap="round">']
+        + threads
+        + ["</g>", f'<g stroke="{BONE}" stroke-width="1.8">']
+        + dots
+        + ["</g>"]
+    )
+    return svg(W, H, body)
 
 
 def main() -> None:
