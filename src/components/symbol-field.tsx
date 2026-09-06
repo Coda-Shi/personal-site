@@ -1250,19 +1250,35 @@ export function SymbolField({
     // reads `decoded` either, so it is left alone rather than set from here.
     if (hrefs.length === 0) return;
     let live = true;
+    const done = () => {
+      if (live) setDecoded(true);
+    };
+    /**
+     * 🔴 A deadline, because `decode()` does not always come back.
+     *
+     * Chrome defers decoding in a tab that is not being painted, so on a page
+     * opened in a background tab the promise simply never settles and the
+     * plates never mount at all — measured on production, eight seconds in,
+     * zero images in the DOM. Nobody is looking at that tab, but "never" is
+     * not a state this may end in.
+     *
+     * So the decode is a head start rather than a precondition: whichever
+     * comes first, the plates go in. Two and a half seconds is past the 2.1
+     * the slowest of them takes to arrive on a warm connection.
+     */
+    const deadline = window.setTimeout(done, 2500);
     void Promise.all(
       hrefs.map((href) => {
         const img = new window.Image();
         img.src = href;
-        // A failed decode must not hold the plates back for ever; the reveal
-        // falls through to the old behaviour for that one.
+        // A failed decode must not hold the plates back either; that one falls
+        // through to the old behaviour.
         return img.decode().catch(() => undefined);
       }),
-    ).then(() => {
-      if (live) setDecoded(true);
-    });
+    ).then(done);
     return () => {
       live = false;
+      window.clearTimeout(deadline);
     };
   }, [liveBoard, track]);
 
