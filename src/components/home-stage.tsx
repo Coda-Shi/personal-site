@@ -217,9 +217,9 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             is room for one line. */}
         <div className="mb-3 flex items-center justify-between gap-3 md:hidden">
           <span className="flex flex-col gap-0.5">{emails}</span>
-          <span className="label consult-phone flex shrink-0 flex-col items-end gap-px border border-bone/20 px-2.5 py-1 leading-tight text-bone/40">
+          <span className="label consult consult-phone flex shrink-0 flex-col items-end gap-px border px-2.5 py-1 leading-tight text-bone/60">
             {dict.consult.label}
-            <span className="text-bone/25">{dict.consult.status}</span>
+            <span className="text-bone/35">{dict.consult.status}</span>
           </span>
         </div>
 
@@ -327,12 +327,12 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             the only soft-cornered object on the page. Quieter than the links
             beside it on purpose. There is nowhere for it to go yet, so it is
             a span and says why. */}
-        <span className="label ml-auto hidden items-center gap-2.5 border border-bone/20 px-3.5 py-1.5 text-bone/40 md:flex">
+        <span className="label consult ml-auto hidden items-center gap-2.5 border px-3.5 py-1.5 text-bone/60 md:flex">
           {dict.consult.label}
-          <span aria-hidden="true" className="text-bone/20">
+          <span aria-hidden="true" className="text-bone/30">
             ·
           </span>
-          <span className="text-bone/25">{dict.consult.status}</span>
+          <span className="text-bone/35">{dict.consult.status}</span>
         </span>
         </div>
         </div>
