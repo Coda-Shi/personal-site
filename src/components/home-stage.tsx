@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LanguageSwitch } from "@/components/language-switch";
-import { ENTRANCE, TrinityDisc, type Focus } from "@/components/trinity-disc";
+import { ENTRANCE, RETURN_CLOSE, TrinityDisc, type Focus } from "@/components/trinity-disc";
 import { EMAILS, INSTAGRAM, NAME, type TrackId } from "@/lib/content";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { nav } from "@/lib/navigation";
@@ -90,7 +90,22 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
     settled ? undefined : { animation: `rise-in 700ms ease-out ${delay}ms both` };
 
   // The hub lights no beam, so it should not clear the copy either.
-  const lit = focus !== null && focus !== "hub";
+  /**
+   * A return counts as lit until the pigment has landed.
+   *
+   * `focus` is null the moment this page mounts, so without this everything
+   * that steps aside for a flood stepped straight back in while the flood was
+   * still full-screen. It is the same `lit` the hover uses, so hovering during
+   * the return simply keeps it true and the timer changes nothing.
+   */
+  const [closing, setClosing] = useState(returning !== null);
+  useEffect(() => {
+    if (!closing) return;
+    const timer = window.setTimeout(() => setClosing(false), RETURN_CLOSE);
+    return () => window.clearTimeout(timer);
+  }, [closing]);
+
+  const lit = closing || (focus !== null && focus !== "hub");
   const recede = {
     opacity: lit ? 0 : 1,
     // Out of the way quickly, back slowly: the beam takes 900ms to arrive and

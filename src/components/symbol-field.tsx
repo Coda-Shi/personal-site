@@ -658,8 +658,59 @@ const PLATE_BOXES: Record<BoardKey, Box[]> = {
   ],
 };
 
+/**
+ * One breathing wrapper, shared by the plates.
+ *
+ * The same wrapper-and-transition split the words use: an animation and a
+ * transition on one property is a fight the animation wins outright, and the
+ * reveal would stop happening. See the note on the text's `<g>`.
+ */
+function Breathing({
+  name,
+  visible,
+  ground,
+  children,
+}: {
+  name: string;
+  visible: boolean;
+  ground?: boolean;
+  children: React.ReactNode;
+}) {
+  const { period, phase } = breath(name);
+  return (
+    <g
+      className="drift"
+      style={{
+        animation: `drift-plate ${period}ms ease-in-out ${-phase}ms infinite`,
+        // Longhand after the shorthand, which resets it — see the text's note.
+        animationPlayState: visible && !ground ? "running" : "paused",
+      }}
+    >
+      {children}
+    </g>
+  );
+}
+
 const plates = (board: Board) =>
   PLATE_ART.map((art, i) => ({ ...art, box: PLATE_BOXES[board.key][i] }));
+
+/**
+ * A plate's own breath, deterministic from its key.
+ *
+ * The words breathe and the plates did not, and a still object arriving into a
+ * moving field reads as a pop however long its fade is — the owner's word was
+ * 闪现. They breathe on the same wrapper-and-transition split the text uses,
+ * and more shallowly (see `drift-plate`): a diagram is a hundred times the area
+ * of a word and the same swing on it would be a pulse, not a shimmer.
+ *
+ * Derived rather than random, because this runs in render and D15 requires the
+ * server and the client to produce the same numbers.
+ */
+function breath(key: string) {
+  let h = 0;
+  for (let i = 0; i < key.length; i += 1) h = (h * 31 + key.charCodeAt(i)) % 9973;
+  return { period: 4200 + (h % 2600), phase: h % 4200 };
+}
 
 
 /**
@@ -1134,6 +1185,23 @@ export function SymbolField({
    * board — portrait gets `tall`, everything else `wide`. Keep the two in step;
    * if they drift, the visible board is the one that never loads its plates.
    */
+  /**
+   * Decoded before they are ever shown, and mounted only once they are.
+   *
+   * The plates used to arrive at whatever moment their bytes did: the six of
+   * them finish between 1.2 and 2.1 seconds after load on a warm connection,
+   * and a sector lit inside that window revealed an `<image>` whose href had
+   * not landed. It appeared when it appeared — part way through its own fade,
+   * or after it — which is the 闪现 the owner saw, and no amount of tuning the
+   * transition would have touched it.
+   *
+   * `decode()` is what makes this exact rather than hopeful: it resolves when
+   * the bitmap is ready to paint, not merely when the bytes are in. `visible`
+   * still overrides it, so a hover inside the first second shows the plates
+   * immediately, as before — that is the old behaviour kept as the floor.
+   */
+  const [decoded, setDecoded] = useState(false);
+
   const [liveBoard, setLiveBoard] = useState<BoardKey | null>(null);
   useEffect(() => {
     // 🔴 These two must stay the exact complement of the rules that pick a
@@ -1170,6 +1238,34 @@ export function SymbolField({
     };
   }, []);
 
+  useEffect(() => {
+    if (liveBoard === null) return;
+    const hrefs =
+      track === "scholarly"
+        ? FIGURES.filter((figure) => figure.boxes[liveBoard]).map((figure) => figure.href)
+        : track === "creative"
+          ? plates(BOARDS[liveBoard]).map((plate) => plate.href)
+          : [];
+    // No plates on this field at all — nothing to wait for, and nothing that
+    // reads `decoded` either, so it is left alone rather than set from here.
+    if (hrefs.length === 0) return;
+    let live = true;
+    void Promise.all(
+      hrefs.map((href) => {
+        const img = new window.Image();
+        img.src = href;
+        // A failed decode must not hold the plates back for ever; the reveal
+        // falls through to the old behaviour for that one.
+        return img.decode().catch(() => undefined);
+      }),
+    ).then(() => {
+      if (live) setDecoded(true);
+    });
+    return () => {
+      live = false;
+    };
+  }, [liveBoard, track]);
+
   if (
     LAYOUTS.wide[track].length === 0 &&
     (track === "creative" ? PLATE_ART.length : 0) === 0
@@ -1182,7 +1278,9 @@ export function SymbolField({
    * in play for the first second or two. Once the board *is* known it decides
    * alone, so the off-screen board never loads a thing.
    */
-  const warmFor = (key: BoardKey) => (liveBoard === null ? visible : liveBoard === key);
+
+  const warmFor = (key: BoardKey) =>
+    liveBoard === null ? visible : liveBoard === key && (decoded || visible);
 
   // Each element carries its own delay so the field assembles unevenly rather
   // than switching on as a block. On the way out the delay drops to zero, so
@@ -1238,30 +1336,32 @@ export function SymbolField({
         const box = figure.boxes[key];
         if (!box) return null;
         return (
-          <image
-            key={figure.key}
-            href={figure.href}
-            x={box.x}
-            y={box.y}
-            width={box.w}
-            height={box.h}
-            preserveAspectRatio="xMidYMid meet"
-            style={reveal(figure.opacity, figure.delay)}
-          />
+          <Breathing key={figure.key} name={figure.key} visible={visible} ground={ground}>
+            <image
+              href={figure.href}
+              x={box.x}
+              y={box.y}
+              width={box.w}
+              height={box.h}
+              preserveAspectRatio="xMidYMid meet"
+              style={reveal(figure.opacity, figure.delay)}
+            />
+          </Breathing>
         );
       })}
 
       {plateList.map((plate) => (
-        <image
-          key={plate.key}
-          href={plate.href}
-          x={plate.box.x}
-          y={plate.box.y}
-          width={plate.box.w}
-          height={plate.box.h}
-          preserveAspectRatio="xMidYMid meet"
-          style={reveal(plate.opacity, plate.delay)}
-        />
+        <Breathing key={plate.key} name={plate.key} visible={visible} ground={ground}>
+          <image
+            href={plate.href}
+            x={plate.box.x}
+            y={plate.box.y}
+            width={plate.box.w}
+            height={plate.box.h}
+            preserveAspectRatio="xMidYMid meet"
+            style={reveal(plate.opacity, plate.delay)}
+          />
+        </Breathing>
       ))}
 
       {items.map((item) => {

@@ -171,6 +171,18 @@ export const ENTRANCE = {
  * see `markName` — so it is home on the disc before the colour moves.
  */
 const RETURN_HOLD = 420;
+/**
+ * The whole return, arrival to the pigment landing back in its circle.
+ *
+ * Exported because the page around the disc has to wait for it. Everything the
+ * flood hides on the way out — the intro copy on every screen, the footer on a
+ * phone — was coming back the instant the route changed, while the colour still
+ * filled the window: 之前被隐去的部分在颜色收缩前就存在了，很乱不好看. The
+ * stage holds them out for exactly this long and then lets them fade in, so
+ * the order is the one the eye expects — the colour leaves, then the page
+ * comes back.
+ */
+export const RETURN_CLOSE = RETURN_HOLD + FLOOD_FALL;
 const RETURN_FIELD_HOLD = RETURN_HOLD + 300;
 
 /**
