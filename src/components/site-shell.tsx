@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ViewTransition } from "react";
-import { LanguageToggle } from "@/components/language-toggle";
+import { LanguageSwitch } from "@/components/language-switch";
 import { SymbolField } from "@/components/symbol-field";
 import { NAME, type TrackId } from "@/lib/content";
 import { getDictionary, type Locale } from "@/lib/i18n";
@@ -89,7 +89,7 @@ export function SiteShell({
             >
               {dict.nav.coda}
             </Link>
-            <LanguageToggle lang={lang} label={dict.switchTo} />
+            <LanguageSwitch lang={lang} label={dict.switchTo} />
           </footer>
         </main>
       </div>
