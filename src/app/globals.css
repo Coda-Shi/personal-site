@@ -369,6 +369,21 @@
   }
 }
 
+/* The plates breathe on the same principle and half as deep: 0.72 at the
+   bottom of the swing against the words' 0.46. A diagram is a hundred times
+   the area of a word, and the same swing on it is a pulse rather than a
+   shimmer. They breathe at all because they did not, and a still object
+   arriving into a moving field reads as a pop however long its fade is. */
+@keyframes drift-plate {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* The breathing is paused while a sector is dark. That cannot be done from
    here — see the note on `animationPlayState` in symbol-field.tsx for why a
    rule in this file is silently overridden. */
@@ -500,8 +515,8 @@
    Tailwind's own ordering — measured 12.48px where 9px was asked for. This
    rule is unlayered, so it beats both without a fight. */
 /* The consultation, dimmed because it does nothing yet: the fill is its
-   colour at 30% over the ground and the edge at 55%, which reads as the same
-   object with the light off. Turning it on is raising those two numbers.
+   colour at 30% over the ground, which reads as the same object with the light
+   off. Turning it on is raising that number. The line around it is bone.
 
    🔴 The purple is in the box and not in the type, and it has to be. #7600BC
    on #050505 is 2.35:1 — below legible before anything is dimmed at all — and
@@ -509,7 +524,10 @@
    carries the colour. */
 .consult {
   background-color: color-mix(in srgb, var(--color-consult) 30%, var(--color-void));
-  border-color: color-mix(in srgb, var(--color-consult) 55%, var(--color-void));
+  /* Bone, at the owner's word, not the purple it was. The rule reads as the
+     same hairline every other bordered thing on the site is drawn with, and
+     the purple stays where it can be dark without taking anything with it. */
+  border-color: color-mix(in srgb, var(--color-bone) 35%, transparent);
 }
 
 .consult-phone {
