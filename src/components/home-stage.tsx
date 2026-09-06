@@ -175,7 +175,13 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             className="label hide-when-short mt-3 max-w-xs text-bone/45 md:max-w-sm xl:max-w-md"
             style={recede}
           >
-            {dict.hint}
+            {/* One block per sentence: what to do, then what it is for. The
+                break is the owner's and holds at every measure — see HINT. */}
+            {dict.hint.map((line) => (
+              <span key={line} className="block">
+                {line}
+              </span>
+            ))}
           </p>
         </div>
       </header>
@@ -299,6 +305,24 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
               <circle cx="17.3" cy="6.7" r="0.9" fill="currentColor" stroke="none" />
             </svg>
           </a>
+        </span>
+        {/* Bottom right, which on a desktop is the far end of this row and on
+            a phone is the end of the last line it wraps to. `ml-auto` rather
+            than a second absolutely-positioned block, so it inherits the
+            footer's entrance and — on a phone — steps aside with it when a
+            sector lights.
+
+            A hairline rectangle, not a pill: everything else on this site is
+            either a straight rule or a circle, and a rounded button would be
+            the only soft-cornered object on the page. Quieter than the links
+            beside it on purpose. There is nowhere for it to go yet, so it is
+            a span and says why. */}
+        <span className="label ml-auto flex items-center gap-2.5 border border-bone/20 px-3.5 py-1.5 text-bone/40">
+          {dict.consult.label}
+          <span aria-hidden="true" className="text-bone/20">
+            ·
+          </span>
+          <span className="text-bone/25">{dict.consult.status}</span>
         </span>
         </div>
         </div>

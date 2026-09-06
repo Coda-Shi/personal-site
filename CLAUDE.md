@@ -1325,6 +1325,26 @@ D27 的 8:5 横板是按笔记本**屏幕**配的；浏览器视口比屏幕矮�
 
 「Curriculum vitae」→ **CV**（首页与分页两处页脚共用一个 `nav.cv`）。「ELEGISTS STUDIO」的字换成**竖琴加羽毛笔的标**（`/creative/elegists-mark.png`），移进图标组、排在 GitHub 之前；24px 高、17px 宽，与另外两个图标同宽，行的节奏不变。它是真标识不能重描边，所以悬停走透明度而不是颜色；工作室的名字留作链接的可及名称。
 
+### D41 — 首页文案：profile 改词、hint 分两行、右下角「预约咨询」占位；/coda 中文换句 ✅ 生效中（2026-09-06）
+
+#### 三处所有者的字
+
+- `PROFILE` 改成 “Work spanning mental health practice, psychological research; music, literature, and indie game production; building and leading organizations.”
+- `HINT` 拆成两行：“Hover and tap;” / “Select which part you came to know him by.” 类型与 lede 一样改成 `readonly [string, string]`，渲染成两个 block——指令与邀请是两件事，连排读起来是一句长说明。中文按原有分号拆：「悬停或轻触；」/「选择你从哪一面了解到他。」
+- `/coda` 的中文一句话换成「在书写中求索，于旅途上感受。」（`hub.subheading` 与 `hub.ariaLabel` 两处）。原句「书写与行路；求索与感受。」是两组并列名词，读者得自己把 书写→求索、行路→感受 对上；新句把这层对应写出来了。
+
+> ⚠️ 中文 `profile` 还是「……独立音乐、文学与游戏创作……」，英文已改成 “music, literature, and indie game production”，少了 independent、多了 indie。与 D40 里实务线 lede 的错位是同一类问题：**英文改了中文没跟，等所有者给词，不要自己改。**
+
+#### 右下角的「预约咨询」
+
+所有者要一个按钮，标注准备中、暂时不能点。
+
+他给的词是「与我咨询」，不通：咨询 的对象是被咨询的人（向我咨询 / 咨询我），「与我」暗示双向。换成 **「预约咨询」/ “Book a consultation”**——按钮该说明它会做什么，而且他做心理实践，咨询 在中文里正落在这个语义上。若他要的是「问我事情」则应是「向我咨询」/ “Ask me”。已告知，等他定。
+
+> 🔴 **它是 `<span>`，不是 `<a>` 也不是 `<button>`。** 现在没有地方可去，一个看起来能按、按下去没反应的东西比一个明说「准备中」的更糟。状态词写在标签里而不是 tooltip 里，因为它就是要被读到。
+
+放在页脚一行的末尾（`ml-auto`），不是第二个绝对定位块——这样它继承页脚的入场，手机上也跟着页脚一起让位。样式是一圈发丝矩形而不是胶囊：这站上除了圆盘只有直线，圆角按钮会是页面上唯一的软角。
+
 ## 5. 工作流约定
 
 **不要直接改 `main`。** 标准循环：
@@ -1424,6 +1444,7 @@ gh pr create --fill
 - [x] 底页景深模糊去掉；WEIRD samples 换 Aufhebung；乾坤两卦分开、洛书阴阳与四角照所有者的图重画，两图都不带字（2026-09-06，见 D38）
 - [x] 加大脑正中矢状面图版（画的，`brain()`）；荣格缩到 400×473 退到最右，洛书挪到最左；手机端用大脑图换掉对位图（2026-09-06，见 D39）
 - [x] 大脑图改用所有者的扫描件（箭头按连通分量抠掉）；手机版禁区收到只剩两条边、三环挪右上、洛书下架；三条 lede 分两行；页脚 CV 与工作室标（2026-09-06，见 D40）
+- [x] 首页 profile 改词、hint 分两行、右下角加「预约咨询」占位（span，不可点）；/coda 中文一句话换成「在书写中求索，于旅途上感受。」（2026-09-06，见 D41）
 - [ ] **演出照片**：所有者整理中。到手后 `scripts/live-photos.py` 处理、条目填进 `src/content/performances.ts`，创作页自动出现「演出」一节
 - [ ] ~~个人照片牌（/coda）~~ **挂起**——所有者出于隐私考虑不做
 - [x] 修掉 `SymbolField` 的 hydration mismatch（见 D15）
