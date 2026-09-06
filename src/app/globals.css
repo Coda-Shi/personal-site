@@ -18,6 +18,11 @@
   --color-oxblood: #6e1423;
   --color-gilt: #6a5216;
 
+  /* The consultation's own colour, the owner's, and the only purple on the
+     site. It is a fourth thing rather than a fourth track, so it borrows
+     nothing from the trinity and sits outside D7. */
+  --color-consult: #7600bc;
+
   /* Latin face first, Han face second. The browser resolves family per
      character, so English keeps Cormorant and Space Grotesk while Chinese
      picks up Source Han from the next slot — one stack, both scripts, no
@@ -494,6 +499,19 @@
    Tailwind size is the same kind of utility, so which one wins is down to
    Tailwind's own ordering — measured 12.48px where 9px was asked for. This
    rule is unlayered, so it beats both without a fight. */
+/* The consultation, dimmed because it does nothing yet: the fill is its
+   colour at 30% over the ground and the edge at 55%, which reads as the same
+   object with the light off. Turning it on is raising those two numbers.
+
+   🔴 The purple is in the box and not in the type, and it has to be. #7600BC
+   on #050505 is 2.35:1 — below legible before anything is dimmed at all — and
+   "not enabled" can only mean darker still. The label stays bone; the box
+   carries the colour. */
+.consult {
+  background-color: color-mix(in srgb, var(--color-consult) 30%, var(--color-void));
+  border-color: color-mix(in srgb, var(--color-consult) 55%, var(--color-void));
+}
+
 .consult-phone {
   font-size: 0.55rem;
   letter-spacing: 0.12em;

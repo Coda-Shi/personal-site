@@ -309,7 +309,7 @@ const zh: Partial<Dictionary> = {
   },
   roles: "心理学学者 · 游戏制作人 · 组织领导",
   profile:
-    "工作横跨精神健康实践与心理学研究、独立音乐、文学与游戏创作，以及组织的搭建与领导。",
+    "工作横跨精神健康实践与心理学研究、音乐、文学与独立游戏制作，以及组织的搭建与领导。",
   hint: ["悬停或轻触；", "选择你从哪一面了解到他。"],
   tracks: {
     scholarly: {
@@ -320,10 +320,10 @@ const zh: Partial<Dictionary> = {
     },
     professional: {
       title: "实务",
-      // ⚠️ The English lost "policy" and became "System design with
-      // investigation" on 2026-09-06; this still says 工业与政策研究 and
-      // 调查与系统设计. Flagged with the owner — his words, his call.
-      lede: ["运营、合规、工业与政策研究。", "调查与系统设计，实现远大目标的努力。"],
+      // 政策 came out with the English's "policy". 调查与系统设计 stays
+      // coordinate where the English now subordinates one to the other —
+      // the owner's call: 中文并列语法没问题.
+      lede: ["运营、合规、工业研究。", "调查与系统设计，实现远大目标的努力。"],
     },
     creative: {
       title: "创作",
