@@ -185,7 +185,6 @@ export const STUDIO_URL = "https://elegists.studio";
  * The Instagram share link arrives with igsh and utm_source tracking
  * parameters. They are stripped: this is a link to a profile, not a campaign.
  */
-export const GITHUB = "https://github.com/Coda-Shi";
 export const INSTAGRAM = "https://www.instagram.com/coda_shi_77721";
 
 export const STUDIO_EMAIL = "elegistsstudio@gmail.com";
