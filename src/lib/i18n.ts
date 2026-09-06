@@ -98,7 +98,7 @@ export function localise<T extends { id: string }>(
 export type Dictionary = {
   roles: string;
   profile: string;
-  hint: string;
+  hint: readonly [string, string];
   tracks: Record<TrackId, TrackCopy>;
   hub: {
     /** The two halves of the disc's centre label. */
@@ -179,6 +179,20 @@ export type Dictionary = {
   };
   /** The two arrows on the deck of photographs. */
   deck: { previous: string; next: string };
+  /**
+   * The consultation, announced before it exists.
+   *
+   * 🔴 **Not a link, and not a button either — a `<span>`.** There is nowhere
+   * for it to go yet, and an element that looks pressable and does nothing is
+   * worse than one that says so. `status` is the word that says so, and it is
+   * part of the label rather than a tooltip because the whole point is that
+   * it is read.
+   *
+   * The owner asked for 与我咨询; that is not how 咨询 takes its object — it
+   * is 向我咨询 or 预约咨询, and the second is what a button would say. He has
+   * the choice; this is the one in place until he makes it.
+   */
+  consult: { label: string; status: string };
 };
 
 const en: Dictionary = {
@@ -257,6 +271,7 @@ const en: Dictionary = {
     play: "Play the video",
   },
   deck: { previous: "Previous photograph", next: "Next photograph" },
+  consult: { label: "Book a consultation", status: "In preparation" },
 };
 
 /**
@@ -294,7 +309,7 @@ const zh: Partial<Dictionary> = {
   roles: "心理学学者 · 游戏制作人 · 组织领导",
   profile:
     "工作横跨精神健康实践与心理学研究、独立音乐、文学与游戏创作，以及组织的搭建与领导。",
-  hint: "悬停或轻触；选择你从哪一面了解到他。",
+  hint: ["悬停或轻触；", "选择你从哪一面了解到他。"],
   tracks: {
     scholarly: {
       title: "学术",
@@ -317,9 +332,9 @@ const zh: Partial<Dictionary> = {
   hub: {
     name: "Coda",
     qualifier: "其人",
-    ariaLabel: "Coda 其人 — 书写与行路；求索与感受。",
+    ariaLabel: "Coda 其人 — 在书写中求索，于旅途上感受。",
     heading: "Coda 其人",
-    subheading: "书写与行路；求索与感受。",
+    subheading: "在书写中求索，于旅途上感受。",
   },
   nav: { cv: "简历", coda: "Coda 其人", writing: "诗文", studio: "唱诗人工作室", email: "邮箱" },
   writing: {
@@ -544,6 +559,7 @@ const zh: Partial<Dictionary> = {
     play: "播放视频",
   },
   deck: { previous: "上一张", next: "下一张" },
+  consult: { label: "预约咨询", status: "准备中" },
   music: {
     "summer-2022": {
       event: "Summer Music Festival",

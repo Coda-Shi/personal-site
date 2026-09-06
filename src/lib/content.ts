@@ -100,7 +100,7 @@ export const QUESTIONS: Question[] = [
 export const ROLES = "Psychology scholar · Game producer · Organizational leader";
 
 export const PROFILE =
-  "Work spanning mental health practice and psychological research; independent music, literature and game creation; and building and leading organizations.";
+  "Work spanning mental health practice, psychological research; music, literature, and indie game production; building and leading organizations.";
 
 /**
  * Shown top-right on the home screen. Both are published at the owner's
@@ -190,7 +190,18 @@ export const INSTAGRAM = "https://www.instagram.com/coda_shi_77721";
 
 export const STUDIO_EMAIL = "elegistsstudio@gmail.com";
 
-export const HINT = "Hover and tap; Select which part you came to know him by.";
+/**
+ * Two lines, and the break is the owner's. The instruction and the invitation
+ * are different sentences doing different work, and run together they read as
+ * one long caption; apart, the first is what to do and the second is what it
+ * is for. Same treatment as a track's lede — a pair rather than a string, so
+ * the break holds at every measure instead of falling wherever the column
+ * happens to end.
+ */
+export const HINT: readonly [string, string] = [
+  "Hover and tap;",
+  "Select which part you came to know him by.",
+];
 
 // Tailwind cannot see class names assembled at runtime, so every track's classes
 // are written out in full here rather than interpolated from the track id.
