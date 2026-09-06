@@ -15,7 +15,7 @@ export async function generateMetadata({
   const copy = getDictionary(lang).tracks[track.id];
   return {
     title: copy.title,
-    description: copy.lede,
+    description: copy.lede.join(" "),
     alternates: localeAlternates(lang, "/professional"),
   };
 }

@@ -48,7 +48,17 @@ export type Track = {
    * mark, Cormorant has a beautiful one, and it should be set, not traced.
    */
   mark: "char" | "coda" | "turnstile";
-  lede: string;
+  /**
+   * Two sentences, and they are two lines: what the track covers, then what
+   * it is for. The owner asked for the break to hold on every screen (分行),
+   * so it is structure rather than punctuation — a single string would break
+   * wherever the measure happened to run out, which on a phone was
+   * mid-sentence and on a laptop was nowhere.
+   *
+   * Joined with a space for the page description, where a line break has no
+   * meaning and a search result wants one sentence after another.
+   */
+  lede: readonly [string, string];
   entries: Entry[];
 };
 
@@ -228,7 +238,10 @@ export const TRACKS: Track[] = [
     glyph: "⊨",
     glyphName: "double turnstile — models, satisfies",
     mark: "turnstile",
-    lede: "Philosophy, public affairs, psychological research and practice. An intellectual obsession with the collective psyche, a care for its well-being.",
+    lede: [
+      "Philosophy, public affairs, psychological research and practice.",
+      "An intellectual obsession with the collective psyche, a care for its well-being.",
+    ],
     entries: [
       {
         id: "tsinghua",
@@ -290,7 +303,10 @@ export const TRACKS: Track[] = [
     glyph: "§",
     glyphName: "section sign",
     mark: "char",
-    lede: "Operations, compliance, industrial and policy research. Investigation and system design, in service of ambitious ends.",
+    lede: [
+      "Operations, compliance, industrial research.",
+      "System design with investigation, in service of ambitious ends.",
+    ],
     entries: [
       // The analyst post and the directorship are one continuous tenure at one
       // company, so they read as a promotion rather than as two jobs.
@@ -352,7 +368,10 @@ export const TRACKS: Track[] = [
     glyph: "𝄌",
     glyphName: "coda — the sign marking a work's final passage",
     mark: "coda",
-    lede: "Game studio, music collective, literary pieces. Visions that defied the mind's confinement and came into being.",
+    lede: [
+      "Game studio, music collective, literary pieces.",
+      "Visions that defied the mind's confinement and came into being.",
+    ],
     entries: [
       {
         id: "elegists",
