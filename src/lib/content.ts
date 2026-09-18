@@ -252,7 +252,7 @@ export const TRACKS: Track[] = [
     mark: "turnstile",
     lede: [
       "Philosophy, public affairs, psychological research and practice.",
-      "An intellectual obsession with the collective psyche, a care for its well-being.",
+      "An intellectual obsession with the psyche, a care for its well-being.",
     ],
     entries: [
       {
