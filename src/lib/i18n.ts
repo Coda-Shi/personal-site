@@ -321,7 +321,7 @@ const zh: Partial<Dictionary> = {
       title: "学术",
       // Split at the full stop the sentence already had — the break is
       // formatting, and none of these words are mine to change.
-      lede: ["哲学、公共事务、心理学研究与实践。", "对人类集体心灵的智识执迷与福祉关怀。"],
+      lede: ["哲学、公共事务、心理学研究与实践。", "对心灵的智识执迷与福祉关怀。"],
     },
     professional: {
       title: "实务",
