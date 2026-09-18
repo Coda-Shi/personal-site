@@ -190,7 +190,7 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             className="label hide-when-short mt-3 max-w-xs text-bone/45 md:max-w-sm xl:max-w-md"
             style={recede}
           >
-            {/* One block per sentence: what to do, then what it is for. The
+            {/* One block per line, so that where there is more than one the
                 break is the owner's and holds at every measure — see HINT. */}
             {dict.hint.map((line) => (
               <span key={line} className="block">

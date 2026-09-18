@@ -1390,6 +1390,19 @@ D27 的 8:5 横板是按笔记本**屏幕**配的；浏览器视口比屏幕矮�
 
 底色随后改成**半透明**（`color-mix(… 30%, transparent)`，所有者的要求）。黑底上两者是同一个颜色——30% 的 `#7600BC` 压 `#050505` 正是原来那个 `#270338`，实测像素差 1——分歧只在点亮之后：桌面页脚不退场，实心的盒子贴在洪水上像张贴纸，半透明的会跟着染色。
 
+### D44 — 去掉用力感：简介、提示、实务 lede、About ✅ 生效中（2026-09-17）
+
+所有者：「这次的改动主要是减少用力感。我会觉得有些地方过度解释和想要让别人觉得我很厉害了。」
+
+- 简介 `PROFILE` → “Research, games, music, writing, and organizational work.” 它同时是 CV 页开头和链接预览的描述，三处一起变。身份标签不动。
+- 提示 `HINT` → “Explore by hover and tap on areas.” 一行；「select which part you came to know him by」那半句拿掉。类型从定长二元组放宽为 `readonly [string, ...string[]]`。
+- 实务 lede → 只剩 “Operations, compliance, design of organizational systems.”；“in service of ambitious ends” 那句删除。中文同步删掉第二句（删除两种语言一起做）。`Track.lede` 同样放宽为一到多行。
+- `/coda` 的 “A life, in his own words” → **About / 关于我**。`/life` 页共用这个标题，一起改。
+
+> ⚠️ 三处中文还没对齐，等所有者给词：`profile`、`hint`、实务 lede 第一句（仍是「工业研究」）。代码里已就地标注。
+
+> 方向：往名词和短句走，少形容词，不替他加解释。这是他的声音，也是以后给文案草稿时的尺度。
+
 ## 5. 工作流约定
 
 **不要直接改 `main`。** 标准循环：
@@ -1492,6 +1505,7 @@ gh pr create --fill
 - [x] 首页 profile 改词、hint 分两行、右下角加「预约咨询」占位（span，不可点）；/coda 中文一句话换成「在书写中求索，于旅途上感受。」（2026-09-06，见 D41）
 - [x] 咨询占位改「向我咨询 / Consult me」并在手机上移到邮箱右边；GitHub 入口全面删除，手机页脚导航压成一行（2026-09-06，见 D41、D42）
 - [x] 图版先 decode 再挂载并加呼吸，与符号同步出场；返回首页时页面等颜色退完再回来；咨询框改骨白边（2026-09-06，见 D43）
+- [x] 去用力感：简介、提示改短，实务 lede 删到一句，About / 关于我（2026-09-17，见 D44）
 - [ ] **演出照片**：所有者整理中。到手后 `scripts/live-photos.py` 处理、条目填进 `src/content/performances.ts`，创作页自动出现「演出」一节
 - [ ] ~~个人照片牌（/coda）~~ **挂起**——所有者出于隐私考虑不做
 - [x] 修掉 `SymbolField` 的 hydration mismatch（见 D15）
