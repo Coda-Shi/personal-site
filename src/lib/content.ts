@@ -49,16 +49,17 @@ export type Track = {
    */
   mark: "char" | "coda" | "turnstile";
   /**
-   * Two sentences, and they are two lines: what the track covers, then what
-   * it is for. The owner asked for the break to hold on every screen (分行),
-   * so it is structure rather than punctuation — a single string would break
-   * wherever the measure happened to run out, which on a phone was
-   * mid-sentence and on a laptop was nowhere.
+   * One line per sentence, one or two of them. The owner asked for the break
+   * to hold on every screen (分行), so it is structure rather than
+   * punctuation — a single string would break wherever the measure happened
+   * to run out, which on a phone was mid-sentence and on a laptop was
+   * nowhere. Professional is down to one: its second sentence, about what
+   * the work was in service of, came out as trying too hard.
    *
    * Joined with a space for the page description, where a line break has no
    * meaning and a search result wants one sentence after another.
    */
-  lede: readonly [string, string];
+  lede: readonly [string, ...string[]];
   entries: Entry[];
 };
 
@@ -99,8 +100,13 @@ export const QUESTIONS: Question[] = [
 
 export const ROLES = "Psychology scholar · Game producer · Organizational leader";
 
-export const PROFILE =
-  "Work spanning mental health practice, psychological research; music, literature, and indie game production; building and leading organizations.";
+/**
+ * Five nouns and no adjectives. The owner cut it back from a sentence that
+ * listed every practice by name, on the principle that the site was trying
+ * too hard — 减少用力感. Also the CV's opening line and the link-preview
+ * description, so it has to stand on its own in all three.
+ */
+export const PROFILE = "Research, games, music, writing, and organizational work.";
 
 /**
  * Shown top-right on the home screen. Both are published at the owner's
@@ -190,17 +196,13 @@ export const INSTAGRAM = "https://www.instagram.com/coda_shi_77721";
 export const STUDIO_EMAIL = "elegistsstudio@gmail.com";
 
 /**
- * Two lines, and the break is the owner's. The instruction and the invitation
- * are different sentences doing different work, and run together they read as
- * one long caption; apart, the first is what to do and the second is what it
- * is for. Same treatment as a track's lede — a pair rather than a string, so
- * the break holds at every measure instead of falling wherever the column
- * happens to end.
+ * Lines rather than a string, so that where there is more than one the break
+ * is the owner's and holds at every measure. Now there is one: the invitation
+ * ("select which part you came to know him by") came out with the rest of
+ * what the owner felt was trying too hard, and what is left is only what to
+ * do.
  */
-export const HINT: readonly [string, string] = [
-  "Hover and tap;",
-  "Select which part you came to know him by.",
-];
+export const HINT: readonly [string, ...string[]] = ["Explore by hover and tap on areas."];
 
 // Tailwind cannot see class names assembled at runtime, so every track's classes
 // are written out in full here rather than interpolated from the track id.
@@ -313,10 +315,7 @@ export const TRACKS: Track[] = [
     glyph: "§",
     glyphName: "section sign",
     mark: "char",
-    lede: [
-      "Operations, compliance, industrial research.",
-      "System design with investigation, in service of ambitious ends.",
-    ],
+    lede: ["Operations, compliance, design of organizational systems."],
     entries: [
       // The analyst post and the directorship are one continuous tenure at one
       // company, so they read as a promotion rather than as two jobs.

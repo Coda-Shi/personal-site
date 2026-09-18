@@ -55,7 +55,7 @@ export const HTML_LANG: Record<Locale, string> = {
  * `title`. Falls back to `title`, so a track only needs this if it has the
  * problem.
  */
-type TrackCopy = { title: string; mark?: string; lede: readonly [string, string] };
+type TrackCopy = { title: string; mark?: string; lede: readonly [string, ...string[]] };
 
 /**
  * CV overrides, keyed by the `id` on each record in content.ts.
@@ -98,7 +98,7 @@ export function localise<T extends { id: string }>(
 export type Dictionary = {
   roles: string;
   profile: string;
-  hint: readonly [string, string];
+  hint: readonly [string, ...string[]];
   tracks: Record<TrackId, TrackCopy>;
   hub: {
     /** The two halves of the disc's centre label. */
@@ -239,7 +239,10 @@ const en: Dictionary = {
   },
   headings: {
     education: "Education",
-    life: "A life, in his own words",
+    // Was "A life, in his own words" — a heading that describes itself. The
+    // owner cut it to the word the section is: About. Also the /life page
+    // it previews, which takes the same name so the two stay one thing.
+    life: "About",
     music: "Music",
     record: "Academic record",
     game: "Game record",
@@ -308,8 +311,14 @@ const zh: Partial<Dictionary> = {
     },
   },
   roles: "心理学学者 · 游戏制作人 · 组织领导",
+  // ⚠️ The English is now "Research, games, music, writing, and organizational
+  // work."; this is still the long form. The owner's words to supply; flagged
+  // with him 2026-09-17.
   profile:
     "工作横跨精神健康实践与心理学研究、音乐、文学与独立游戏制作，以及组织的搭建与领导。",
+  // ⚠️ The English is now one line, "Explore by hover and tap on areas.";
+  // this is still the old pair. The owner's words to supply; flagged with him
+  // 2026-09-17.
   hint: ["悬停或轻触；", "选择你从哪一面了解到他。"],
   tracks: {
     scholarly: {
@@ -320,10 +329,13 @@ const zh: Partial<Dictionary> = {
     },
     professional: {
       title: "实务",
-      // 政策 came out with the English's "policy". 调查与系统设计 stays
-      // coordinate where the English now subordinates one to the other —
-      // the owner's call: 中文并列语法没问题.
-      lede: ["运营、合规、工业研究。", "调查与系统设计，实现远大目标的努力。"],
+      // The second sentence came out with the English's "in service of
+      // ambitious ends" (去掉ambitious end那句话) — a deletion, so both
+      // languages at once.
+      // ⚠️ The first still says 工业研究 where the English is now "design of
+      // organizational systems". The owner's words to supply; flagged with
+      // him 2026-09-17.
+      lede: ["运营、合规、工业研究。"],
     },
     creative: {
       title: "创作",
@@ -349,7 +361,7 @@ const zh: Partial<Dictionary> = {
   },
   headings: {
     education: "教育",
-    life: "生活自述",
+    life: "关于我",
     music: "音乐履历",
     record: "学术履历",
     game: "游戏履历",
