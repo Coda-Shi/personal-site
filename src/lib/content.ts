@@ -487,13 +487,6 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
       { text: "Memento mori", face: "serif" },
       { text: "Amplectere omnia", face: "serif" },
       { text: "Σ = ΛΦΛ′ + Θ", face: "mono" },
-      // Chosen by the owner from the Chinese-thought list, 2026-09-05. 知行合一
-      // sits opposite the factor equation on purpose: one measures, the other
-      // refuses to measure knowing and doing apart. 见群龙无首 is the Qian
-      // hexagram's ninth line — a host of dragons and no head — on the page
-      // of someone who runs a studio.
-      { text: "知行合一", face: "han" },
-      { text: "见群龙无首", face: "han" },
     ],
     support: [
       { text: "Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.", face: "serif" },
@@ -512,9 +505,17 @@ export const SYMBOL_LAYERS: Record<TrackId, SymbolLayer> = {
       { text: "P(θ\u00a0|\u00a0x)\u00a0∝\u00a0P(x\u00a0|\u00a0θ)\u00a0P(θ)", face: "mono" },
       { text: "Δχ²(df)", face: "mono" },
       // 书不尽言，言不尽意 answers the Tractatus lines above it from the other
-      // side of the world; 反者道之动 and 凡所有相，皆是虚妄 are the owner's.
+      // side of the world; the rest are the owner's.
+      //
+      // 知行合一 and 见群龙无首 were anchors and are here at his word — he
+      // wanted them the size of 反者道之动, and size is a property of the
+      // tier, not of the item. Which is the right reading of them anyway:
+      // five Chinese lines at one weight are a body of thought, where two of
+      // them shouted over the other three.
       { text: "书不尽言，言不尽意", face: "han" },
       { text: "反者道之动", face: "han" },
+      { text: "知行合一", face: "han" },
+      { text: "见群龙无首", face: "han" },
       { text: "凡所有相，皆是虚妄", face: "han" },
     ],
     // Trimmed 2026-08-10. Legible type and forty-seven items do not both fit in

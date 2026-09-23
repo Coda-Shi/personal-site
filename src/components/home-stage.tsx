@@ -232,7 +232,7 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             is room for one line. */}
         <div className="mb-3 flex items-center justify-between gap-3 md:hidden">
           <span className="flex flex-col gap-0.5">{emails}</span>
-          <span className="label consult consult-phone flex shrink-0 flex-col items-end gap-px border px-2.5 py-1 leading-tight text-bone/60">
+          <span className="label consult-phone flex shrink-0 flex-col items-end gap-px border border-bone/35 px-2.5 py-1 leading-tight text-bone/60">
             {dict.consult.label}
             <span className="text-bone/35">{dict.consult.status}</span>
           </span>
@@ -341,8 +341,14 @@ export function HomeStage({ lang, dict }: { lang: Locale; dict: Dictionary }) {
             either a straight rule or a circle, and a rounded button would be
             the only soft-cornered object on the page. Quieter than the links
             beside it on purpose. There is nowhere for it to go yet, so it is
-            a span and says why. */}
-        <span className="label consult ml-auto hidden items-center gap-2.5 border px-3.5 py-1.5 text-bone/60 md:flex">
+            a span and says why.
+
+            Nothing behind the rule. It carried a dim purple fill for a day —
+            #7600BC, the owner's, at 30% — and he had it taken off: a filled
+            box was the only one on the site, and an announcement does not
+            need to be loud to be read. The colour is in CLAUDE.md if it is
+            ever wanted back. */}
+        <span className="label ml-auto hidden items-center gap-2.5 border border-bone/35 px-3.5 py-1.5 text-bone/60 md:flex">
           {dict.consult.label}
           <span aria-hidden="true" className="text-bone/30">
             ·
