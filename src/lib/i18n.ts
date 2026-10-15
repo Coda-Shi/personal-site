@@ -176,6 +176,10 @@ export type Dictionary = {
     coverCaption: string;
     coverNote: string;
     play: string;
+    /** The laurel's accessible name — it is an image, and its text is drawn. */
+    laurelLabel: string;
+    /** Over the row of outlets that ran the finalist list. */
+    seenOn: string;
   };
   /** The two arrows on the deck of photographs. */
   deck: { previous: string; next: string };
@@ -273,6 +277,8 @@ const en: Dictionary = {
     coverCaption: "A cover, on Bilibili",
     coverNote: "The heavy music I love, and the intensity only it can carry.",
     play: "Play the video",
+    laurelLabel: "Finalist, Best AI Games, 2026 indiePlay",
+    seenOn: "As seen on",
   },
   deck: { previous: "Previous photograph", next: "Next photograph" },
   consult: { label: "Consult me", status: "In Preparation" },
@@ -484,8 +490,11 @@ const zh: Partial<Dictionary> = {
       location: "远程",
       detail: [
         "联合创办一家远程独立游戏工作室，管理创意与制作两条线上的全部八名成员。",
-        "构思 AI 原生推理游戏《DEAR SUSPECT》，主导其创意愿景、美学方向、叙事与玩法设计、企划，以及设计系统建设。",
+        // The game by its Chinese name, as the indiePlay list and the
+        // Creative page's title give it.
+        "构思 AI 原生推理游戏《亲爱的嫌疑人》，主导其创意愿景、美学方向、叙事与玩法设计、企划，以及设计系统建设。",
         "撰写约十万字游戏剧本，并统筹项目的制作、发行、融资与商务拓展。",
+        "《亲爱的嫌疑人》入围 2026 indiePlay 中国独立游戏大赛「最佳AI游戏作品」。",
       ],
     },
     "hot-sound": {
@@ -563,6 +572,8 @@ const zh: Partial<Dictionary> = {
     coverCaption: "翻唱，在 bilibili",
     coverNote: "我钟爱的重型音乐，和只有它才能表达的激烈情绪。",
     play: "播放视频",
+    laurelLabel: "2026 indiePlay 最佳AI游戏作品 入围",
+    seenOn: "媒体报道",
   },
   deck: { previous: "上一张", next: "下一张" },
   consult: { label: "向我咨询", status: "准备中" },

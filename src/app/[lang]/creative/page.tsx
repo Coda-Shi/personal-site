@@ -4,7 +4,8 @@ import Image from "next/image";
 import { PhotoDeck } from "@/components/photo-deck";
 import { VideoEmbed } from "@/components/video-embed";
 import { PERFORMANCES } from "@/content/performances";
-import { BILIBILI, COVER, MUSIC, STUDIO_URL, TRACKS } from "@/lib/content";
+import { Laurel } from "@/components/laurel";
+import { BILIBILI, COVER, MUSIC, PRESS, STUDIO_URL, TRACKS } from "@/lib/content";
 import { EntryList, TrackPage } from "@/components/track-page";
 import { getDictionary, hasLocale, localise } from "@/lib/i18n";
 import { localeAlternates } from "@/lib/site";
@@ -50,14 +51,49 @@ export default async function Page({ params }: PageProps<"/[lang]/creative">) {
         {/* The full key art, keyed to bone — never referenced raw (D14). The
             source is the studio's, kept out of the repo in _incoming/; the ink
             metric is max(R,G,B), because the red strokes sit near 0.1
-            luminance and would vanish under one. */}
-        <Image
-          src="/creative/dear-suspect-key-art.png"
-          alt=""
-          width={1200}
-          height={688}
-          className="mt-8 h-auto w-full opacity-90"
-        />
+            luminance and would vanish under one.
+
+            Framed flush in the card's hairline: the art is cut by its own
+            rectangle at the top, left and bottom, and a frame on that line
+            makes the cuts the edge of a picture instead of an accident. On
+            the wrapper, so the line keeps its own alpha and not the art's. */}
+        <div className="mt-8 border border-bone/25">
+          <Image
+            src="/creative/dear-suspect-key-art.png"
+            alt=""
+            width={1200}
+            height={688}
+            className="h-auto w-full opacity-90"
+          />
+        </div>
+
+        {/* Under the cover, centred as one unit with the row below it: the
+            laurel says what happened, the outlets are where it can be read. */}
+        <Laurel label={dict.creative.laurelLabel} className="mx-auto mt-10 block w-full max-w-[24rem]" />
+
+        <div className="mt-8 text-center">
+          <p className="label text-bone/45">{dict.creative.seenOn}</p>
+          <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+            {PRESS.map((outlet) => (
+              <li key={outlet.id}>
+                <a
+                  href={outlet.url}
+                  rel="noreferrer"
+                  aria-label={outlet.name[lang]}
+                  className="block opacity-55 transition-opacity hover:opacity-90"
+                >
+                  <Image
+                    src={`/creative/press/${outlet.id}.png`}
+                    alt=""
+                    width={outlet.w}
+                    height={outlet.h}
+                    style={{ width: outlet.w, height: outlet.h }}
+                  />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
 
         <a
           href={STUDIO_URL}
