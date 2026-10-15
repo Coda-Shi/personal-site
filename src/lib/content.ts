@@ -180,6 +180,75 @@ export const COVER = {
 export const STUDIO_URL = "https://elegists.studio";
 
 /**
+ * DEAR SUSPECT at the 2026 indiePlay China Independent Game Competition: a
+ * finalist in Best AI Games. Announced 2026-09-30,
+ * playable at WePlay in Shanghai 11-21/22, winners on the main stage 11-22.
+ * After that date `status` either becomes the win or stays as it is — a
+ * finalist place does not expire and does not come down.
+ *
+ * The category is written as the official laurel writes it (最佳AI游戏作品 /
+ * BEST AI GAMES); the news copy shortens it to 最佳AI作品, the graphic does
+ * not, and the graphic is the organisers' own wording.
+ */
+export const INDIEPLAY = {
+  edition: "2026 indiePlay",
+  category: { zh: "最佳AI游戏作品", en: "BEST AI GAMES" },
+  status: { zh: "入围", en: "FINALIST" },
+} as const;
+
+/**
+ * Outlets that published the finalist list with the game on it, each checked
+ * by hand for 亲爱的嫌疑人 under the AI category before it went in. The mark
+ * links to that article, so the row is something a reader can check rather
+ * than a row of logos.
+ *
+ * Sized to equal *area*, not equal height — a long wordmark (Tencent) at the
+ * height of a stacked one (Sohu) would be twice its weight. The numbers are
+ * the bone PNGs' aspect ratios from scripts/press-marks.py, solved for about
+ * 1,500 square pixels each; regenerate them together.
+ *
+ * 搜狐, 腾讯新闻 and 网易 carried the list through accounts on their
+ * platforms; indienova and 游研社 published it as their own news.
+ */
+export const PRESS = [
+  {
+    id: "indienova",
+    name: { en: "indienova", zh: "indienova" },
+    url: "https://indienova.com/indie-game-news/2026-indieplay-nominees/",
+    w: 82,
+    h: 18,
+  },
+  {
+    id: "yystv",
+    name: { en: "YYSTV", zh: "游研社" },
+    url: "https://www.yystv.cn/p/14458",
+    w: 65,
+    h: 23,
+  },
+  {
+    id: "tencent",
+    name: { en: "Tencent News", zh: "腾讯新闻" },
+    url: "https://news.qq.com/rain/a/20260930A072EB00",
+    w: 105,
+    h: 14,
+  },
+  {
+    id: "sohu",
+    name: { en: "Sohu", zh: "搜狐" },
+    url: "https://www.sohu.com/a/1082751120_122598898",
+    w: 54,
+    h: 28,
+  },
+  {
+    id: "netease",
+    name: { en: "NetEase", zh: "网易" },
+    url: "https://www.163.com/dy/article/L84A2T87053578KG.html",
+    w: 90,
+    h: 17,
+  },
+] as const;
+
+/**
  * The two profiles the footer links out to, as icons.
  *
  * Both marks are drawn in the site's own line idiom rather than lifting either
@@ -392,6 +461,7 @@ export const TRACKS: Track[] = [
           "Co-founded a remote independent game studio and manages all eight team members across creative and production functions.",
           "Conceived DEAR SUSPECT, an AI-native deduction game, and leads its creative vision, aesthetic direction, narrative and gameplay design, planning, and design-system development.",
           "Wrote approximately 100,000 Chinese characters of game script and owns the project's production, publishing, financing, and business-development workstreams.",
+          "DEAR SUSPECT was a finalist for Best AI Games at the 2026 indiePlay China Independent Game Competition.",
         ],
       },
       {
