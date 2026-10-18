@@ -1455,12 +1455,12 @@ indienova、游研社、腾讯新闻、搜狐、网易。每篇都核过名单�
 
 | | 英文 | 中文 |
 |---|---|---|
-| 实务 | Operations, analysis, design of organizational systems. / Long horizons, deliberate choices, careful work. | 运营、分析、组织系统设计。／为长远的事所做的审慎工作。（10-18 当天又改，原为「为一些长远的事，做审慎细致的工作。」） |
-| 创作 | Music collective, game studio, works of art. / Visions too insistent to stay unmade. | 音乐团体、游戏工作室、艺术作品。／所有执意要抵达现实的愿景。 |
+| 实务 | Operations, analysis, design of organizational systems. / Long horizons, deliberate choices, careful work. | 运营、分析、组织系统设计。／为长远目标服务的审慎工作。（当天改过两次：「为一些长远的事，做审慎细致的工作。」→「为长远的事所做的审慎工作。」→ 现行） |
+| 创作 | Music collective, game studio, works of art. / Visions too insistent to stay unmade. | 音乐团体、游戏工作室、艺术作品。／不甘仅仅止于想象的愿景。 |
 
 - 被换掉的是 "Visions that defied the mind's confinement and came into being." /「终于挣脱心智囚笼、抵达现实的愿景。」——一句里三个宏大动作，和 D44 删掉的 "in service of ambitious ends" 是同一种句子。
 - 斟酌时定下的几个词：insistent 不用 restless（后者把情绪带回来）或 vivid（说的是清楚，不是渴望）；analysis 用单数（列领域时同 data analysis）；long horizons / deliberate choices 用复数。
-- **创作的中文第二行不是英文的译文**：「所有」「抵达现实」是所有者定稿时自己的字，我建议的是「执意要成形的愿景」，他没用。别把它「对齐」回英文。
+- **创作的中文第二行是所有者自己挑的字**：先后试过「所有执意要抵达现实的愿景」「难以满足于困守心中的愿景」「渴望被赋予形态的愿景」，最后定「不甘仅仅止于想象的愿景」。要避开的是「执意」（太硬）和「困守」（把删掉的囚笼意象带回来）；「不甘」同时对上英文的 insistent 和他想要的渴望。
 - 三条 lede 现在都是两行，又对称了。
 
 **lede 只在标点处换行**（`track-page.tsx` 的 `<p>` 加 `break-keep text-pretty`）：手机上 20px、327px 宽，一行装 16 个汉字，当时的「为一些长远的事，做审慎细致的工作。」17 字，默认会把「作。」单独挤到第二行（现行的 13 字句装得下，规则留着防下一次）。`word-break: keep-all` 让中文只在标点处断，于是断在逗号；`text-wrap: pretty` 管英文，不再剩 "systems." / "work." 一个词一行。桌面（max-w-xl、24px）六条全是一行，规则不生效。中文没有标点的长句在 keep-all 下会溢出——现有 lede 最长无标点段 13 字（260px），离 327 还有余量；**以后写更长的无标点中文 lede 要量一下**。
