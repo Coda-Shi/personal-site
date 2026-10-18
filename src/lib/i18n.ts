@@ -332,7 +332,7 @@ const zh: Partial<Dictionary> = {
     professional: {
       title: "实务",
       // The owner's words, both lines (2026-10-18).
-      lede: ["运营、分析、组织系统设计。", "为一些长远的事，做审慎细致的工作。"],
+      lede: ["运营、分析、组织系统设计。", "为长远的事所做的审慎工作。"],
     },
     creative: {
       title: "创作",
