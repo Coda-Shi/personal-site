@@ -14,7 +14,16 @@ export type Entry = {
   location: string;
   period: string;
   detail: string[];
+  /**
+   * Several posts held at one place, each with its own dates and record. The
+   * place is named once and the masthead carries the span and a summary of
+   * the roles; the posts open underneath it. `detail` stays empty when this
+   * is set — the record belongs to the posts.
+   */
+  posts?: Post[];
 };
+
+export type Post = { title: string; unit?: string; period: string; detail: string[] };
 
 /**
  * The flatter shape used by education and advocacy: one paragraph rather than
@@ -340,28 +349,35 @@ export const TRACKS: Track[] = [
         ],
       },
       {
-        id: "smu-invariance",
+        // Two concurrent posts in one department, one entry: the university
+        // once, each post with its own dates and record. Merged at the
+        // owner's request, 2026-10-18.
+        id: "smu",
         org: "Southern Methodist University",
         unit: "Department of Psychology",
-        role: "Independent Research — Lead Analyst",
-        location: "Dallas, TX",
-        period: "Spring 2026 — Present",
-        detail: [
-          "Leads Phase I on the full analytic sample (N = 10,080) and Phase II on a ~1,500 subsample testing Sex × Age invariance: measurement invariance of the PHQ-9 and GAD-7 in a Shanghai tertiary-hospital psychiatric outpatient sample, addressing a gap where Chinese invariance studies typically sit below N = 1,000.",
-          "Built a reproducible R pipeline in tidyverse, psych, lavaan, semTools, and flextable, following Putnick & Bornstein (2016) and Fischer & Karl (2019) reporting standards; Phase II adds ordinal multi-group CFA with the WLSMV estimator and an MNFA extension.",
-          "Completed end-to-end data cleaning, sample accounting, Table 1 demographics, and a missingness audit confirming complete PHQ-9/GAD-7 item data; produced pairwise cross-tabulations with Cramér's V and a three-tier data-quality flagging system supporting primary and sensitivity analyses.",
-          "Manuscript in preparation with Dr. Quanfa He; targeting an APS / APA / SRP poster and a clinical-methodological journal, Fall 2026.",
-        ],
-      },
-      {
-        id: "smu-delta",
-        org: "Southern Methodist University",
-        unit: "Delta Adult Attachment & Personality Development Lab",
-        role: "Research Assistant",
+        role: "Lead Analyst, Research Assistant",
         location: "Dallas, TX",
         period: "Oct 2025 — Present",
-        detail: [
-          "Co-piloted two Sonar studies, coded 500 entries for an ongoing friendship research project, and cleaned 1,500 raw questionnaire entries for a longitudinal volitional personality-change study using SPSS syntax.",
+        detail: [],
+        posts: [
+          {
+            title: "Independent Research — Lead Analyst",
+            period: "Spring 2026 — Present",
+            detail: [
+              "Leads Phase I on the full analytic sample (N = 10,080) and Phase II on a ~1,500 subsample testing Sex × Age invariance: measurement invariance of the PHQ-9 and GAD-7 in a Shanghai tertiary-hospital psychiatric outpatient sample, addressing a gap where Chinese invariance studies typically sit below N = 1,000.",
+              "Built a reproducible R pipeline in tidyverse, psych, lavaan, semTools, and flextable, following Putnick & Bornstein (2016) and Fischer & Karl (2019) reporting standards; Phase II adds ordinal multi-group CFA with the WLSMV estimator and an MNFA extension.",
+              "Completed end-to-end data cleaning, sample accounting, Table 1 demographics, and a missingness audit confirming complete PHQ-9/GAD-7 item data; produced pairwise cross-tabulations with Cramér's V and a three-tier data-quality flagging system supporting primary and sensitivity analyses.",
+              "Manuscript in preparation with Dr. Quanfa He; targeting an APS / APA / SRP poster and a clinical-methodological journal, Fall 2026.",
+            ],
+          },
+          {
+            title: "Research Assistant",
+            unit: "Delta Adult Attachment & Personality Development Lab",
+            period: "Oct 2025 — Present",
+            detail: [
+              "Co-piloted two Sonar studies, coded 500 entries for an ongoing friendship research project, and cleaned 1,500 raw questionnaire entries for a longitudinal volitional personality-change study using SPSS syntax.",
+            ],
+          },
         ],
       },
       {
