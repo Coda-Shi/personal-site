@@ -6,7 +6,7 @@
 >
 > **维护约定**：做了新决策、完成了里程碑、或发现了新陷阱，就更新本文件，并同步「最后更新」日期。决策只增不删——推翻旧决策时把它标记为「已废弃」并说明原因，保留推理链比保留结论更有价值。
 
-**最后更新**：2026-10-15
+**最后更新**：2026-10-18
 
 ---
 
@@ -1449,6 +1449,22 @@ indienova、游研社、腾讯新闻、搜狐、网易。每篇都核过名单�
 
 11 月 22 日颁奖。获奖就改 `INDIEPLAY.status` 和 CV 那条；没获奖什么都不用动——入围不会过期。改了就重跑 `laurel-svg.py`，桌面那套文件也跟着换。
 
+### D47 — 实务与创作的 lede 换词；lede 只在标点处换行 ✅ 生效中（2026-10-18）
+
+所有者问三条 lede「有没有太 dramatic/pretentious」，然后自己改了词，我只给斟酌意见。学术不动。
+
+| | 英文 | 中文 |
+|---|---|---|
+| 实务 | Operations, analysis, design of organizational systems. / Long horizons, deliberate choices, careful work. | 运营、分析、组织系统设计。／为一些长远的事，做审慎细致的工作。 |
+| 创作 | Music collective, game studio, works of art. / Visions too insistent to stay unmade. | 音乐团体、游戏工作室、艺术作品。／所有执意要抵达现实的愿景。 |
+
+- 被换掉的是 "Visions that defied the mind's confinement and came into being." /「终于挣脱心智囚笼、抵达现实的愿景。」——一句里三个宏大动作，和 D44 删掉的 "in service of ambitious ends" 是同一种句子。
+- 斟酌时定下的几个词：insistent 不用 restless（后者把情绪带回来）或 vivid（说的是清楚，不是渴望）；analysis 用单数（列领域时同 data analysis）；long horizons / deliberate choices 用复数。
+- **创作的中文第二行不是英文的译文**：「所有」「抵达现实」是所有者定稿时自己的字，我建议的是「执意要成形的愿景」，他没用。别把它「对齐」回英文。
+- 三条 lede 现在都是两行，又对称了。
+
+**lede 只在标点处换行**（`track-page.tsx` 的 `<p>` 加 `break-keep text-pretty`）：手机上 20px、327px 宽，一行装 16 个汉字，「为一些长远的事，做审慎细致的工作。」17 字，默认会把「作。」单独挤到第二行。`word-break: keep-all` 让中文只在标点处断，于是断在逗号；`text-wrap: pretty` 管英文，不再剩 "systems." / "work." 一个词一行。桌面（max-w-xl、24px）六条全是一行，规则不生效。中文没有标点的长句在 keep-all 下会溢出——现有 lede 最长无标点段 13 字（260px），离 327 还有余量；**以后写更长的无标点中文 lede 要量一下**。
+
 ## 5. 工作流约定
 
 **不要直接改 `main`。** 标准循环：
@@ -1554,6 +1570,7 @@ gh pr create --fill
 - [x] 去用力感：简介、提示改短，实务 lede 删到一句，About / 关于我（2026-09-17，见 D44）
 - [x] 知行合一、见群龙无首降到支撑层；咨询框去掉紫底只留骨白边（2026-09-22，见 D45）
 - [x] 《亲爱的嫌疑人》入围 indiePlay：创作页封面加骨白线框，其下加骨白月桂（重画）与五家媒体标识，CV 加一条（2026-10-15，见 D46）。**11/22 颁奖后看结果改 `INDIEPLAY.status`**
+- [x] 实务、创作 lede 换成所有者的新词；lede 只在标点处换行（2026-10-18，见 D47）
 - [ ] **演出照片**：所有者整理中。到手后 `scripts/live-photos.py` 处理、条目填进 `src/content/performances.ts`，创作页自动出现「演出」一节
 - [ ] ~~个人照片牌（/coda）~~ **挂起**——所有者出于隐私考虑不做
 - [x] 修掉 `SymbolField` 的 hydration mismatch（见 D15）

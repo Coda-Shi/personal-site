@@ -182,9 +182,15 @@ export function TrackPage({
             One block per sentence, so the break between them holds at every
             measure — the owner asked for it on the phone and on the desktop
             both. Each sentence still wraps inside itself; what it cannot do
-            is share a line with the other one. */}
+            is share a line with the other one.
+
+            break-keep: Chinese may only wrap at its punctuation, so a line too
+            long for the phone breaks at its comma instead of pushing its last
+            character and full stop onto a line of their own. text-pretty does
+            the same for the English, which would otherwise leave "systems."
+            or "work." alone on the phone. */}
         <p
-          className="mt-6 max-w-xl font-display text-xl leading-relaxed italic text-bone/80 md:text-2xl"
+          className="mt-6 max-w-xl font-display text-xl leading-relaxed italic text-bone/80 break-keep text-pretty md:text-2xl"
           style={rise(220)}
         >
           {copy.lede.map((line) => (

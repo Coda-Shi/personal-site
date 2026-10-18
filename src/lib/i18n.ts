@@ -331,14 +331,14 @@ const zh: Partial<Dictionary> = {
     },
     professional: {
       title: "实务",
-      // One sentence, as the English is: the second went with "in service of
-      // ambitious ends", and the first follows "design of organizational
-      // systems". Approved by the owner, 2026-09-17.
-      lede: ["运营、合规、组织系统设计。"],
+      // The owner's words, both lines (2026-10-18).
+      lede: ["运营、分析、组织系统设计。", "为一些长远的事，做审慎细致的工作。"],
     },
     creative: {
       title: "创作",
-      lede: ["游戏工作室、音乐团体、文学作品。", "终于挣脱心智囚笼、抵达现实的愿景。"],
+      // The owner's words (2026-10-18). Not a translation of the English
+      // second line: 所有 and 抵达现实 are his, and stay.
+      lede: ["音乐团体、游戏工作室、艺术作品。", "所有执意要抵达现实的愿景。"],
     },
   },
   hub: {
