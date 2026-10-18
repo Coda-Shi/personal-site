@@ -384,7 +384,10 @@ export const TRACKS: Track[] = [
     glyph: "§",
     glyphName: "section sign",
     mark: "char",
-    lede: ["Operations, compliance, design of organizational systems."],
+    lede: [
+      "Operations, analysis, design of organizational systems.",
+      "Long horizons, deliberate choices, careful work.",
+    ],
     entries: [
       // The analyst post and the directorship are one continuous tenure at one
       // company, so they read as a promotion rather than as two jobs.
@@ -447,8 +450,8 @@ export const TRACKS: Track[] = [
     glyphName: "coda — the sign marking a work's final passage",
     mark: "coda",
     lede: [
-      "Game studio, music collective, literary pieces.",
-      "Visions that defied the mind's confinement and came into being.",
+      "Music collective, game studio, works of art.",
+      "Visions too insistent to stay unmade.",
     ],
     entries: [
       {
