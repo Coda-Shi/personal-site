@@ -26,15 +26,38 @@ function EntryHead({ entry }: { entry: Entry }) {
   );
 }
 
-function EntryDetail({ entry }: { entry: Entry }) {
+function Bullets({ lines, className }: { lines: string[]; className: string }) {
   return (
-    <ul className="mt-4 space-y-2">
-      {entry.detail.map((line) => (
+    <ul className={`space-y-2 ${className}`}>
+      {lines.map((line) => (
         <li key={line} className="text-sm leading-relaxed text-bone/75">
           {line}
         </li>
       ))}
     </ul>
+  );
+}
+
+/**
+ * An entry with several posts opens into one block per post, each with its
+ * title and dates on one line, the unit under it, and its own record — set
+ * off by a hairline at the left so the two records do not read as one list.
+ */
+function EntryDetail({ entry }: { entry: Entry }) {
+  if (!entry.posts) return <Bullets lines={entry.detail} className="mt-4" />;
+  return (
+    <div className="mt-5 space-y-6">
+      {entry.posts.map((post) => (
+        <section key={post.title} className="border-l border-bone/25 pl-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+            <h3 className="text-sm font-medium">{post.title}</h3>
+            <span className="label whitespace-nowrap text-bone/55">{post.period}</span>
+          </div>
+          {post.unit ? <p className="mt-0.5 text-sm text-bone/55">{post.unit}</p> : null}
+          <Bullets lines={post.detail} className="mt-3" />
+        </section>
+      ))}
+    </div>
   );
 }
 

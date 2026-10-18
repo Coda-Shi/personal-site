@@ -69,7 +69,7 @@ type TrackCopy = { title: string; mark?: string; lede: readonly [string, ...stri
  * Chinese name. Inventing one for a Texas company or a campus club would put a
  * name on his CV that does not exist.
  */
-type EntryCopy = Partial<Pick<Entry, "org" | "unit" | "role" | "location" | "period" | "detail">>;
+type EntryCopy = Partial<Pick<Entry, "org" | "unit" | "role" | "location" | "period" | "detail" | "posts">>;
 type RecordCopy = Partial<{
   org: string;
   role: string;
@@ -402,27 +402,31 @@ const zh: Partial<Dictionary> = {
         "课题负责人：严超赣教授。",
       ],
     },
-    "smu-invariance": {
-      org: "南卫理公会大学",
-      period: "2026 春 — 至今",
-      unit: "心理学系",
-      role: "独立研究 · 主分析师",
-      location: "美国 得克萨斯州达拉斯",
-      detail: [
-        "主持第一阶段全样本（N = 10,080）与第二阶段约 1,500 人子样本的性别 × 年龄不变性检验：在上海某三级甲等医院精神科门诊样本中检验 PHQ-9 与 GAD-7 的测量不变性，填补既有中文不变性研究样本量多在 1,000 以下的空白。",
-        "以 tidyverse、psych、lavaan、semTools、flextable 搭建可复现的 R 分析流程，报告标准遵循 Putnick & Bornstein (2016) 与 Fischer & Karl (2019)；第二阶段加入 WLSMV 估计的有序多组 CFA 与 MNFA 扩展。",
-        "完成端到端数据清洗、样本核算、Table 1 人口学统计，以及确认 PHQ-9 / GAD-7 条目数据完整的缺失值审计；产出带 Cramér's V 的两两交叉表，以及支撑主分析与敏感性分析的三级数据质量标记体系。",
-        "与何全发博士合作的稿件撰写中，拟于 2026 年秋投递 APS / APA / SRP 海报及临床方法学期刊。",
-      ],
-    },
-    "smu-delta": {
+    smu: {
       org: "南卫理公会大学",
       period: "2025.10 — 至今",
-      unit: "Delta 成人依恋与人格发展实验室",
-      role: "研究助理",
+      unit: "心理学系",
+      role: "主分析师、研究助理",
       location: "美国 得克萨斯州达拉斯",
-      detail: [
-        "协同执行两项 Sonar 研究，为一项进行中的友谊研究编码 500 条记录，并以 SPSS 语法清洗一项意志性人格改变追踪研究的 1,500 条原始问卷数据。",
+      posts: [
+        {
+          title: "独立研究 · 主分析师",
+          period: "2026 春 — 至今",
+          detail: [
+            "主持第一阶段全样本（N = 10,080）与第二阶段约 1,500 人子样本的性别 × 年龄不变性检验：在上海某三级甲等医院精神科门诊样本中检验 PHQ-9 与 GAD-7 的测量不变性，填补既有中文不变性研究样本量多在 1,000 以下的空白。",
+            "以 tidyverse、psych、lavaan、semTools、flextable 搭建可复现的 R 分析流程，报告标准遵循 Putnick & Bornstein (2016) 与 Fischer & Karl (2019)；第二阶段加入 WLSMV 估计的有序多组 CFA 与 MNFA 扩展。",
+            "完成端到端数据清洗、样本核算、Table 1 人口学统计，以及确认 PHQ-9 / GAD-7 条目数据完整的缺失值审计；产出带 Cramér's V 的两两交叉表，以及支撑主分析与敏感性分析的三级数据质量标记体系。",
+            "与何全发博士合作的稿件撰写中，拟于 2026 年秋投递 APS / APA / SRP 海报及临床方法学期刊。",
+          ],
+        },
+        {
+          title: "研究助理",
+          unit: "Delta 成人依恋与人格发展实验室",
+          period: "2025.10 — 至今",
+          detail: [
+            "协同执行两项 Sonar 研究，为一项进行中的友谊研究编码 500 条记录，并以 SPSS 语法清洗一项意志性人格改变追踪研究的 1,500 条原始问卷数据。",
+          ],
+        },
       ],
     },
     watson: {
