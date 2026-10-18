@@ -76,23 +76,23 @@ export type Question = { id: string; lead: string; note: string };
 export const QUESTIONS: Question[] = [
   {
     id: "measurement",
-    lead: "The precision of psychological constructs, the reliability and validity of the instruments that measure them, and whether either holds across cultures.",
-    note: "Invariance across sex, age and culture is the precondition for comparing a construct at all — and most screening instruments have never been tested on a sample large enough to settle it.",
+    lead: "Whether psychological constructs can be measured precisely, and whether the measurement holds across cultures.",
+    note: "Invariance across sex, age and culture is the precondition for comparing a construct at all — and most cross-cultural versions of screening instruments have yet to be tested on a sample large enough to settle it.",
   },
   {
     id: "death-suffering",
-    lead: "The nature of death and of psychic suffering, and what separates them.",
-    note: "Their phenomenological structure and their value are not the same, yet both may be filed under the same heading of bad experience. How different cultures give them meaning and find somewhere to put them; what they mean to the living; and, more concretely, how loss, mourning and trauma change a personality — and how personality in turn shapes what a person feels of those experiences, what they make of them, and what they can integrate.",
+    lead: "How the suffering that death, loss and trauma bring changes a person.",
+    note: "How the awareness of death, and psychic suffering in its many forms, are given a place in different cultures; and how the part of a person that is changed in turn shapes how they feel, interpret and integrate these experiences.",
   },
   {
     id: "selfhood",
-    lead: "Whether the need for a self-identity is itself a culturally specific one",
-    note: "If the answer is yes, then the many theories of personality and development that set a stable, integrated self-identity as the goal of development all carry a cultural boundary they never declare. What I most want to examine is the part meaning plays in it: whether it can work as a mechanism for maintaining self-continuity, so that a person still experiences themselves as coherent across time even when identity, role or values have changed.",
+    lead: "Which part of a coherent identity is a need, and which a norm.",
+    note: "By what mechanisms a person comes to feel one consistent identity across time and across situations; and whether meaning sustains that continuity, or follows from it.",
   },
   {
     id: "intervention",
     lead: "How mindfulness-based, psychodynamic and existential interventions actually work.",
-    note: "How the efficacy of mindfulness, existential and traditional-cultural therapies can be established, and the conditions under which each holds; and how, in practice, to relieve another person’s suffering and their fear of death.",
+    note: "How their efficacy can be established, and the conditions under which each holds; and how, through practice, to relieve another person’s suffering and their fear of death.",
   },
 ];
 
