@@ -7,6 +7,8 @@ import { localeAlternates } from "@/lib/site";
 
 const track = TRACKS.find((t) => t.id === "scholarly")!;
 
+const NUMERALS = ["I", "II", "III", "IV"];
+
 export async function generateMetadata({
   params,
 }: PageProps<"/[lang]/scholarly">): Promise<Metadata> {
@@ -32,17 +34,29 @@ export default async function Page({ params }: PageProps<"/[lang]/scholarly">) {
           the part a reader can disagree with. */}
       <section className="mt-16">
         <h2 className="label text-bone/75">{dict.headings.questions}</h2>
-        <ul className="mt-8 space-y-7">
-          {QUESTIONS.map((original) => {
+        {/* Four cells divided by hairlines, titles only. Opening one gives it
+            the room — the lines slide, the other three fall back to strips
+            with their numeral — as a circle on the home page takes the screen
+            and the other two recede. The box keeps its height, so reading a
+            note never pushes the record further down. Native <details> with a
+            shared name: one open at a time, no script, keyboard and find-in-
+            page for free. The geometry is in globals.css (.questions). */}
+        <div className="questions mt-8">
+          {QUESTIONS.map((original, i) => {
             const q = localise(original, dict.questionCopy);
             return (
-              <li key={original.id} className="max-w-xl border-l border-bone/25 pl-5">
-                <p className="font-display text-xl leading-snug text-bone/90">{q.lead}</p>
-                <p className="mt-1.5 text-sm leading-relaxed text-bone/65">{q.note}</p>
-              </li>
+              <details key={original.id} name="questions" className="q">
+                <summary>
+                  <span className="q-numeral label">{NUMERALS[i]}</span>
+                  <span className="q-lead font-display text-base leading-snug md:text-xl">
+                    {q.lead}
+                  </span>
+                </summary>
+                <p className="q-note text-sm leading-relaxed text-bone/70">{q.note}</p>
+              </details>
             );
           })}
-        </ul>
+        </div>
       </section>
 
       {/* The posts held come after the questions, and under a heading of
