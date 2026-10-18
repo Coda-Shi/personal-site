@@ -333,13 +333,13 @@ const zh: Partial<Dictionary> = {
     professional: {
       title: "实务",
       // The owner's words, both lines (2026-10-18).
-      lede: ["运营、分析、组织系统设计。", "为长远的事所做的审慎工作。"],
+      lede: ["运营、分析、组织系统设计。", "为长远目标服务的审慎工作。"],
     },
     creative: {
       title: "创作",
-      // The owner's words (2026-10-18). Not a translation of the English
-      // second line: 所有 and 抵达现实 are his, and stay.
-      lede: ["音乐团体、游戏工作室、艺术作品。", "所有执意要抵达现实的愿景。"],
+      // The owner's words (2026-10-18), chosen over 执意 and 不肯: 不甘
+      // carries the English "insistent" and the longing he wanted with it.
+      lede: ["音乐团体、游戏工作室、艺术作品。", "不甘仅仅止于想象的愿景。"],
     },
   },
   hub: {
