@@ -4,6 +4,7 @@ import {
   type Question,
   ROLES,
   TRACKS,
+  type Attached,
   type Entry,
   type Performance,
   type TrackId,
@@ -76,6 +77,7 @@ type RecordCopy = Partial<{
   location: string;
   period: string;
   detail: string;
+  attached: Attached[];
 }>;
 type SkillCopy = Partial<{ heading: string; items: string }>;
 
@@ -155,6 +157,8 @@ export type Dictionary = {
     advocacy: string;
     contact: string;
     additional: string;
+    /** The fold at the end of a section that holds its secondary entries. */
+    moreExperience: string;
   };
   /** Shown on the control that switches to the *other* language. */
   switchTo: string;
@@ -258,6 +262,7 @@ const en: Dictionary = {
     advocacy: "Advocacy",
     contact: "Contact",
     additional: "Additional",
+    moreExperience: "Additional experience",
   },
   switchTo: "中文",
   readOn: "Read on",
@@ -317,7 +322,7 @@ const zh: Partial<Dictionary> = {
       note: "如何验证它们的有效性，各自又在什么条件下成立；以及如何通过亲身的实践去缓解他人的痛苦与对死亡的焦虑。",
     },
   },
-  roles: "心理学学者 · 游戏制作人 · 组织领导",
+  roles: "心理学研究者 · 游戏制作人 · 组织领导",
   // Matched to the English's five nouns — drafted as a straight rendering and
   // approved by the owner, 2026-09-17.
   profile: "研究、游戏、音乐、写作与组织工作。",
@@ -373,6 +378,7 @@ const zh: Partial<Dictionary> = {
     advocacy: "行路",
     contact: "联系",
     additional: "其他",
+    moreExperience: "更多经历",
   },
   switchTo: "English",
   readOn: "继续读",
@@ -443,16 +449,32 @@ const zh: Partial<Dictionary> = {
 
     // Everglory keeps its Latin name: the owner confirms the company has no
     // Chinese one, and a translated CV is not a licence to invent one.
-    "everglory-ops": {
-      period: "2025.07 — 2026.04",
-      role: "管理分析师，后任运营与合规总监",
-      location: "美国 得克萨斯州丹顿",
-      detail: [
-        "对一座产值 600 万美元的办公与纸盘制造工厂握有人力、合规、设施与运营的全周期决策权，下辖五个部门、30 名员工、两条产线；主导产能匹配、Kaizen 与 6S 改善，以及 ERP / EDI 数据准确性。",
-        "设计并推行公司制度、订单到交付流程、安全与主管规程、SOP、预防性维护与能量隔离（lockout / tagout）程序，以及生产报告与危机处理机制。",
-        "通过展会陌生拜访开发并拿下一个大型零售客户，任内营收增长 15%。",
-        "在 400 万美元的工厂筹建与审计阶段支持跨部门团队，对齐合规、设备、人力与运营文档，保障顺利投产。",
-        "主导针对供应商与承包商涉嫌不当行为的内部调查，最终导致两名高级员工被解雇并进入法律程序；落地交叉核查控制，估计减少 50 万美元敞口。",
+    everglory: {
+      period: "2022 · 2025 — 2026",
+      role: "运营与合规总监、项目助理",
+      location: "美国 得克萨斯州达拉斯—沃斯堡地区",
+      posts: [
+        {
+          title: "管理分析师，后任运营与合规总监",
+          location: "美国 得克萨斯州丹顿",
+          period: "2025.07 — 2026.04",
+          detail: [
+            "对一座产值 600 万美元的办公与纸盘制造工厂握有人力、合规、设施与运营的全周期决策权，下辖五个部门、30 名员工、两条产线；主导产能匹配、Kaizen 与 6S 改善，以及 ERP / EDI 数据准确性。",
+            "设计并推行公司制度、订单到交付流程、安全与主管规程、SOP、预防性维护与能量隔离（lockout / tagout）程序，以及生产报告与危机处理机制。",
+            "通过展会陌生拜访开发并拿下一个大型零售客户，任内营收增长 15%。",
+            "在 400 万美元的工厂筹建与审计阶段支持跨部门团队，对齐合规、设备、人力与运营文档，保障顺利投产。",
+            "主导内部合规调查，在供应商与承包商往来中落地交叉核查控制，估计减少 50 万美元风险敞口。",
+          ],
+        },
+        {
+          title: "项目助理",
+          location: "美国 得克萨斯州欧文",
+          period: "2022.07 — 2022.11",
+          detail: [
+            "通过北美食品级纸制品行业的竞争研究，支持达拉斯地区的市场进入与厂址、办公选址；该子公司 2023 年销售额达 70 万美元，占集团营收 8%。",
+            "为七个岗位定义画像与薪资区间，搭建 LinkedIn 与 Indeed 人才库，并招募到一位区域总经理，节省约 24,000 美元猎头费用。",
+          ],
+        },
       ],
     },
     nimte: {
@@ -476,15 +498,6 @@ const zh: Partial<Dictionary> = {
         "以 SQL 与公开数据集从市场与公司两个层面分析半导体集成电路制造，在 Tableau 中可视化增长趋势，并撰写每周五页的行业报告。",
         "评估半导体短缺背后的政策与供需动因，梳理全球集成电路原材料供应链，产出两份六页报告与两套演示材料。",
         "按融资轮次、领投方与业务画像筛选细分赛道初创公司，形成四份详细标的简报。",
-      ],
-    },
-    "everglory-project": {
-      period: "2022.07 — 2022.11",
-      role: "项目助理",
-      location: "美国 得克萨斯州欧文",
-      detail: [
-        "通过北美食品级纸制品行业的竞争研究，支持达拉斯地区的市场进入与厂址、办公选址；该子公司 2023 年销售额达 70 万美元，占集团营收 8%。",
-        "为七个岗位定义画像与薪资区间，搭建 LinkedIn 与 Indeed 人才库，并招募到一位区域总经理，节省约 24,000 美元猎头费用。",
       ],
     },
 
@@ -522,13 +535,15 @@ const zh: Partial<Dictionary> = {
       role: "公共事务硕士",
       location: "美国 罗德岛州普罗维登斯",
       detail: "计量经济学、概率论、数据分析与可视化、公共政策、公司金融、公共行政。",
-    },
-    harvard: {
-      org: "哈佛大学",
-      period: "2024.08 — 2024.12",
-      role: "国际商务 / 贸易 / 商学（非学位）",
-      location: "美国 马萨诸塞州剑桥",
-      detail: "布朗大学 MPA 就读期间跨校注册。",
+      attached: [
+        {
+          org: "哈佛大学",
+          role: "国际商务 / 贸易 / 商学（非学位）",
+          location: "美国 马萨诸塞州剑桥",
+          period: "2024.08 — 2024.12",
+          detail: "布朗大学 MPA 就读期间跨校注册。",
+        },
+      ],
     },
     uci: {
       org: "加州大学尔湾分校",
