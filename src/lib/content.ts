@@ -21,9 +21,23 @@ export type Entry = {
    * is set — the record belongs to the posts.
    */
   posts?: Post[];
+  /**
+   * Kept in full but not shown by default: folded, with the others like it,
+   * under one "Additional experience" line at the end of its section. Opened,
+   * it behaves exactly as the entries above it do. Nothing is cut — this only
+   * says what a reader sees first. The owner's ordering, 2026-10-22 (D50).
+   */
+  secondary?: true;
 };
 
-export type Post = { title: string; unit?: string; period: string; detail: string[] };
+export type Post = {
+  title: string;
+  unit?: string;
+  /** Only where the posts were held in different places. */
+  location?: string;
+  period: string;
+  detail: string[];
+};
 
 /**
  * The flatter shape used by education and advocacy: one paragraph rather than
@@ -36,7 +50,17 @@ export type CvRecord = {
   location: string;
   period: string;
   detail: string;
+  /**
+   * Something done under this record rather than beside it — Harvard's
+   * cross-registration, taken during the Brown degree. Shown inside the
+   * record, not as an institution of its own.
+   */
+  attached?: Attached[];
+  /** As on Entry: folded under "Additional experience" at the section's end. */
+  secondary?: true;
 };
+
+export type Attached = { org: string; role: string; location: string; period: string; detail: string };
 
 export type Track = {
   id: TrackId;
@@ -107,7 +131,9 @@ export const QUESTIONS: Question[] = [
 
 
 
-export const ROLES = "Psychology scholar · Game producer · Organizational leader";
+// "Researcher", not "scholar": what he does now, without claiming a standing
+// he has not yet had time to earn. The owner's change, 2026-10-22.
+export const ROLES = "Psychology researcher · Game producer · Organizational leader";
 
 /**
  * Five nouns and no adjectives. The owner cut it back from a sentence that
@@ -405,20 +431,41 @@ export const TRACKS: Track[] = [
       "Long horizons, deliberate choices, careful work.",
     ],
     entries: [
-      // The analyst post and the directorship are one continuous tenure at one
-      // company, so they read as a promotion rather than as two jobs.
+      // One company, two separate stints: a project role in 2022, and the
+      // analyst-to-director tenure in 2025–26. One entry with two posts, and
+      // the span written as two dates rather than one range — they were not
+      // continuous, and a range would say they were. Merged 2026-10-22 (D50).
       {
-        id: "everglory-ops",
+        id: "everglory",
         org: "Everglory Products Corporation",
-        role: "Management Analyst, then Director of Operations & Compliance",
-        location: "Denton, TX",
-        period: "Jul 2025 — Apr 2026",
-        detail: [
-          "Held full-cycle HR, compliance, facility, and operating authority for a $6M office and paper-plate conversion plant spanning five departments, 30 employees, and two production lines; directed capacity alignment, Kaizen and 6S initiatives, and ERP/EDI data accuracy.",
-          "Designed and enforced company policies, order-to-fulfilment workflows, safety and supervisor protocols, SOPs, preventive-maintenance and lockout/tagout procedures, and production reporting and crisis-handling systems.",
-          "Acquired and developed one large retail account through tradeshow cold outreach, contributing to a 15% revenue increase during the tenure.",
-          "Supported cross-department teams through a $4M factory setup and audit phase, aligning compliance, equipment, HR, and operational documentation for a smooth launch.",
-          "Led internal investigations into alleged vendor and contractor misconduct, resulting in termination and legal escalation involving two senior employees; implemented cross-check controls reducing an estimated $500K exposure.",
+        role: "Director of Operations & Compliance, Project Assistant",
+        location: "Dallas–Fort Worth, TX",
+        period: "2022 · 2025 — 2026",
+        detail: [],
+        posts: [
+          {
+            // One continuous tenure, so the analyst post and the directorship
+            // read as a promotion rather than as two jobs.
+            title: "Management Analyst, then Director of Operations & Compliance",
+            location: "Denton, TX",
+            period: "Jul 2025 — Apr 2026",
+            detail: [
+              "Held full-cycle HR, compliance, facility, and operating authority for a $6M office and paper-plate conversion plant spanning five departments, 30 employees, and two production lines; directed capacity alignment, Kaizen and 6S initiatives, and ERP/EDI data accuracy.",
+              "Designed and enforced company policies, order-to-fulfilment workflows, safety and supervisor protocols, SOPs, preventive-maintenance and lockout/tagout procedures, and production reporting and crisis-handling systems.",
+              "Acquired and developed one large retail account through tradeshow cold outreach, contributing to a 15% revenue increase during the tenure.",
+              "Supported cross-department teams through a $4M factory setup and audit phase, aligning compliance, equipment, HR, and operational documentation for a smooth launch.",
+              "Led internal compliance investigations and implemented cross-check controls across vendor and contractor relationships, reducing an estimated $500K exposure.",
+            ],
+          },
+          {
+            title: "Project Assistant",
+            location: "Irving, TX",
+            period: "Jul 2022 — Nov 2022",
+            detail: [
+              "Supported Dallas-area market entry and factory and office site selection through competitive research in the North American food-grade paper-products industry; the subsidiary later reached $700K in 2023 sales, 8% of group revenue.",
+              "Defined profiles and salary bands for seven roles, built LinkedIn and Indeed talent pools, and recruited a Regional General Manager, avoiding approximately $24,000 in headhunter fees.",
+            ],
+          },
         ],
       },
       {
@@ -437,6 +484,7 @@ export const TRACKS: Track[] = [
       {
         id: "china-securities",
         org: "China Securities Co., Ltd.",
+        secondary: true,
         role: "Research Intern",
         location: "Remote",
         period: "May 2023 — Jun 2023",
@@ -444,17 +492,6 @@ export const TRACKS: Track[] = [
           "Used SQL and public datasets to analyse semiconductor IC manufacturing at market and company level, visualised growth trends in Tableau, and authored a weekly five-page industry report.",
           "Assessed policy and supply-demand drivers behind semiconductor shortages, mapped the global IC raw-material supply chain, and produced two six-page reports and two presentation decks.",
           "Screened niche-sector startups by financing round, lead investor, and business profile, producing four detailed target briefs.",
-        ],
-      },
-      {
-        id: "everglory-project",
-        org: "Everglory Products Corporation",
-        role: "Project Assistant",
-        location: "Irving, TX",
-        period: "Jul 2022 — Nov 2022",
-        detail: [
-          "Supported Dallas-area market entry and factory and office site selection through competitive research in the North American food-grade paper-products industry; the subsidiary later reached $700K in 2023 sales, 8% of group revenue.",
-          "Defined profiles and salary bands for seven roles, built LinkedIn and Indeed talent pools, and recruited a Regional General Manager, avoiding approximately $24,000 in headhunter fees.",
         ],
       },
     ],
@@ -507,14 +544,17 @@ export const EDUCATION: CvRecord[] = [
     location: "Providence, RI",
     period: "Jun 2024 — Jun 2025",
     detail: "Econometrics, probability, data analysis and visualisation, public policy, corporate finance, public administration.",
-  },
-  {
-    id: "harvard",
-    org: "Harvard University",
-    role: "International Business / Trade / Commerce (non-degree)",
-    location: "Cambridge, MA",
-    period: "Aug 2024 — Dec 2024",
-    detail: "Cross-registration during the Brown MPA.",
+    // Taken during the Brown degree, not beside it, so it sits inside the
+    // Brown record (D50).
+    attached: [
+      {
+        org: "Harvard University",
+        role: "International Business / Trade / Commerce (non-degree)",
+        location: "Cambridge, MA",
+        period: "Aug 2024 — Dec 2024",
+        detail: "Cross-registration during the Brown MPA.",
+      },
+    ],
   },
   {
     id: "uci",
@@ -742,6 +782,7 @@ export const ADVOCACY: CvRecord[] = [
   },
   {
     id: "xunzheng",
+    secondary: true,
     org: "XunZheng Mental Health Clinic",
     role: "Mental Health Hotline Operator",
     location: "Ningbo",
@@ -751,6 +792,7 @@ export const ADVOCACY: CvRecord[] = [
   },
   {
     id: "adoption-day",
+    secondary: true,
     org: "Adoption Day Ningbo",
     role: "Animal Rescuer",
     location: "Ningbo",

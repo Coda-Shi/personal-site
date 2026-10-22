@@ -50,7 +50,7 @@ export default async function Page({ params }: PageProps<"/[lang]/cv">) {
 
       <section className="mt-16">
         <h2 className="label text-bone/55">{dict.headings.education}</h2>
-        <RecordList items={EDUCATION} overrides={dict.education} />
+        <RecordList items={EDUCATION} overrides={dict.education} lang={lang} />
       </section>
 
       {TRACKS.map((track) => (
@@ -71,7 +71,7 @@ export default async function Page({ params }: PageProps<"/[lang]/cv">) {
 
       <section className="mt-16">
         <h2 className="label text-bone/55">{dict.headings.advocacy}</h2>
-        <RecordList items={ADVOCACY} overrides={dict.advocacy} />
+        <RecordList items={ADVOCACY} overrides={dict.advocacy} lang={lang} />
       </section>
 
       <section className="mt-16">

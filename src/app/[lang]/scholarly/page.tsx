@@ -68,7 +68,7 @@ export default async function Page({ params }: PageProps<"/[lang]/scholarly">) {
 
       <section className="mt-16">
         <h2 className="label text-bone/55">{dict.headings.education}</h2>
-        <RecordList items={EDUCATION} overrides={dict.education} />
+        <RecordList items={EDUCATION} overrides={dict.education} lang={lang} />
       </section>
     </TrackPage>
   );

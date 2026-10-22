@@ -589,6 +589,41 @@
   transform: translateY(-25%) rotate(225deg);
 }
 
+/* The "Additional experience" fold (D50) takes the same chevron, centred on
+   its one line rather than on a masthead's first. */
+.more > summary::-webkit-details-marker {
+  display: none;
+}
+
+.more > summary {
+  position: relative;
+}
+
+.more > summary::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  color: var(--color-bone);
+  opacity: 0.4;
+  transform: translateY(-75%) rotate(45deg);
+  transition:
+    transform 220ms ease-out,
+    opacity 220ms ease-out;
+}
+
+.more > summary:hover::after {
+  opacity: 0.85;
+}
+
+.more[open] > summary::after {
+  transform: translateY(-25%) rotate(225deg);
+}
+
 /* ── Which symbol board is shown ──────────────────────────────────────────
    Both are in the DOM; this picks one. The choice cannot be made in React
    from the viewport — that would make the markup depend on something the
