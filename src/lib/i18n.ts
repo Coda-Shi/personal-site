@@ -513,6 +513,8 @@ const zh: Partial<Dictionary> = {
         "构思 AI 原生推理游戏《亲爱的嫌疑人》，主导其创意愿景、美学方向、叙事与玩法设计、企划，以及设计系统建设。",
         "撰写约十万字游戏剧本，并统筹项目的制作、发行、融资与商务拓展。",
         "《亲爱的嫌疑人》入围 2026 indiePlay 中国独立游戏大赛「最佳AI游戏作品」。",
+        // Invited, not yet held: change to the past once the forum has taken place.
+        "受邀参加 2026 腾讯全球游戏创作大赛初光 AI 游戏论坛（武汉，11 月 26 日）的 AI 游戏创作者圆桌对谈，主持人许怡然。",
       ],
     },
     "hot-sound": {
