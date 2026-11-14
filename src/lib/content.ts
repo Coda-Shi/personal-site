@@ -518,6 +518,7 @@ export const TRACKS: Track[] = [
           "Conceived DEAR SUSPECT, an AI-native deduction game, and leads its creative vision, aesthetic direction, narrative and gameplay design, planning, and design-system development.",
           "Wrote approximately 100,000 Chinese characters of game script and owns the project's production, publishing, financing, and business-development workstreams.",
           "DEAR SUSPECT was a finalist for Best AI Games at the 2026 indiePlay China Independent Game Competition.",
+          "Invited to the AI game creators' roundtable at the Chuguang AI Game Forum (2026 Tencent Global Game Creation Competition, Wuhan, 26 November), moderated by Alex Xu.",
         ],
       },
       {
