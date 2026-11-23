@@ -21,8 +21,9 @@ import type { INDIEPLAY, TENCENT } from "@/lib/content";
  * two this is. It read 入围 · FINALIST until DEAR SUSPECT won the category on
  * 2026-11-22, and reads 获奖 · WINNER since (INDIEPLAY.status). If the
  * organisers issue an official white laurel, it replaces this one. The
- * Tencent laurel follows the same four lines with the competition's name
- * where the category would be (TENCENT).
+ * Tencent laurel keeps the four lines but not their roles: the English name
+ * on top, the Chinese name large, the track in both languages, the status
+ * (TENCENT).
  *
  * A win is gold, a selection bone. The gold is the untarnished one D7 keeps
  * out of the trinity; a small mark that appears once does not tip the balance
@@ -146,7 +147,15 @@ export function Laurel({
           column's full 327px — a scale of 0.68, so 14 units is 9.5px, just
           over the floor for spaced capitals in Cormorant (D24). */}
       <g fill="currentColor" textAnchor="middle">
-        <text x={W / 2} y={48} fontSize={17} opacity={a(0.72)} style={{ ...latin, letterSpacing: "0.04em" }}>
+        {/* TENCENT GAME AWARDS 2026 is twice "2026 indiePlay"; a step smaller
+            keeps it clear of the leaves where the branches close in. */}
+        <text
+          x={W / 2}
+          y={48}
+          fontSize={"track" in award ? 15 : 17}
+          opacity={a(0.72)}
+          style={{ ...latin, letterSpacing: "0.04em" }}
+        >
           {award.edition}
         </text>
         <text x={W / 2} y={91} fontSize={30} opacity={a(0.92)}>
@@ -156,16 +165,33 @@ export function Laurel({
             </tspan>
           ))}
         </text>
-        <text
-          x={W / 2}
-          y={119}
-          fontSize={14}
-          fontWeight={600}
-          opacity={a(0.72)}
-          style={{ ...latin, letterSpacing: "0.24em" }}
-        >
-          {award.category.en}
-        </text>
+        {"track" in award ? (
+          // Both languages on one line, set like the status line below.
+          <text x={W / 2} y={119} fontSize={14} opacity={a(0.72)}>
+            {runs(award.track.zh).map((run) => (
+              <tspan key={run.key} style={run.latin ? latin : han}>
+                {run.text}
+              </tspan>
+            ))}
+            <tspan dx={8} style={latin}>
+              ·
+            </tspan>
+            <tspan dx={8} fontWeight={600} style={{ ...latin, letterSpacing: "0.24em" }}>
+              {award.track.en}
+            </tspan>
+          </text>
+        ) : (
+          <text
+            x={W / 2}
+            y={119}
+            fontSize={14}
+            fontWeight={600}
+            opacity={a(0.72)}
+            style={{ ...latin, letterSpacing: "0.24em" }}
+          >
+            {award.category.en}
+          </text>
+        )}
         <text x={W / 2} y={148} fontSize={14} opacity={a(0.6)}>
           <tspan style={han}>{award.status.zh}</tspan>
           <tspan dx={8} style={latin}>

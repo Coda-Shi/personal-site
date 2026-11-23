@@ -235,14 +235,23 @@ export const INDIEPLAY = {
 /**
  * DEAR SUSPECT at the Tencent Game Awards 2026, by the organiser's own names
  * (2026腾讯游戏创作大赛 / TENCENT GAME AWARDS 2026, the banner on
- * gameinstitute.qq.com/awards2026). A finalist; the ceremony is on 2026-11-27.
- * The main competition has three tracks and which one we are in has not been
- * confirmed, so the laurel names the competition where a category would go.
+ * gameinstitute.qq.com/awards2026). A finalist in the AI游戏赛道, one of the
+ * main competition's three tracks (its page: /awards2026/ai); the ceremony is
+ * on 2026-11-27. The finalist list is not online; the track is the owner's.
  * Same words as the studio site's AWARDS[1] (data/press.ts in its repo).
+ *
+ * Not the GWB Game Awards on gameinstitute.tencent.com, where the Chinese
+ * site's 英 link goes: that is the institute's international competition, with
+ * its own timetable.
+ *
+ * Unlike indiePlay, the name differs by language, so the laurel carries both:
+ * the English one where indiePlay's edition goes, the Chinese one large, and
+ * the track as one line in both (laurel.tsx).
  */
 export const TENCENT = {
-  edition: "2026",
-  category: { zh: "腾讯游戏创作大赛", en: "TENCENT GAME AWARDS" },
+  edition: "TENCENT GAME AWARDS 2026",
+  category: { zh: "腾讯游戏创作大赛" },
+  track: { zh: "AI游戏赛道", en: "AI GAMES TRACK" },
   status: { zh: "入围", en: "FINALIST" },
   won: false,
 } as const;
@@ -534,7 +543,7 @@ export const TRACKS: Track[] = [
           "Conceived DEAR SUSPECT, an AI-native deduction game, and leads its creative vision, aesthetic direction, narrative and gameplay design, planning, and design-system development.",
           "Wrote approximately 100,000 Chinese characters of game script and owns the project's production, publishing, financing, and business-development workstreams.",
           "DEAR SUSPECT won Best AI Games at the 2026 indiePlay China Independent Game Awards.",
-          "DEAR SUSPECT was a finalist at the Tencent Game Awards 2026.",
+          "DEAR SUSPECT was a finalist in the AI Games track at the Tencent Game Awards 2026.",
           "Invited to the AI game creators' roundtable at the Chuguang AI Game Forum (Tencent Game Awards 2026, Wuhan, 26 November), moderated by Alex Xu.",
         ],
       },

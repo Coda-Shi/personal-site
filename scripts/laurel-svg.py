@@ -17,9 +17,9 @@ Two laurels, three versions each:
     indieplay   bilingual   2026 indiePlay / 最佳AI游戏作品 / BEST AI GAMES / 获奖 · WINNER
                 zh          2026 indiePlay / 最佳AI游戏作品 / 获奖
                 en          2026 indiePlay / BEST AI GAMES / WINNER
-    tencent     bilingual   2026 / 腾讯游戏创作大赛 / TENCENT GAME AWARDS / 入围 · FINALIST
-                zh          2026 / 腾讯游戏创作大赛 / 入围
-                en          2026 / TENCENT GAME AWARDS / FINALIST
+    tencent     bilingual   TENCENT GAME AWARDS 2026 / 腾讯游戏创作大赛 / AI游戏赛道 · AI GAMES TRACK / 入围 · FINALIST
+                zh          2026 / 腾讯游戏创作大赛 / AI游戏赛道 / 入围
+                en          TENCENT GAME AWARDS 2026 / AI GAMES TRACK / FINALIST
 
 (indiePlay read 入围 / FINALIST until the ceremony on 2026-11-22.)
 
@@ -80,7 +80,7 @@ def cormorant(text: str) -> TTFont:
     raise SystemExit(f"no Cormorant file in .next covers {text!r} — run npm run build first")
 
 
-LATIN = cormorant("2026 indiePlay BEST AI GAMES WINNER TENCENT FINALIST ·")
+LATIN = cormorant("2026 indiePlay BEST AI GAMES WINNER TENCENT AWARDS TRACK FINALIST ·")
 L400 = Face(instancer.instantiateVariableFont(LATIN, {"wght": 400}))
 L600 = Face(instancer.instantiateVariableFont(LATIN, {"wght": 600}))
 HAN = Face(TTFont(FANGSONG))
@@ -163,11 +163,31 @@ LAURELS = {
     },
     "tencent": {
         "colours": ("bone", "black"),
-        "versions": laurel("2026", "腾讯游戏创作大赛", "TENCENT GAME AWARDS", "入围", "FINALIST"),
+        # The name differs by language, so not indiePlay's shape: English name
+        # on top, Chinese name large, the track in both (laurel.tsx).
+        "versions": {
+            "bilingual": [
+                (48, 15, [("TENCENT GAME AWARDS 2026", L400, 0.04, 0)], 250),
+                (91, 30, title_zh("腾讯游戏创作大赛"), 250),
+                (119, 14, title_zh("AI游戏赛道") + [("·", L400, 0, 8), ("AI GAMES TRACK", L600, 0.24, 8)], 290),
+                (148, 14, [("入围", HAN, 0, 0), ("·", L400, 0, 8), ("FINALIST", L600, 0.24, 8)]),
+            ],
+            "zh": [
+                (48, 17, [("2026", L400, 0.04, 0)]),
+                (91, 30, title_zh("腾讯游戏创作大赛"), 250),
+                (119, 15, title_zh("AI游戏赛道")),
+                (148, 15, [("入围", HAN, 0.6, 0)]),
+            ],
+            "en": [
+                (58, 15, [("TENCENT GAME AWARDS 2026", L400, 0.04, 0)], 250),
+                (96, 23, [("AI GAMES TRACK", L600, 0.14, 0)], 250),
+                (128, 14, [("FINALIST", L600, 0.24, 0)]),
+            ],
+        },
         "titles": {
-            "bilingual": "2026 腾讯游戏创作大赛 入围 · Finalist, Tencent Game Awards 2026",
-            "zh": "2026 腾讯游戏创作大赛 入围",
-            "en": "Tencent Game Awards 2026 Finalist",
+            "bilingual": "Tencent Game Awards 2026 · 2026腾讯游戏创作大赛 AI游戏赛道 入围 · Finalist, AI Games track",
+            "zh": "2026 腾讯游戏创作大赛 AI游戏赛道 入围",
+            "en": "Tencent Game Awards 2026, AI Games track, Finalist",
         },
     },
 }
