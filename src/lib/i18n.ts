@@ -182,6 +182,7 @@ export type Dictionary = {
     play: string;
     /** The laurel's accessible name — it is an image, and its text is drawn. */
     laurelLabel: string;
+    tencentLaurelLabel: string;
     /** Over the row of outlets that ran the finalist list. */
     seenOn: string;
   };
@@ -282,7 +283,8 @@ const en: Dictionary = {
     coverCaption: "A cover, on Bilibili",
     coverNote: "The heavy music I love, and the intensity only it can carry.",
     play: "Play the video",
-    laurelLabel: "Finalist, Best AI Games, 2026 indiePlay",
+    laurelLabel: "Winner, Best AI Games, 2026 indiePlay",
+    tencentLaurelLabel: "Finalist, Tencent Game Awards 2026",
     seenOn: "As seen on",
   },
   deck: { previous: "Previous photograph", next: "Next photograph" },
@@ -512,9 +514,11 @@ const zh: Partial<Dictionary> = {
         // Creative page's title give it.
         "构思 AI 原生推理游戏《亲爱的嫌疑人》，主导其创意愿景、美学方向、叙事与玩法设计、企划，以及设计系统建设。",
         "撰写约十万字游戏剧本，并统筹项目的制作、发行、融资与商务拓展。",
-        "《亲爱的嫌疑人》入围 2026 indiePlay 中国独立游戏大赛「最佳AI游戏作品」。",
+        "《亲爱的嫌疑人》获 2026 indiePlay 中国独立游戏大赛「最佳AI游戏作品」奖。",
+        // The competition by its official name, as its own site writes it.
+        "《亲爱的嫌疑人》入围 2026 腾讯游戏创作大赛。",
         // Invited, not yet held: change to the past once the forum has taken place.
-        "受邀参加 2026 腾讯全球游戏创作大赛初光 AI 游戏论坛（武汉，11 月 26 日）的 AI 游戏创作者圆桌对谈，主持人许怡然。",
+        "受邀参加 2026 腾讯游戏创作大赛初光 AI 游戏论坛（武汉，11 月 26 日）的 AI 游戏创作者圆桌对谈，主持人许怡然。",
       ],
     },
     "hot-sound": {
@@ -594,7 +598,8 @@ const zh: Partial<Dictionary> = {
     coverCaption: "翻唱，在 bilibili",
     coverNote: "我钟爱的重型音乐，和只有它才能表达的激烈情绪。",
     play: "播放视频",
-    laurelLabel: "2026 indiePlay 最佳AI游戏作品 入围",
+    laurelLabel: "2026 indiePlay 最佳AI游戏作品 获奖",
+    tencentLaurelLabel: "2026 腾讯游戏创作大赛 入围",
     seenOn: "媒体报道",
   },
   deck: { previous: "上一张", next: "下一张" },

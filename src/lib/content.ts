@@ -215,11 +215,10 @@ export const COVER = {
 export const STUDIO_URL = "https://elegists.studio";
 
 /**
- * DEAR SUSPECT at the 2026 indiePlay China Independent Game Competition: a
- * finalist in Best AI Games. Announced 2026-09-30,
- * playable at WePlay in Shanghai 11-21/22, winners on the main stage 11-22.
- * After that date `status` either becomes the win or stays as it is — a
- * finalist place does not expire and does not come down.
+ * DEAR SUSPECT at the 2026 indiePlay China Independent Game Awards: a
+ * finalist in Best AI Games (announced 2026-09-30), and its winner at the
+ * ceremony on 2026-11-22 on the closing stage of WePlay Expo 2026, Shanghai.
+ * `status` is the one word that changed.
  *
  * The category is written as the official laurel writes it (最佳AI游戏作品 /
  * BEST AI GAMES); the news copy shortens it to 最佳AI作品, the graphic does
@@ -228,7 +227,24 @@ export const STUDIO_URL = "https://elegists.studio";
 export const INDIEPLAY = {
   edition: "2026 indiePlay",
   category: { zh: "最佳AI游戏作品", en: "BEST AI GAMES" },
+  // Was 入围 / FINALIST until the ceremony on 2026-11-22.
+  status: { zh: "获奖", en: "WINNER" },
+  won: true,
+} as const;
+
+/**
+ * DEAR SUSPECT at the Tencent Game Awards 2026, by the organiser's own names
+ * (2026腾讯游戏创作大赛 / TENCENT GAME AWARDS 2026, the banner on
+ * gameinstitute.qq.com/awards2026). A finalist; the ceremony is on 2026-11-27.
+ * The main competition has three tracks and which one we are in has not been
+ * confirmed, so the laurel names the competition where a category would go.
+ * Same words as the studio site's AWARDS[1] (data/press.ts in its repo).
+ */
+export const TENCENT = {
+  edition: "2026",
+  category: { zh: "腾讯游戏创作大赛", en: "TENCENT GAME AWARDS" },
   status: { zh: "入围", en: "FINALIST" },
+  won: false,
 } as const;
 
 /**
@@ -517,8 +533,9 @@ export const TRACKS: Track[] = [
           "Co-founded a remote independent game studio and manages all eight team members across creative and production functions.",
           "Conceived DEAR SUSPECT, an AI-native deduction game, and leads its creative vision, aesthetic direction, narrative and gameplay design, planning, and design-system development.",
           "Wrote approximately 100,000 Chinese characters of game script and owns the project's production, publishing, financing, and business-development workstreams.",
-          "DEAR SUSPECT was a finalist for Best AI Games at the 2026 indiePlay China Independent Game Competition.",
-          "Invited to the AI game creators' roundtable at the Chuguang AI Game Forum (2026 Tencent Global Game Creation Competition, Wuhan, 26 November), moderated by Alex Xu.",
+          "DEAR SUSPECT won Best AI Games at the 2026 indiePlay China Independent Game Awards.",
+          "DEAR SUSPECT was a finalist at the Tencent Game Awards 2026.",
+          "Invited to the AI game creators' roundtable at the Chuguang AI Game Forum (Tencent Game Awards 2026, Wuhan, 26 November), moderated by Alex Xu.",
         ],
       },
       {

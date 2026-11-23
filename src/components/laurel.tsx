@@ -1,7 +1,8 @@
-import { INDIEPLAY } from "@/lib/content";
+import type { INDIEPLAY, TENCENT } from "@/lib/content";
 
 /**
- * DEAR SUSPECT's indiePlay laurel, drawn in the site's own hand.
+ * DEAR SUSPECT's laurels, drawn in the site's own hand: indiePlay (won) and
+ * the Tencent Game Awards (finalist). One drawing; the words are the award's.
  *
  * 🔴 **Drawn, not keyed — and that was tried first.** The owner asked for the
  * official laurel processed to bone. The official one is a glossy, layered
@@ -16,9 +17,16 @@ import { INDIEPLAY } from "@/lib/content";
  * (2026 indiePlay / 最佳AI游戏作品 / BEST AI GAMES), set in the site's faces,
  * between two branches drawn as geometry. The fourth line is ours and it is
  * not optional: the official graphic is the category's header, the same for
- * every game in it and for the winner, so without 入围 · FINALIST the badge
- * would claim more than happened. If the finalist kit from the organisers
- * includes an official white laurel, it replaces this one.
+ * every game in it and for the winner, so the badge has to say which of the
+ * two this is. It read 入围 · FINALIST until DEAR SUSPECT won the category on
+ * 2026-11-22, and reads 获奖 · WINNER since (INDIEPLAY.status). If the
+ * organisers issue an official white laurel, it replaces this one. The
+ * Tencent laurel follows the same four lines with the competition's name
+ * where the category would be (TENCENT).
+ *
+ * A win is gold, a selection bone. The gold is the untarnished one D7 keeps
+ * out of the trinity; a small mark that appears once does not tip the balance
+ * the way a flood would, and it is the one place on the site gold means gold.
  *
  * Inline SVG rather than a file in /public, so the text is real text in the
  * site's web fonts (an SVG loaded through <img> gets none) and follows
@@ -95,15 +103,35 @@ const BRANCH = [
 const latin = { fontFamily: "var(--font-display)" } as const;
 const han = { fontFamily: "var(--font-fangsong)" } as const;
 
-export function Laurel({ label, className }: { label: string; className?: string }) {
+/** Han and Latin runs of a Chinese line, each in its own face (最佳 · AI · 游戏作品). */
+const runs = (zh: string) =>
+  zh
+    .split(/([A-Za-z0-9]+)/)
+    .filter(Boolean)
+    .map((text, i) => ({ text, latin: /^[A-Za-z0-9]/.test(text), key: i }));
+
+export function Laurel({
+  award,
+  label,
+  className,
+}: {
+  award: typeof INDIEPLAY | typeof TENCENT;
+  label: string;
+  className?: string;
+}) {
+  // Bone is stepped down so the laurel sits under the key art rather than on
+  // it. Gold is already darker than bone, and on the Creative page's oxblood
+  // the same steps turn it to mud and the win reads quieter than the
+  // selection beside it — so a win is solid throughout.
+  const a = (opacity: number) => (award.won ? 1 : opacity);
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
       role="img"
       aria-label={label}
-      className={`text-bone ${className ?? ""}`}
+      className={`${award.won ? "text-gold" : "text-bone"} ${className ?? ""}`}
     >
-      <g fill="currentColor" stroke="none" opacity={0.78}>
+      <g fill="currentColor" stroke="none" opacity={a(0.78)}>
         <g>
           <path d={STEM} fill="none" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" />
           <path d={BRANCH} />
@@ -118,31 +146,33 @@ export function Laurel({ label, className }: { label: string; className?: string
           column's full 327px — a scale of 0.68, so 14 units is 9.5px, just
           over the floor for spaced capitals in Cormorant (D24). */}
       <g fill="currentColor" textAnchor="middle">
-        <text x={W / 2} y={48} fontSize={17} opacity={0.72} style={{ ...latin, letterSpacing: "0.04em" }}>
-          {INDIEPLAY.edition}
+        <text x={W / 2} y={48} fontSize={17} opacity={a(0.72)} style={{ ...latin, letterSpacing: "0.04em" }}>
+          {award.edition}
         </text>
-        <text x={W / 2} y={91} fontSize={30} opacity={0.92}>
-          <tspan style={han}>{INDIEPLAY.category.zh.slice(0, 2)}</tspan>
-          <tspan style={latin}>{INDIEPLAY.category.zh.slice(2, 4)}</tspan>
-          <tspan style={han}>{INDIEPLAY.category.zh.slice(4)}</tspan>
+        <text x={W / 2} y={91} fontSize={30} opacity={a(0.92)}>
+          {runs(award.category.zh).map((run) => (
+            <tspan key={run.key} style={run.latin ? latin : han}>
+              {run.text}
+            </tspan>
+          ))}
         </text>
         <text
           x={W / 2}
           y={119}
           fontSize={14}
           fontWeight={600}
-          opacity={0.72}
+          opacity={a(0.72)}
           style={{ ...latin, letterSpacing: "0.24em" }}
         >
-          {INDIEPLAY.category.en}
+          {award.category.en}
         </text>
-        <text x={W / 2} y={148} fontSize={14} opacity={0.6}>
-          <tspan style={han}>{INDIEPLAY.status.zh}</tspan>
+        <text x={W / 2} y={148} fontSize={14} opacity={a(0.6)}>
+          <tspan style={han}>{award.status.zh}</tspan>
           <tspan dx={8} style={latin}>
             ·
           </tspan>
           <tspan dx={8} fontWeight={600} style={{ ...latin, letterSpacing: "0.24em" }}>
-            {INDIEPLAY.status.en}
+            {award.status.en}
           </tspan>
         </text>
       </g>
