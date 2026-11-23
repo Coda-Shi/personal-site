@@ -5,7 +5,7 @@ import { PhotoDeck } from "@/components/photo-deck";
 import { VideoEmbed } from "@/components/video-embed";
 import { PERFORMANCES } from "@/content/performances";
 import { Laurel } from "@/components/laurel";
-import { BILIBILI, COVER, MUSIC, PRESS, STUDIO_URL, TRACKS } from "@/lib/content";
+import { BILIBILI, COVER, INDIEPLAY, MUSIC, PRESS, STUDIO_URL, TENCENT, TRACKS } from "@/lib/content";
 import { EntryList, TrackPage } from "@/components/track-page";
 import { getDictionary, hasLocale, localise } from "@/lib/i18n";
 import { localeAlternates } from "@/lib/site";
@@ -68,8 +68,12 @@ export default async function Page({ params }: PageProps<"/[lang]/creative">) {
         </div>
 
         {/* Under the cover, centred as one unit with the row below it: the
-            laurel says what happened, the outlets are where it can be read. */}
-        <Laurel label={dict.creative.laurelLabel} className="mx-auto mt-10 block w-full max-w-[24rem]" />
+            laurels say what happened, the outlets are where it can be read.
+            The win first; side by side from sm, stacked on the phone. */}
+        <div className="mx-auto mt-10 flex max-w-[24rem] flex-col items-center gap-6 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4">
+          <Laurel award={INDIEPLAY} label={dict.creative.laurelLabel} className="block w-full sm:max-w-[20rem]" />
+          <Laurel award={TENCENT} label={dict.creative.tencentLaurelLabel} className="block w-full sm:max-w-[20rem]" />
+        </div>
 
         <div className="mt-8 text-center">
           <p className="label text-bone/45">{dict.creative.seenOn}</p>

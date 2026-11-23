@@ -17,6 +17,9 @@
   --color-klein: #002fa7;
   --color-oxblood: #6e1423;
   --color-gilt: #6a5216;
+  /* The untarnished gold above, kept out of the trinity and used for one thing:
+     the laurel of a win (laurel.tsx). Small and alone, it cannot outweigh. */
+  --color-gold: #b08d2e;
 
   /* Latin face first, Han face second. The browser resolves family per
      character, so English keeps Cormorant and Space Grotesk while Chinese
