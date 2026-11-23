@@ -1529,12 +1529,14 @@ indienova、游研社、腾讯新闻、搜狐、网易。每篇都核过名单�
 
 所有者：「《亲爱的嫌疑人》斩获2026年 indieplay最佳ai游戏奖。做桂冠svg，搜索网上，补全信息，加入履历。」「同时，我们入围了2026腾讯游戏创作大赛。也写上去。」「目前两个网站上的素材统一比较好点」「改成金色」
 
-- **事实**：11-22 WePlay 文化展闭幕舞台颁奖（上海），700+ 作品、11 个奖项，最高 indiePlay 大奖空缺（3DM 报道）。主办方获奖名单当天网上没有，获奖以所有者为准。腾讯赛事官方名「2026腾讯游戏创作大赛 / TENCENT GAME AWARDS 2026」（gameinstitute.qq.com/awards2026 题图），主赛区三条赛道（自由创意 / AI游戏 / 小红花游戏），我们在哪条未确认，所以不写赛道；11-27 颁奖。
-- **数据**：`INDIEPLAY.status` 改「获奖 · WINNER」、加 `won: true`；新增 `TENCENT`（第一行「2026」、类别位放赛事名、`won: false`）。CV 的 ELEGISTS STUDIO 条目：获奖一条、腾讯入围一条、论坛一条（赛事名从「腾讯全球游戏创作大赛」更正为官方名）。
-- **`laurel.tsx` 改成吃一个 award**：中文标题按拉丁 / 汉字切 run 各走各的字体（最佳 · AI · 游戏作品），不再写死 `slice`。创作页封面下两枚并排（获奖在前），`sm` 以下竖排，各自满栏 327px。
+- **事实**：11-22 WePlay 文化展闭幕舞台颁奖（上海），700+ 作品、11 个奖项，最高 indiePlay 大奖空缺（3DM 报道）。主办方获奖名单当天网上没有，获奖以所有者为准。腾讯赛事官方名「2026腾讯游戏创作大赛 / TENCENT GAME AWARDS 2026」（gameinstitute.qq.com/awards2026 题图），主赛区三条赛道（自由创意 / AI游戏 / 小红花游戏），我们在 **「AI游戏赛道」**（官网 `/awards2026/ai`；入围名单网上没有，赛道以所有者为准——我起初写成「赛道未确认、不写」，所有者纠正：「腾讯游戏创作大赛我们也是AI赛道，你仔细去查一下」）；11-27 颁奖。中文站「英」按钮通向的 gameinstitute.tencent.com 是 **GWB Game Awards**，时间表不同，是学堂另一个国际赛事，英文名不用它。
+- **数据**：`INDIEPLAY.status` 改「获奖 · WINNER」、加 `won: true`；新增 `TENCENT`（`edition` 是英文名、`category.zh` 是中文名、`track` 中英、`won: false`）。CV 的 ELEGISTS STUDIO 条目：获奖一条、腾讯入围一条（「入围 2026 腾讯游戏创作大赛「AI游戏赛道」」/ "a finalist in the AI Games track at the Tencent Game Awards 2026"）、论坛一条（赛事名从「腾讯全球游戏创作大赛」更正为官方名）。
+- **`laurel.tsx` 改成吃一个 award**：中文标题按拉丁 / 汉字切 run 各走各的字体（最佳 · AI · 游戏作品），不再写死 `slice`。腾讯的赛事名中英不同，不能套 indiePlay 的「品牌 / 类别中 / 类别英 / 结果」：改成「TENCENT GAME AWARDS 2026（小一号，15）/ 腾讯游戏创作大赛（大）/ AI游戏赛道 · AI GAMES TRACK / 入围 · FINALIST」，第三行和第四行同一种中英并排。创作页封面下两枚并排（获奖在前），`sm` 以下竖排，各自满栏 327px。
 - **获奖是金，入围是骨白。** 金用 D7 里那个「真金」`#b08d2e`，新 token `--color-gold`，只给获奖月桂用：`gilt`（#6a5216）在黑底上看不出是金；D7 不让真金进三色，是因为整片铺色会压倒另外两个，一枚小标识不会。金色月桂不走骨白那套递减透明度——在创作页的血红底上那几档会把金压成泥，获奖反而比旁边的入围暗，所以获奖全实。
 - **两站统一**（与 ES 会话对过）：英文赛事名跟独立站用「China Independent Game Awards」（之前本站写 Competition）；腾讯中英名两边一致；独立站获奖月桂也改 `#b08d2e`，腾讯留它自己的琥珀。对外月桂文件两站共用一套，由本站脚本出。
-- **导出**：`laurel-svg.py` 改成 `LAURELS` 表，两枚各三版；indiePlay 金 / 骨白 / 黑，腾讯骨白 / 黑；长名在两枝之间自动缩到 250 单位内（只有英文版的 TENCENT GAME AWARDS 用到）。30 个文件在所有者桌面「DEAR SUSPECT 桂冠 2026」，独立站 `client/public/press/logo/laurel/`、OneDrive 与 Drive 由 ES 会话同步。
+- **导出**：`laurel-svg.py` 改成 `LAURELS` 表，两枚各三版；indiePlay 金 / 骨白 / 黑，腾讯骨白 / 黑；长行在两枝之间自动缩到给定宽度内。30 个文件在所有者桌面「DEAR SUSPECT 桂冠 2026」，独立站 `client/public/press/logo/laurel/`、OneDrive 与 Drive 由 ES 会话同步。
+- **这一轮起，月桂类改动先给所有者看预览图再合并**（「这一次你要给我看一眼预览图审批」）：文件联系表 + 创作页桌面与 375px 截图，放 `_incoming/`。手机截图用 CDP 设 375 宽（headless 窗口最小约 500，直接截不准；站点不让 iframe 嵌）。
+- 11-23 第一次合并（#71）在 Vercel 生产部署瞬间失败，代码与成功的预览完全相同——不是代码问题；下一次合并会重新触发。
 - **之后**：11-26 论坛之后「受邀参加」改过去时（中英）；11-27 腾讯颁奖后看结果——获奖就把 `TENCENT.status` / `won` 改了、CV 那条改了、重跑导出、告诉 ES。主办方的获奖名单上线后，把链接给 ES。
 
 ## 5. 工作流约定
