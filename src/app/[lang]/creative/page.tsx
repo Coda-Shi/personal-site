@@ -69,10 +69,21 @@ export default async function Page({ params }: PageProps<"/[lang]/creative">) {
 
         {/* Under the cover, centred as one unit with the row below it: the
             laurels say what happened, the outlets are where it can be read.
-            The win first; side by side from sm, stacked on the phone. */}
-        <div className="mx-auto mt-10 flex max-w-[24rem] flex-col items-center gap-6 sm:max-w-none sm:flex-row sm:justify-center sm:gap-4">
+            In the order they were won: indiePlay alone on top, the two
+            Tencent awards side by side under it — three in one row would set
+            the small lines under 7px. Stacked on the phone. */}
+        <div className="mx-auto mt-10 flex max-w-[24rem] flex-col items-center gap-6 sm:max-w-none sm:gap-4">
           <Laurel award={INDIEPLAY} label={dict.creative.laurelLabel} className="block w-full sm:max-w-[20rem]" />
-          <Laurel award={TENCENT} label={dict.creative.tencentLaurelLabel} className="block w-full sm:max-w-[20rem]" />
+          <div className="flex w-full flex-col items-center gap-6 sm:flex-row sm:justify-center sm:gap-4">
+            {TENCENT.map((award) => (
+              <Laurel
+                key={award.id}
+                award={award}
+                label={dict.creative.tencentLaurelLabel[award.id]}
+                className="block w-full sm:max-w-[20rem]"
+              />
+            ))}
+          </div>
         </div>
 
         <div className="mt-8 text-center">
