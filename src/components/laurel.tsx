@@ -1,5 +1,7 @@
 import type { INDIEPLAY, TENCENT } from "@/lib/content";
 
+type Award = typeof INDIEPLAY | (typeof TENCENT)[number];
+
 /**
  * DEAR SUSPECT's laurels, drawn in the site's own hand: indiePlay (won) and
  * the Tencent Game Awards (finalist). One drawing; the words are the award's.
@@ -20,14 +22,15 @@ import type { INDIEPLAY, TENCENT } from "@/lib/content";
  * every game in it and for the winner, so the badge has to say which of the
  * two this is. It read 入围 · FINALIST until DEAR SUSPECT won the category on
  * 2026-11-22, and reads 获奖 · WINNER since (INDIEPLAY.status). If the
- * organisers issue an official white laurel, it replaces this one. The
- * Tencent laurel keeps the four lines but not their roles: the English name
- * on top, the Chinese name large, the track in both languages, the status
- * (TENCENT).
+ * organisers issue an official white laurel, it replaces this one. The two
+ * Tencent wins of 2026-11-27 have the same four lines (TENCENT): the English
+ * name of the event on top, a step smaller because it is twice as long.
  *
- * A win is gold, a selection bone. The gold is the untarnished one D7 keeps
- * out of the trinity; a small mark that appears once does not tip the balance
- * the way a flood would, and it is the one place on the site gold means gold.
+ * 🔴 **Every laurel is bone, the wins too** (owner, 2026-11-28: the site keeps
+ * one bone-white, minimal register). From 11-23 a win was gold; that read as
+ * the one gold thing on the page and the trinity's gilt next to it, and it is
+ * gone with --color-gold. The studio's laurel files still come in gold for
+ * Steam and the press kit; that is their register, not this site's.
  *
  * Inline SVG rather than a file in /public, so the text is real text in the
  * site's web fonts (an SVG loaded through <img> gets none) and follows
@@ -116,21 +119,22 @@ export function Laurel({
   label,
   className,
 }: {
-  award: typeof INDIEPLAY | typeof TENCENT;
+  award: Award;
   label: string;
   className?: string;
 }) {
   // Bone is stepped down so the laurel sits under the key art rather than on
-  // it. Gold is already darker than bone, and on the Creative page's oxblood
-  // the same steps turn it to mud and the win reads quieter than the
-  // selection beside it — so a win is solid throughout.
-  const a = (opacity: number) => (award.won ? 1 : opacity);
+  // it, the names brightest and the edition and status a step back.
+  const a = (opacity: number) => opacity;
+  // A long English category is fitted between the branches by closing up its
+  // tracking, not by shrinking the type, which is already at the phone's floor.
+  const long = award.category.en.length > 20;
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
       role="img"
       aria-label={label}
-      className={`${award.won ? "text-gold" : "text-bone"} ${className ?? ""}`}
+      className={`text-bone ${className ?? ""}`}
     >
       <g fill="currentColor" stroke="none" opacity={a(0.78)}>
         <g>
@@ -152,7 +156,7 @@ export function Laurel({
         <text
           x={W / 2}
           y={48}
-          fontSize={"track" in award ? 15 : 17}
+          fontSize={award.edition.length > 16 ? 15 : 17}
           opacity={a(0.72)}
           style={{ ...latin, letterSpacing: "0.04em" }}
         >
@@ -165,33 +169,16 @@ export function Laurel({
             </tspan>
           ))}
         </text>
-        {"track" in award ? (
-          // Both languages on one line, set like the status line below.
-          <text x={W / 2} y={119} fontSize={14} opacity={a(0.72)}>
-            {runs(award.track.zh).map((run) => (
-              <tspan key={run.key} style={run.latin ? latin : han}>
-                {run.text}
-              </tspan>
-            ))}
-            <tspan dx={8} style={latin}>
-              ·
-            </tspan>
-            <tspan dx={8} fontWeight={600} style={{ ...latin, letterSpacing: "0.24em" }}>
-              {award.track.en}
-            </tspan>
-          </text>
-        ) : (
-          <text
-            x={W / 2}
-            y={119}
-            fontSize={14}
-            fontWeight={600}
-            opacity={a(0.72)}
-            style={{ ...latin, letterSpacing: "0.24em" }}
-          >
-            {award.category.en}
-          </text>
-        )}
+        <text
+          x={W / 2}
+          y={119}
+          fontSize={14}
+          fontWeight={600}
+          opacity={a(0.72)}
+          style={{ ...latin, letterSpacing: long ? "0.1em" : "0.24em" }}
+        >
+          {award.category.en}
+        </text>
         <text x={W / 2} y={148} fontSize={14} opacity={a(0.6)}>
           <tspan style={han}>{award.status.zh}</tspan>
           <tspan dx={8} style={latin}>

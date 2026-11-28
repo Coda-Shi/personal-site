@@ -12,19 +12,25 @@ The branches are read out of the prerendered Creative page, so the drawing has
 one source and this script only sets the type. The words are INDIEPLAY's and
 TENCENT's in src/lib/content.ts: change both places together.
 
-Two laurels, three versions each:
+Three laurels, three versions each:
 
     indieplay   bilingual   2026 indiePlay / 最佳AI游戏作品 / BEST AI GAMES / 获奖 · WINNER
                 zh          2026 indiePlay / 最佳AI游戏作品 / 获奖
                 en          2026 indiePlay / BEST AI GAMES / WINNER
-    tencent     bilingual   TENCENT GAME AWARDS 2026 / 腾讯游戏创作大赛 / AI游戏赛道 · AI GAMES TRACK / 入围 · FINALIST
-                zh          2026 / 腾讯游戏创作大赛 / AI游戏赛道 / 入围
-                en          TENCENT GAME AWARDS 2026 / AI GAMES TRACK / FINALIST
+    tencent-ainative / tencent-npc
+                bilingual   TENCENT GAME AWARDS 2026 / 最佳AI原生游戏 / BEST AI-NATIVE GAME / 获奖 · WINNER
+                zh          TENCENT GAME AWARDS 2026 / 最佳AI原生游戏 / 获奖
+                en          TENCENT GAME AWARDS 2026 / BEST AI-NATIVE GAME / WINNER
 
-(indiePlay read 入围 / FINALIST until the ceremony on 2026-11-22.)
+(indiePlay read 入围 / FINALIST until the ceremony on 2026-11-22. The Tencent
+laurel was one finalist badge naming the track until the two wins of
+2026-11-27; the track is never named any more. The studio's Steam and press-kit
+Tencent files were cut on 11-27 from these same branches by a separate script,
+kept with the project files, laurels-tencent-2026/build/.)
 
-Colours as on the site: a win in gold, and every laurel also in bone (for dark
-grounds) and black (for light), for wherever one colour is all there is.
+Colours: bone (as on the site, since 2026-11-28 every laurel there is bone)
+and black (for light grounds); indiePlay also in gold, the studio's colour for a
+win on Steam and in the press kit.
 
 Solid, unlike the page: there the laurel sits under the key art at reduced
 opacity; as a file it is the mark itself, and whoever places it sets its
@@ -80,7 +86,7 @@ def cormorant(text: str) -> TTFont:
     raise SystemExit(f"no Cormorant file in .next covers {text!r} — run npm run build first")
 
 
-LATIN = cormorant("2026 indiePlay BEST AI GAMES WINNER TENCENT AWARDS TRACK FINALIST ·")
+LATIN = cormorant("2026 indiePlay BEST AI GAMES WINNER TENCENT AWARDS NATIVE INTELLIGENT NPC DESIGN -·")
 L400 = Face(instancer.instantiateVariableFont(LATIN, {"wght": 400}))
 L600 = Face(instancer.instantiateVariableFont(LATIN, {"wght": 600}))
 HAN = Face(TTFont(FANGSONG))
@@ -161,34 +167,28 @@ LAURELS = {
             "en": "2026 indiePlay Best AI Games Winner",
         },
     },
-    "tencent": {
-        "colours": ("bone", "black"),
-        # The name differs by language, so not indiePlay's shape: English name
-        # on top, Chinese name large, the track in both (laurel.tsx).
-        "versions": {
-            "bilingual": [
-                (48, 15, [("TENCENT GAME AWARDS 2026", L400, 0.04, 0)], 250),
-                (91, 30, title_zh("腾讯游戏创作大赛"), 250),
-                (119, 14, title_zh("AI游戏赛道") + [("·", L400, 0, 8), ("AI GAMES TRACK", L600, 0.24, 8)], 290),
-                (148, 14, [("入围", HAN, 0, 0), ("·", L400, 0, 8), ("FINALIST", L600, 0.24, 8)]),
-            ],
-            "zh": [
-                (48, 17, [("2026", L400, 0.04, 0)]),
-                (91, 30, title_zh("腾讯游戏创作大赛"), 250),
-                (119, 15, title_zh("AI游戏赛道")),
-                (148, 15, [("入围", HAN, 0.6, 0)]),
-            ],
-            "en": [
-                (58, 15, [("TENCENT GAME AWARDS 2026", L400, 0.04, 0)], 250),
-                (96, 23, [("AI GAMES TRACK", L600, 0.14, 0)], 250),
-                (128, 14, [("FINALIST", L600, 0.24, 0)]),
-            ],
-        },
-        "titles": {
-            "bilingual": "Tencent Game Awards 2026 · 2026腾讯游戏创作大赛 AI游戏赛道 入围 · Finalist, AI Games track",
-            "zh": "2026 腾讯游戏创作大赛 AI游戏赛道 入围",
-            "en": "Tencent Game Awards 2026, AI Games track, Finalist",
-        },
+    **{
+        key: {
+            "colours": ("bone", "black"),
+            # indiePlay's shape; the event's English name is a step smaller and
+            # fitted, being twice "2026 indiePlay" (laurel.tsx).
+            "versions": {
+                version: [
+                    (lines[0][0], 15, [("TENCENT GAME AWARDS 2026", L400, 0.04, 0)], 250),
+                    *lines[1:],
+                ]
+                for version, lines in laurel("x", zh, en, "获奖", "WINNER").items()
+            },
+            "titles": {
+                "bilingual": f"Tencent Game Awards 2026 · 2026腾讯游戏创作大赛 {zh}奖 获奖 · Winner, {title}",
+                "zh": f"2026 腾讯游戏创作大赛 {zh}奖 获奖",
+                "en": f"Tencent Game Awards 2026, {title}, Winner",
+            },
+        }
+        for key, zh, en, title in (
+            ("tencent-ainative", "最佳AI原生游戏", "BEST AI-NATIVE GAME", "Best AI-Native Game"),
+            ("tencent-npc", "最佳智能NPC设计", "BEST INTELLIGENT NPC DESIGN", "Best Intelligent NPC Design"),
+        )
     },
 }
 

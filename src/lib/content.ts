@@ -233,28 +233,43 @@ export const INDIEPLAY = {
 } as const;
 
 /**
- * DEAR SUSPECT at the Tencent Game Awards 2026, by the organiser's own names
- * (2026腾讯游戏创作大赛 / TENCENT GAME AWARDS 2026, the banner on
- * gameinstitute.qq.com/awards2026). A finalist in the AI游戏赛道, one of the
- * main competition's three tracks (its page: /awards2026/ai); the ceremony is
- * on 2026-11-27. The finalist list is not online; the track is the owner's.
- * Same words as the studio site's AWARDS[1] (data/press.ts in its repo).
+ * DEAR SUSPECT at the Tencent Game Awards 2026 (2026腾讯游戏创作大赛 /
+ * TENCENT GAME AWARDS 2026, the banner on gameinstitute.qq.com/awards2026):
+ * a finalist, then at the ceremony on 2026-11-27 the winner of two awards,
+ * 最佳AI原生游戏奖 / Best AI-Native Game and 最佳智能NPC设计奖 / Best
+ * Intelligent NPC Design ("Intelligent" is the owner's word, kept). Same words
+ * as the studio site's AWARDS[] (data/press.ts in its repo) and the studio's
+ * laurel files.
+ *
+ * 🔴 **The track is never named.** It was on the finalist laurel and in the CV;
+ * since the win the owner has it out of every public line (2026-11-27). Link
+ * to /awards2026, not the track's own page.
  *
  * Not the GWB Game Awards on gameinstitute.tencent.com, where the Chinese
  * site's 英 link goes: that is the institute's international competition, with
  * its own timetable.
  *
- * Unlike indiePlay, the name differs by language, so the laurel carries both:
- * the English one where indiePlay's edition goes, the Chinese one large, and
- * the track as one line in both (laurel.tsx).
+ * Each award is indiePlay's shape — edition, category in Chinese large, in
+ * English below, status — so one drawing serves all three (laurel.tsx). The
+ * Chinese category drops the trailing 奖, as indiePlay's 最佳AI游戏作品 does and
+ * as the studio's laurel files do.
  */
-export const TENCENT = {
-  edition: "TENCENT GAME AWARDS 2026",
-  category: { zh: "腾讯游戏创作大赛" },
-  track: { zh: "AI游戏赛道", en: "AI GAMES TRACK" },
-  status: { zh: "入围", en: "FINALIST" },
-  won: false,
-} as const;
+export const TENCENT = [
+  {
+    id: "tencent-ainative",
+    edition: "TENCENT GAME AWARDS 2026",
+    category: { zh: "最佳AI原生游戏", en: "BEST AI-NATIVE GAME" },
+    status: { zh: "获奖", en: "WINNER" },
+    won: true,
+  },
+  {
+    id: "tencent-npc",
+    edition: "TENCENT GAME AWARDS 2026",
+    category: { zh: "最佳智能NPC设计", en: "BEST INTELLIGENT NPC DESIGN" },
+    status: { zh: "获奖", en: "WINNER" },
+    won: true,
+  },
+] as const;
 
 /**
  * Outlets that published the finalist list with the game on it, each checked
@@ -543,7 +558,7 @@ export const TRACKS: Track[] = [
           "Conceived DEAR SUSPECT, an AI-native deduction game, and leads its creative vision, aesthetic direction, narrative and gameplay design, planning, and design-system development.",
           "Wrote approximately 100,000 Chinese characters of game script and owns the project's production, publishing, financing, and business-development workstreams.",
           "DEAR SUSPECT won Best AI Games at the 2026 indiePlay China Independent Game Awards.",
-          "DEAR SUSPECT was a finalist in the AI Games track at the Tencent Game Awards 2026.",
+          "DEAR SUSPECT won Best AI-Native Game and Best Intelligent NPC Design at the Tencent Game Awards 2026.",
           "Invited to the AI game creators' roundtable at the Chuguang AI Game Forum (Tencent Game Awards 2026, Wuhan, 26 November), moderated by Alex Xu.",
         ],
       },
